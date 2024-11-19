@@ -29,10 +29,16 @@ class Generator(nn.Module):
     def __init__(self, latent_size):
         super(Generator, self).__init__()
         self.main = nn.Sequential(
-            nn.Linear(latent_size, latent_size),
-            nn.Linear(latent_size, latent_size),
-            nn.Linear(latent_size, latent_size),
-            nn.Linear(latent_size, latent_size),
+            nn.Linear(latent_size, latent_size * 2),
+            nn.ReLU(),
+            nn.BatchNorm1d(latent_size * 2),
+            nn.Linear(latent_size * 2, latent_size),
+            nn.ReLU(),
+            nn.BatchNorm1d(latent_size),
+            nn.Linear(latent_size, latent_size // 2),
+            nn.ReLU(),
+            nn.BatchNorm1d(latent_size // 2),
+            nn.Linear(latent_size // 2, latent_size),
             upper_softmax()
         )
 
@@ -44,11 +50,19 @@ class Generator_big(nn.Module):
     def __init__(self, latent_size, img_size):
         super(Generator_big, self).__init__()
         self.main = nn.Sequential(
-            nn.Linear(latent_size, 2*latent_size),
-            nn.Linear(2*latent_size, 4*latent_size),
-            nn.Linear(4*latent_size, 8*latent_size),
-            nn.Linear(8*latent_size, img_size),
-            upper_softmax()
+            nn.Sequential(
+                nn.Linear(latent_size, 2 * latent_size),
+                nn.ReLU(),
+                nn.BatchNorm1d(2 * latent_size),
+                nn.Linear(2 * latent_size, 4 * latent_size),
+                nn.ReLU(),
+                nn.BatchNorm1d(4 * latent_size),
+                nn.Linear(4 * latent_size, 8 * latent_size),
+                nn.ReLU(),
+                nn.BatchNorm1d(8 * latent_size),
+                nn.Linear(8 * latent_size, img_size),
+                upper_softmax()
+            )
         )
 
     def forward(self, input):

@@ -1,10 +1,10 @@
 import torch
 from collections import defaultdict
-from .models.Generator import Generator_big
-from .models.Detector import Detector, Encoder, Decoder
+from models.Generator import Generator_big
+from models.Detector import Detector, Encoder, Decoder
 import torch_two_sample as tts
-from .models.Mmd_loss import MMDLoss
-from .models.Mmd_loss_constrained import MMDLossConstrained
+from models.Mmd_loss import MMDLoss
+from models.Mmd_loss_constrained import MMDLossConstrained
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pandas as pd

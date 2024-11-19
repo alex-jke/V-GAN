@@ -1,9 +1,10 @@
 import torch
 from collections import defaultdict
-from .models.Generator import Generator, Generator_big
+from models.Generator import Generator, Generator_big
 import torch_two_sample as tts
-from .models.Mmd_loss import MMDLoss
-from .models.Mmd_loss_constrained import MMDLossConstrained
+from models.Mmd_loss import MMDLoss
+from models.Mmd_loss_constrained import MMDLossConstrained
+from models.Mmd_loss_constrained import RBF as RBFConstrained
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pandas as pd
@@ -126,7 +127,12 @@ class VMMD:
             img_size=ndims, latent_size=latent_size).to(device)
         return generator
 
-    def fit(self, X):
+    def fit(self, X: np.array, embedding = lambda x: x):
+        '''
+        Fits the model to the data. The model is trained using the MMD loss function. The model is trained using the Adadelta optimizer.
+        @param X: A two-dimensional numpy array with the data to be fitted.
+        The data should be in the form: n_samples x n_features
+        '''
 
         cuda = torch.cuda.is_available()
         mps = torch.backends.mps.is_available()
@@ -151,7 +157,8 @@ class VMMD:
             generator.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         self.generator_optimizer = optimizer.__class__.__name__
         # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
-        loss_function = MMDLossConstrained(weight=10)
+        kernel = RBFConstrained(embedding=embedding)
+        loss_function = MMDLossConstrained(weight=10, kernel=kernel)
 
         for epoch in range(epochs):
             print(f'\rEpoch {epoch} of {epochs}')
@@ -229,6 +236,33 @@ class VMMD:
         return u
 
 
+def model_eval(model, X_data) -> pd.DataFrame:
+    X_sample = torch.mps.Tensor(pd.DataFrame(
+        X_data).sample(500).to_numpy()).to('mps:0')
+    u = model.generate_subspaces(500)
+    uX_data = u * \
+              torch.mps.Tensor(X_sample).to(model.device) + \
+              torch.mean(X_sample, dim=0) * (~u)
+    mmd = tts.MMDStatistic(500, 500)
+    mmd_val, distances = mmd(X_sample, uX_data, alphas=[0.01], ret_matrix=True)
+    mmd_prop = tts.MMDStatistic(500, 500)
+    mmd_prop_val, distances_prop = mmd_prop(
+        X_sample, uX_data, alphas=[1 / model.bandwidth], ret_matrix=True)
+    PYDEVD_WARN_EVALUATION_TIMEOUT = 200
+    print(f'pval of the MMD two sample test {mmd.pval(distances)}')
+    print(
+        f'pval of the MMD two sample test with proposed bandwidth {1 / model.bandwidth} is {mmd_prop.pval(distances_prop)}, with MMD {mmd_prop_val}')
+    unique_subspaces, proba = np.unique(
+        np.array(u.to('cpu')), axis=0, return_counts=True)
+    proba = proba / np.array(u.to('cpu')).shape[0]
+    unique_subspaces = [str(unique_subspaces[i] * 1)
+                        for i in range(unique_subspaces.shape[0])]
+
+    subspace_df = pd.DataFrame({'subspace': unique_subspaces, 'probability': proba})
+    print(subspace_df)
+    print(np.sum(proba))
+    return subspace_df
+
 if __name__ == "__main__":
     # mean = [1,1,0,0,0,0,0,0,2,1]
     # cov = [[1,1,0,0,0,0,0,0,0,0],[1,1,0,0,0,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0],[0,0,0,0,0,0,1,0,0,0],
@@ -238,30 +272,8 @@ if __name__ == "__main__":
            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0], [500, 0, 0, 0, 0, 0, 0, 0, 1, 500], [500, 0, 0, 0, 0, 0, 0, 0, 500, 1]]
     X_data = np.random.multivariate_normal(mean, cov, 2000)
 
-    model = VMMD(epochs=1500, path_to_directory=Path() / "experiments" /
+    model = VMMD(epochs=1500, path_to_directory=Path(os.getcwd()).parent / "experiments" /
                  f"Example_normal_{datetime.datetime.now()}_vmmd", lr=0.01)
     model.fit(X_data)
+    model_eval(model, X_data)
 
-    X_sample = torch.mps.Tensor(pd.DataFrame(
-        X_data).sample(500).to_numpy()).to('mps:0')
-    u = model.generate_subspaces(500)
-    uX_data = u * \
-        torch.mps.Tensor(X_sample).to(model.device) + \
-        torch.mean(X_sample, dim=0)*(~u)
-    mmd = tts.MMDStatistic(500, 500)
-    mmd_val, distances = mmd(X_sample, uX_data, alphas=[0.01], ret_matrix=True)
-    mmd_prop = tts.MMDStatistic(500, 500)
-    mmd_prop_val, distances_prop = mmd_prop(
-        X_sample, uX_data, alphas=[1/model.bandwidth], ret_matrix=True)
-    PYDEVD_WARN_EVALUATION_TIMEOUT = 200
-    print(f'pval of the MMD two sample test {mmd.pval(distances)}')
-    print(
-        f'pval of the MMD two sample test with proposed bandwidth {1/model.bandwidth} is {mmd_prop.pval(distances_prop)}, with MMD {mmd_prop_val}')
-    unique_subspaces, proba = np.unique(
-        np.array(u.to('cpu')), axis=0, return_counts=True)
-    proba = proba/np.array(u.to('cpu')).shape[0]
-    unique_subspaces = [str(unique_subspaces[i]*1)
-                        for i in range(unique_subspaces.shape[0])]
-
-    print(pd.DataFrame({'subspace': unique_subspaces, 'probability': proba}))
-    print(np.sum(proba))
