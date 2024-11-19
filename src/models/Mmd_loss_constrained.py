@@ -1,13 +1,18 @@
+from abc import ABC, abstractmethod
+
 import torch
 from torch import nn
 
+from models.norm import VectorNorm, FrobeniusNorm, MatrixNorm, L2Norm
 
-BATCH_DIM = 0
-SHAPE_LEN_WITH_BATCH_DIM = 3
+SHAPE_LEN_VECTOR = 2
+SHAPE_LEN_MATRIX = 3
 
 class RBF(nn.Module):
 
-    def __init__(self, n_kernels=5, mul_factor=2.0, bandwidth=None, embedding = lambda x: x):
+    def __init__(self, n_kernels=5, mul_factor=2.0, bandwidth=None, embedding = lambda x: x,
+                 vector_norm: VectorNorm = L2Norm(),
+                 matrix_norm: MatrixNorm = FrobeniusNorm()):
         super().__init__()
         device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
@@ -16,6 +21,8 @@ class RBF(nn.Module):
             torch.arange(n_kernels) - n_kernels // 2).to(device)
         self.bandwidth = bandwidth
         self.embedding = embedding
+        self.vector_norm = vector_norm
+        self.matrix_norm = matrix_norm
 
     def get_bandwidth(self, L2_distances):
         if self.bandwidth is None:
@@ -32,16 +39,18 @@ class RBF(nn.Module):
             Alternatively, a shape of (embedding_dim, n_samples, feature_dim)
         '''
         X_embedded = self.embedding(X)
+        if len(X_embedded.shape) == SHAPE_LEN_VECTOR:
+            norm = self.vector_norm.compute_distance_matrix
+        elif len(X_embedded.shape) == SHAPE_LEN_MATRIX:
+            norm = self.matrix_norm.compute_distance_matrix
+        else:
+            raise ValueError("Input Tensor has to either be of shape (BxN) or (ExBxN)")
 
-        L2_distances = torch.cdist(X_embedded, X_embedded)
-        L2_distances = L2_distances
-        if len(L2_distances.shape) == SHAPE_LEN_WITH_BATCH_DIM:
-            # Computes the mean over the batch dimension (dim: ExBxN -> PxN), this being a norm for matrices of ExN.
-            L2_distances = L2_distances.mean(dim=BATCH_DIM)
+        distances = norm(X_embedded)
 
-        L2_squared = L2_distances ** 2
+        squared_distances = distances ** 2
 
-        result = self._compute_rbf_kernel(L2_squared)
+        result = self._compute_rbf_kernel(squared_distances)
 
         return result
 
@@ -98,3 +107,5 @@ class MMDLossConstrained(nn.Module):
         XY = K[:X_size, X_size:].mean()
         YY = K[X_size:, X_size:].mean()
         return XX - 2 * XY + YY + self.weight*(torch.mean(torch.ones(U.shape[1]).to(self.device) - torch.topk(U, 1, 0).values))
+        #todo: try to restrict it to generate as few distinct subspaces as possible.
+
