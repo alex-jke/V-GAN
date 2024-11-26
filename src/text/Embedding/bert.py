@@ -1,0 +1,139 @@
+import os
+from typing import List, Dict
+
+import numpy as np
+import pandas as pd
+import torch
+from torch import Tensor
+from transformers import AutoTokenizer, AutoModel, AutoModelForMaskedLM
+
+from .huggingmodel import HuggingModel
+
+
+class Bert(HuggingModel):
+    def __init__(self):
+        model_name = 'bert-base-cased'
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModel.from_pretrained(model_name)
+        self.embedded_cache: Dict[int, Tensor] = {}
+        super().__init__(model_name, tokenizer, model)
+
+    def decode2tokenized(self, embeddings: List[np.ndarray]) -> List[int]:
+        """
+        This method takes a list of token embeddings and returns the closest token index for each.
+        :param embeddings: List of individual token embeddings as numpy arrays.
+        :return: List of token indices closest to each embedding.
+        """
+        # Convert list of numpy embeddings to a single tensor and ensure dtype is float32
+        embeddings = torch.tensor(np.stack(embeddings), dtype=torch.float32).to(self.device)  # Shape: (num_tokens, embedding_dim)
+
+        # Retrieve token embeddings for the vocabulary and ensure they are also float32
+        token_embeddings: Tensor = self.get_token_embeddings().to(
+            dtype=torch.float32)  # Shape: (vocab_size, embedding_dim)
+
+        # Removes the CLS, SEP, and MASK tokens, as those were always chosen as the closest tokens
+        tokens_to_remove = [103, 102, 101]
+        for token in tokens_to_remove:
+            token_embeddings = torch.cat((token_embeddings[:token], token_embeddings[token + 1:]), 0)
+
+        # Normalize embeddings for cosine similarity
+        embeddings = torch.nn.functional.normalize(embeddings, dim=1)
+        token_embeddings = torch.nn.functional.normalize(token_embeddings, dim=1)
+
+        # Compute cosine similarities for each token embedding against the vocabulary
+        similarities = torch.matmul(embeddings, token_embeddings.T)  # Shape (num_tokens x vocab_size)
+
+        # Find the index with the highest similarity for each token embedding
+        closest_tokens = torch.argmax(similarities, dim=1).tolist()  # Convert result to a list of token IDs
+
+        return closest_tokens
+
+
+    def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
+        """
+        This method takes a tokenized list of integers and returns the embeddings.
+        :param tokenized: A list of indexes of the tokens.
+        :return: A list of embeddings.
+        """
+        tokenized = torch.tensor(tokenized).unsqueeze(0).to(self.device)
+        with torch.no_grad():
+            outputs = self.model(tokenized)
+            embeddings: Tensor = outputs.last_hidden_state
+
+        list_embeddings = embeddings.tolist()[0]
+        # Convert the embeddings to a list of numpy arrays
+        return [np.array(embedding) for embedding in list_embeddings]
+
+    def get_token_embeddings(self) -> Tensor:
+        """
+        This method returns the token embeddings.
+        :return: A 28_996 x 768 tensor.
+        """
+        embeddings = self.model.embeddings.word_embeddings.weight.detach()
+        return embeddings
+
+    def get_token_embeddings_csv(self) -> pd.DataFrame:
+        """
+        This method returns the token embeddings. If the csv file with the embeddings is not found, it will
+        create it.
+        :return:
+        """
+        embeddings = self.model.embeddings.word_embeddings.weight.detach().numpy()
+        csv_file = f"../resources/{self.model_name}_embeddings.csv"
+
+        if os.path.exists(csv_file):
+            return pd.read_csv(csv_file)
+
+        file = open(csv_file, 'x')
+        token_size = len(self.tokenizer)
+
+
+    def fully_embed_tokenized(self, tokenized: Tensor) -> Tensor:
+        """
+        This method takes a list of token indices and returns the corresponding embeddings.
+        The embeddings are taken from the last layer of the model.
+        :param tokenized: A list of token indices.
+        :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
+        """
+        key = hash(tokenized)
+        cached = self.embedded_cache.get(key)
+        if cached is not None:
+            return cached
+
+        token_vec = torch.tensor(tokenized).unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
+        attention_mask = torch.ones_like(token_vec).to(self.device)
+        # if a token is a padding token, set the mask to 0
+        attention_mask[token_vec == self.tokenizer.pad_token_id] = 0
+        with torch.no_grad():
+            outputs = self.model(token_vec, attention_mask=attention_mask)
+            # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension
+            embeddings = outputs.last_hidden_state.T[:, :, 0]
+
+        self.embedded_cache[key] = embeddings
+        return embeddings
+
+
+if __name__ == '__main__':
+    bert = Bert()
+    text = "Hello, world! This is a test."
+    print("Original:", text)
+
+    embeddings = bert.get_token_embeddings()
+
+    tokenized = bert.tokenize(text)
+    tokenized_tensor = torch.tensor(tokenized).unsqueeze(0).to(bert.device)
+    print("Tokenized:", tokenized)
+
+    embedded: List[np.array] = bert.embed_tokenized(tokenized)
+    #only print the first 100 symbols
+    print("Embedded:", str(embedded)[:100])
+    print("fully embedded:", bert.fully_embed_tokenized(tokenized_tensor))
+
+    deemedbedded = bert.decode2tokenized(embedded)
+    print("Decoded embedding to tokens:", bert.decode2tokenized(embedded))
+
+    detokenized = bert.detokenize(deemedbedded)
+    print("Detokenized actual:", detokenized)
+
+    detokenized = bert.detokenize(tokenized)
+    print("Detokenized should:", detokenized)

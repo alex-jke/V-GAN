@@ -91,14 +91,15 @@ class MMDLossConstrained(nn.Module):
     Constrained loss by the number of features selected
     '''
 
-    def __init__(self, weight, kernel=RBF()):
+    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3):
         super().__init__()
         self.kernel = kernel
         self.weight = weight
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
+        self.subspace_penalty = subspace_amount_penalty
 
-    def forward(self, X, Y, U):
+    def forward(self, X, Y, U: torch.Tensor):
         K = self.kernel(torch.vstack([X, Y]))
         self.bandwidth = self.kernel.bandwidth
         self.bandwidth_multipliers = self.kernel.bandwidth_multipliers
@@ -106,6 +107,14 @@ class MMDLossConstrained(nn.Module):
         XX = K[:X_size, :X_size].mean()
         XY = K[:X_size, X_size:].mean()
         YY = K[X_size:, X_size:].mean()
-        return XX - 2 * XY + YY + self.weight*(torch.mean(torch.ones(U.shape[1]).to(self.device) - torch.topk(U, 1, 0).values))
-        #todo: try to restrict it to generate as few distinct subspaces as possible.
+
+        ones = torch.ones(U.shape[1]).to(self.device)
+        topk = torch.topk(U, 1, 0).values
+        mean = torch.mean(ones - topk)
+        penalty = self.weight*(mean)
+
+        unique_subspaces = torch.cdist(U, U)[0].count_nonzero()
+        amount_penalty = self.subspace_penalty * unique_subspaces / U.shape[0]
+
+        return XX - 2 * XY + YY + penalty #+ amount_penalty
 

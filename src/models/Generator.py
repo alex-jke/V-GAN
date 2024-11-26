@@ -64,7 +64,7 @@ class Generator_big(nn.Module):
                 #nn.LeakyReLU(0.2),
                 nn.BatchNorm1d(8 * latent_size),
                 nn.Linear(8 * latent_size, img_size),
-                upper_softmax()
+                upper_softmax() #todo: check is not diferentiable if all points 1/n. Should not be problem since not all points can be selected
             )
         )
 

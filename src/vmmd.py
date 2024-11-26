@@ -1,3 +1,5 @@
+from random import random
+
 import torch
 from collections import defaultdict
 from models.Generator import Generator, Generator_big
@@ -32,6 +34,8 @@ class VMMD:
         self.lr = lr
         self.momentum = momentum
         self.seed = seed
+        if self.seed == None:
+            self.seed = np.random.randint(10, 10000, 1)
         self.weight_decay = weight_decay
         self.path_to_directory = path_to_directory
         self.generator_optimizer = None
