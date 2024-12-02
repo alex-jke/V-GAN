@@ -4,6 +4,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+import torch
 from torch import Tensor
 
 from text.Embedding.bert import Bert
@@ -22,6 +23,8 @@ from vmmd import VMMD, model_eval
 SUBSPACE_PROBABILITY_COLUMN = 'probability'
 SUBSPACE_COLUMN = 'subspace'
 VERSION = '0.212'
+device = torch.device('cuda:0' if torch.cuda.is_available(
+        ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
 def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD):
     visualizer = AlphaVisualizer(model=model, tokenized_data=tokenized_data, tokenizer=tokenizer)
@@ -37,6 +40,8 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
     data: Tensor = dataset_tokenizer.get_tokenized_training_data(max_rows=samples)
     first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
+
+    first_part = first_part.cuda().float() # todo: necessary for cude, if statement wont work.
 
     embedding = model.get_embedding_fun()
 
@@ -70,9 +75,9 @@ if __name__ == '__main__':
         dataset=IMBdDataset(),
         model=Bert(),
         sequence_length=300,
-        epochs=1500,
-        batch_size=500,
-        samples=2000,
+        epochs=100,
+        batch_size=1000,
+        samples=10000,
         train=True,
         lr=0.001,
         momentum=0.9,

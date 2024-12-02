@@ -171,7 +171,7 @@ class VMMD:
             # DATA LOADER#
             if cuda:
                 data_loader = DataLoader(
-                    X, batch_size=self.batch_size, drop_last=True, pin_memory=cuda, shuffle=True)
+                    X, batch_size=self.batch_size, drop_last=True, pin_memory=not cuda, shuffle=True)
             else:  # Uses CUDA if Available, other wise MPS or nothing
                 data_loader = DataLoader(
                     X, batch_size=self.batch_size, drop_last=True, pin_memory=mps, shuffle=True)
@@ -179,8 +179,8 @@ class VMMD:
 
             # GET NOISE TENSORS#
             if cuda:  # Need to open this if statement as the Tensor function has to be called from diferent modules depending of the device
-                noise_tensor = torch.cuda.FloatTensor(
-                    self.batch_size, latent_size).to(torch.device('cuda'))
+                #noise_tensor = torch.cuda.FloatTensor(self.batch_size, latent_size)#.to(self.device)#to(torch.device('cuda'))
+                noise_tensor = torch.FloatTensor(self.batch_size, latent_size).to(self.device)
             elif mps:
                 noise_tensor = torch.mps.Tensor(
                     self.batch_size, latent_size).to(torch.device('mps'))
@@ -241,8 +241,10 @@ class VMMD:
 
 
 def model_eval(model, X_data) -> pd.DataFrame:
-    X_sample = torch.mps.Tensor(pd.DataFrame(
-        X_data).sample(500).to_numpy()).to('mps:0')
+    device = torch.device('cuda:0' if torch.cuda.is_available(
+        ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
+    X_sample = torch.Tensor(pd.DataFrame(
+        X_data).sample(500).to_numpy()).to(device)
     u = model.generate_subspaces(500)
     uX_data = u * \
               torch.mps.Tensor(X_sample).to(model.device) + \

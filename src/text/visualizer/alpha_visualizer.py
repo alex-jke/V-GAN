@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
@@ -46,8 +49,9 @@ class AlphaVisualizer(Visualizer):
         y_pos = 1
         for i in range(samples):
             print("Sample", i)
-            print("Original:", self.tokenizer.detokenize(sample_data[i].tolist()))
-            strings = [self.tokenizer.detokenize(token) for token in sample_data[i].tolist()]
+            int_list = [int(number) for number in sample_data[i].tolist()]
+            print("Original:", self.tokenizer.detokenize(int_list))
+            strings = [self.tokenizer.detokenize(token) for token in int_list]
 
             # Normalize the average subspace values
             values = (self.avg_subspace - self.avg_subspace.min()) / (self.avg_subspace.max() - self.avg_subspace.min())
@@ -79,6 +83,7 @@ class AlphaVisualizer(Visualizer):
 
         # Show the plot
         plt.tight_layout()
-        plt.savefig('results/alpha_visualization.png')
+        path = Path(os.getcwd()) / "results" / "alpha_visualization.png"
+        plt.savefig(path)
         plt.show()
 
