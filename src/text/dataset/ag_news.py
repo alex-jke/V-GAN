@@ -21,16 +21,6 @@ class AGNews(Dataset):
         return [1, 2, 3, 4]
         #return ['World', 'Sports', 'Business', 'Sci/Tech']
 
-    def get_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
-        if not self.imported:
-            self._import_data()
-        return self.x_train, self.y_train
-
-    def get_testing_data(self) -> Tuple[np.ndarray, np.ndarray]:
-        if not self.imported:
-            self._import_data()
-        return self.x_test, self.y_test
-
     @property
     def name(self) -> str:
         return "AG News"

@@ -2,6 +2,9 @@ from random import random
 
 import torch
 from collections import defaultdict
+
+from matplotlib import pyplot
+
 from models.Generator import Generator, Generator_big
 import torch_two_sample as tts
 from models.Mmd_loss import MMDLoss
@@ -42,7 +45,7 @@ class VMMD:
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
-    def __plot_loss(self, path_to_directory, show=False):
+    def _create_plot(self) -> pyplot:
         train_history = self.train_history
         plt.style.use('ggplot')
         generator_y = train_history['generator_loss']
@@ -54,7 +57,12 @@ class VMMD:
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         ax.legend(loc="upper right")
-        plt.savefig(path_to_directory / "train_history.pdf",
+
+        return plt, ax
+
+    def _plot_loss(self, path_to_directory, show=False):
+        plot, _ = self._create_plot()
+        plot.savefig(path_to_directory / "train_history.pdf",
                     format="pdf", dpi=1200)
 
         if show == True:
@@ -95,7 +103,7 @@ class VMMD:
             params.update(params_new)
             params.to_csv(
                 path_to_directory / 'params.csv')
-        self.__plot_loss(path_to_directory, show)
+        self._plot_loss(path_to_directory, show)
 
     def load_models(self, path_to_generator, ndims, device: str = None):
         '''Loads models for prediction
@@ -109,7 +117,7 @@ class VMMD:
             device = self.device
         self.generator = Generator_big(
             img_size=ndims, latent_size=max(int(ndims/16), 1)).to(device)
-        self.generator.load_state_dict(torch.load(path_to_generator))
+        self.generator.load_state_dict(torch.load(path_to_generator, map_location=device))
         self.generator.eval()  # This only works for dropout layers
         self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space'
         self.__latent_size = max(int(ndims/16), 1)
@@ -216,6 +224,8 @@ class VMMD:
             print(f"Average loss in the epoch: {generator_loss}")
             self.train_history["generator_loss"].append(generator_loss)
 
+        self.generator = generator
+
         if not self.path_to_directory == None:
             path_to_directory = Path(self.path_to_directory)
             if operator.not_(path_to_directory.exists()):
@@ -227,7 +237,6 @@ class VMMD:
                        path_to_directory/'models'/f'generator_{run_number}.pt')
             self.model_snapshot(path_to_directory, run_number, show=True)
 
-        self.generator = generator
 
     def generate_subspaces(self, nsubs):
         # Need to load in cpu as mps Tensor module doesn't properly fix the seed

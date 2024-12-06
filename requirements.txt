@@ -86,3 +86,4 @@ wcwidth==0.2.13
 wget==3.2
 wheel==0.41.2
 zipp==3.17.0
+kagglehub

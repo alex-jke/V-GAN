@@ -18,6 +18,7 @@ class DatasetTokenizer:
         self.dataset_train_name = "train"
         self.dataset_test_name = "test"
         self.file_extension = ".csv"
+        self.resource_path = Path(os.getcwd()) / 'text' / 'resources'
         self.path = Path(os.getcwd()) / 'text' / 'resources' / dataset.name
         self.sequence_length = sequence_length
         self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
@@ -65,7 +66,22 @@ class DatasetTokenizer:
             data[i] = data[i] + [[self.tokenizer.padding_token] * self.sequence_length] * (max_lists - len(data[i]))
 
         data_tensor = torch.tensor(data, dtype=torch.int).to(self.device)
+
         return data_tensor
+
+    def _trim_tensor(self, tensor: Tensor) -> Tensor:
+        """
+        Finds the longest sequence of non-padding tokens and trims the tensor to that length.
+        """
+        max_sequence_length = 0
+        for i in range(tensor.shape[0]):
+            sequence_length = 0
+            for j in range(tensor.shape[2]):
+                if tensor[i, 0, j] != self.tokenizer.padding_token:
+                    sequence_length += 1
+            max_sequence_length = max(max_sequence_length, sequence_length)
+        print(f"Trimming tensor to length {max_sequence_length}")
+        return tensor[:, :max_sequence_length]
 
     def _get_dataset(self, dataset_name: str, class_label: str) -> pd.DataFrame:
         file_path = self.path / f"{self.base_file_name}_{dataset_name}{self.file_extension}"
@@ -95,4 +111,8 @@ class DatasetTokenizer:
 
         tokenized_padded = tokenized_x.apply(vec_transform)
         tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded, self.dataset.y_label_name: y})
+        if not os.path.exists(self.resource_path):
+            os.mkdir(self.resource_path)
+        if not os.path.exists(self.path):
+            os.mkdir(self.path)
         tokenized_df.to_csv(self.path / f"{self.base_file_name}_{dataset_name}{self.file_extension}", index=False)
