@@ -4,20 +4,21 @@ import pandas as pd
 from text.dataset.dataset import Dataset
 
 
-class EmotionDataset(Dataset):
+class WikipediaPeopleDataset(Dataset):
     def get_possible_labels(self) -> list:
-        # Six categories: sadness (0), joy (1), love (2), anger (3), fear (4), and surprise (5).
-        return [0, 1, 2, 3, 4, 5]
+        return [0]
 
     def _import_data(self):
         # Download latest version
-        path = kagglehub.dataset_download("nelgiriyewithana/emotions")
-        data = pd.read_csv(path + "/text.csv")
+        path = kagglehub.dataset_download("sameersmahajan/people-wikipedia-data")
+        data = pd.read_csv(path + "/people_wiki.csv")
+        data[self.y_label_name] = 0
         self.split(data)
+
 
     @property
     def name(self) -> str:
-        return "Emotions"
+        return "Wikipedia People"
 
     @property
     def x_label_name(self) -> str:

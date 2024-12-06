@@ -36,6 +36,12 @@ class Dataset(ABC):
         self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(x, y, test_size=0.2, random_state=42)
         self.imported = True
 
+    @property
+    def average_length(self):
+        if not self.imported:
+            self._import_data()
+        return self.x_train.apply(lambda x: len(x)).mean()
+
     @abstractmethod
     def get_possible_labels(self) -> list:
         pass
