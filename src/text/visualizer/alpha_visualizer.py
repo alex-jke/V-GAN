@@ -15,7 +15,7 @@ class AlphaVisualizer(Visualizer):
     Class for visualizing data with using the alpha in text.
     """
 
-    def visualize(self, samples: int = 1):
+    def visualize(self, samples: int = 1, epoch: int = 0):
         """
         Visualizes the data with alpha characters.
         :param samples: The number of samples to visualize.
@@ -24,9 +24,8 @@ class AlphaVisualizer(Visualizer):
         most_selected = torch.argsort(self.avg_subspace, descending=True)[:10]
         padding_token = self.tokenizer.detokenize([self.tokenizer.padding_token])
 
-        print("indices and value of most selected features:",
-              [(int(i), float(self.avg_subspace[i])) for i in most_selected])
-        print("average subspace:", self.avg_subspace)
+        #print("indices and value of most selected features:",[(int(i), float(self.avg_subspace[i])) for i in most_selected])
+        #print("average subspace:", self.avg_subspace)
 
         # Initialize HTML content
         html_content = """
@@ -54,15 +53,19 @@ class AlphaVisualizer(Visualizer):
 
         y_pos = 1  # Vertical position
         for i in range(samples):
-            print("Sample", i)
+            #print("Sample", i)
             int_list = [int(number) for number in sample_data[i].tolist()]
-            print("Original:", self.tokenizer.detokenize(int_list))
-            strings = [self.tokenizer.detokenize([token]) for token in int_list if
+            #print("Original:", self.tokenizer.detokenize(int_list))
+            strings = [self.tokenizer.detokenize(token) for token in int_list if
                        token != self.tokenizer.padding_token]
+            sample_length = len(strings)
 
             # Normalize the average subspace values
-            values = self.avg_subspace[:len(strings)]
-            values = (values - values.min()) / (values.max() - values.min())
+            values = self.avg_subspace[sample_length]
+            max, min = values.max(), values.min()
+            if max != min:
+                values = (values - min) / (max - min)
+                #print("Normalized values:", values)
 
             html_content += f"<div><strong>Sample {i + 1}:</strong></div>"
 
@@ -81,9 +84,9 @@ class AlphaVisualizer(Visualizer):
         """
 
         # Save HTML content to a file
-        output_path = self.output_dir / "alpha_visualization.html"
+        output_path = self.output_dir / "text" / f"text_{epoch}.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
-        print(f"Visualization saved to {output_path}. Open this file in a web browser to view.")
+        #print(f"Visualization saved to {output_path}. Open this file in a web browser to view.")

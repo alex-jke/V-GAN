@@ -109,12 +109,11 @@ class MMDLossConstrained(nn.Module):
         YY = K[X_size:, X_size:].mean()
 
         ones = torch.ones(U.shape[1]).to(self.device)
-        topk = torch.topk(U, 1, 0).values
+        topk = torch.topk(U, 10, 0).values.float().mean(dim=0)
+        #avg = U.float().mean(dim=0).sum() / U.shape[1]
         mean = torch.mean(ones - topk)
-        penalty = self.weight*(mean)
+        penalty = self.weight * (mean)
+        #penalty = self.weight * (avg) #self.weight*(mean)
 
-        #unique_subspaces = torch.cdist(U, U)[0].count_nonzero()
-        #amount_penalty = self.subspace_penalty * unique_subspaces / U.shape[0]
-
-        return XX - 2 * XY + YY + penalty #+ amount_penalty
+        return XX - 2 * XY + YY + penalty
 

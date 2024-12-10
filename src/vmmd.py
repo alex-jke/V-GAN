@@ -29,7 +29,8 @@ class VMMD:
     kernel learning is performed. The default values for the kernel are
     '''
 
-    def __init__(self, batch_size=500, epochs=30, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None):
+    def __init__(self, batch_size=500, epochs=30, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None,
+                 weight=9):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.batch_size = batch_size
@@ -42,6 +43,7 @@ class VMMD:
         self.weight_decay = weight_decay
         self.path_to_directory = path_to_directory
         self.generator_optimizer = None
+        self.weight = weight
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
@@ -72,7 +74,8 @@ class VMMD:
         return {'batch size': self.batch_size, 'epochs': self.epochs, 'lr_g': self.lr,
                 'momentum': self.momentum, 'weight decay': self.weight_decay,
                 'batch_size': self.batch_size, 'seed': self.seed,
-                'generator optimizer': self.generator_optimizer}
+                'generator optimizer': self.generator_optimizer,
+                'penalty weight': self.weight}
 
     def model_snapshot(self, path_to_directory=None, run_number=0, show=False):
         ''' Creates an snapshot of the model
@@ -170,7 +173,7 @@ class VMMD:
         self.generator_optimizer = optimizer.__class__.__name__
         # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
         kernel = RBFConstrained(embedding=embedding)
-        loss_function = MMDLossConstrained(weight=10, kernel=kernel)
+        loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
 
         for epoch in range(epochs):
             print(f'\rEpoch {epoch} of {epochs}')
@@ -221,6 +224,10 @@ class VMMD:
                 generator_loss += float(batch_loss.to(
                     'cpu').detach().numpy())/batch_number
 
+            if epoch % 100 == 0:
+                self.generator = generator
+                yield epoch
+
             print(f"Average loss in the epoch: {generator_loss}")
             self.train_history["generator_loss"].append(generator_loss)
 
@@ -229,9 +236,9 @@ class VMMD:
         if not self.path_to_directory == None:
             path_to_directory = Path(self.path_to_directory)
             if operator.not_(path_to_directory.exists()):
-                os.mkdir(path_to_directory)
-                if operator.not_(Path(path_to_directory/'models').exists()):
-                    os.mkdir(path_to_directory / 'models')
+                os.makedirs(path_to_directory)
+            if operator.not_(Path(path_to_directory/'models').exists()):
+                os.mkdir(path_to_directory / 'models')
             run_number = int(len(os.listdir(path_to_directory/'models')))
             torch.save(generator.state_dict(),
                        path_to_directory/'models'/f'generator_{run_number}.pt')

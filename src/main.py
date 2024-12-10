@@ -26,22 +26,22 @@ from vmmd import VMMD, model_eval
 
 SUBSPACE_PROBABILITY_COLUMN = 'probability'
 SUBSPACE_COLUMN = 'subspace'
-VERSION = '0.23'
 device = torch.device('cuda:0' if torch.cuda.is_available(
 ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
 
-def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str):
+def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = 0):
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
     alpha_visualizer = AlphaVisualizer(**params)
-    alpha_visualizer.visualize(samples=30)
+    alpha_visualizer.visualize(samples=30, epoch=epoch)
 
     value_visualizer = ValueVisualizer(**params)
-    value_visualizer.visualize(samples=0)
+    value_visualizer.visualize(samples=0, epoch=epoch)
 
 
 def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs: int, batch_size: int, samples: int,
-             train: bool = False, lr: float = 0.001, momentum=0.99, weight_decay=0.04):
+             train: bool = False, lr: float = 0.001, momentum=0.99, weight_decay=0.04, version: str = '0',
+             penalty_weight: float = 0.0):
     sequence_length = min(sequence_length, model.max_token_length())
 
     dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, sequence_length=sequence_length)
@@ -56,19 +56,22 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     embedding = model.get_embedding_fun()
 
     export_path = None
-    path = os.path.join(os.getcwd(), 'text', 'experiments', f"{dataset.name}_{sequence_length}_vmmd_{model.model_name}"
-                                                            f"_{epochs}_{VERSION}")
+    path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}",
+                        f"{dataset.name}_{sequence_length}_vmmd_{model.model_name}"
+                        f"_{epochs}_{penalty_weight}")
     export_path = path
     if train:
         export_path = export_path + "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
 
     vmmd = VMMD_od(path_to_directory=export_path, epochs=epochs, batch_size=batch_size, lr=lr, momentum=momentum,
-                   weight_decay=weight_decay, seed=None)
+                   weight_decay=weight_decay, seed=None, penalty_weight=penalty_weight)
 
     if os.path.exists(export_path):
         vmmd.load_models(path_to_generator=Path(path) / "models" / "generator_0.pt", ndims=sequence_length)
     else:
-        vmmd.fit(X=first_part)  # , embedding=embedding)
+        for epoch in vmmd.fit(X=first_part):
+            visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
+         # , embedding=embedding)
 
     # subspaces: pd.DataFrame = model_eval(model=vmmd, X_data=first_part.cpu()).sort_values(by='probability',
     # ascending=False)
@@ -79,20 +82,32 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     p_value_df = vmmd.check_if_myopic(x_data=first_part.cpu().numpy(), count=1000)
     print(p_value_df)
 
-    visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path)
+    visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs)
 
 
 if __name__ == '__main__':
-    dataset = WikipediaPeopleDataset()
-    pipeline(
-        dataset=dataset,
-        model=GPT2(),
-        sequence_length=1024,
-        epochs=500,
-        batch_size=1000,
-        samples=10_000,
-        train=False,
-        lr=0.05,
-        momentum=0.9,
-        weight_decay=0.01
-    )
+    version = '0.36top10'
+    model = GPT2()
+    penalty = 0
+    wiki_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 5000, "penalty_weight": penalty,
+                   "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.05, "momentum": 0.9,
+                   "weight_decay": 0.005, "version": version, "train": False}
+
+    ag_news_params = {"model": model, "epochs": 2000, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
+                      "sequence_length": 50, "dataset": AGNews(), "lr": 0.05, "momentum": 0.9, "weight_decay": 0.005,
+                      "version": version, "train": False}
+
+    imdb_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+                   "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.08, "momentum": 0.9, "weight_decay": 0.005,
+                   "version": version, "train": False}
+
+    emotions_params = {"model": model, "epochs": 3000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+                       "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.05, "momentum": 0.9,
+                       "weight_decay": 0.005, "version": version, "train": False}
+
+    pipeline(**wiki_params)
+    pipeline(**ag_news_params)
+    pipeline(**imdb_params)
+    pipeline(**emotions_params)
+
+    # dataset = EmotionDataset()

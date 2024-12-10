@@ -13,7 +13,6 @@ class Visualizer(ABC):
     """
 
     def __init__(self, model, tokenized_data: Tensor, tokenizer: Tokenizer, path: str):
-        super().__init__()
         self.num_subspaces = 500
         # Tensor is of the shape (num_subspaces, sequence_length)
         self.model = model
@@ -29,7 +28,7 @@ class Visualizer(ABC):
         return self.model.generate_subspaces(samples)
 
     @abstractmethod
-    def visualize(self, samples: int = 1):
+    def visualize(self, samples: int = 1, epoch: int = 0):
         """
         Visualizes the data.
         :param text: The text to visualize.

@@ -87,8 +87,8 @@ class VGAN_od(VGAN):
 
 class VMMD_od(VMMD):
     def __init__(self, batch_size=500, epochs=30, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04,
-                 path_to_directory=None):
-        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory)
+                 path_to_directory=None, penalty_weight=0.0):
+        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory, penalty_weight)
         self.x_data = None
         self.recommended_bandwidth_name = "recommended bandwidth"
 
@@ -114,7 +114,9 @@ class VMMD_od(VMMD):
 
     def fit(self, X, embedding=lambda x: x):
         self.x_data = X
-        super().fit(X, embedding)
+        for epoch in super().fit(X, embedding):
+            yield epoch
+
 
     def check_if_myopic(self, x_data: np.array, bandwidth: Union[float, np.array] = 0.01, count=500) -> pd.DataFrame:
         """_summary_
@@ -142,7 +144,7 @@ class VMMD_od(VMMD):
             bandwidth = [bandwidth]
 
         if not hasattr(self, 'bandwidth'):
-            mmd_loss = MMDLossConstrained(0)
+            mmd_loss = MMDLossConstrained(self.weight)
             mmd_loss.forward(
                 x_sample, ux_sample, u_subspaces * 1)
             self.bandwidth = mmd_loss.bandwidth

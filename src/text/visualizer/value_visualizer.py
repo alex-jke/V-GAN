@@ -1,10 +1,12 @@
+import os
+
 from text.visualizer.visualizer import Visualizer
 import matplotlib.pyplot as plt
 
 
 class ValueVisualizer(Visualizer):
 
-    def visualize(self, samples: int = 1):
+    def visualize(self, samples: int = 1, epoch: int = 0):
         """
         Visualizes the data with the values.
         :param samples: The number of samples to visualize.
@@ -25,7 +27,12 @@ class ValueVisualizer(Visualizer):
         ax.set_xlabel("Token Position")
         ax.set_ylabel("Average Subspace Value")
 
+        # Set the y-axis to be between 0 and 1
+        ax.set_ylim(-0.05, 1.05)
+
         ax.legend()
 
-        output_path = self.output_dir / "value_visualization.png"
+        output_path = self.output_dir / "value" / f"value_{epoch}.png"
+        if not os.path.exists(output_path.parent):
+            os.makedirs(output_path.parent)
         plt.savefig(output_path)
