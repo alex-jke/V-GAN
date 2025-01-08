@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 class ValueVisualizer(Visualizer):
 
-    def visualize(self, samples: int = 1, epoch: int = 0):
+    def visualize(self, samples: int = 1, epoch: int = -1):
         """
         Visualizes the data with the values.
         :param samples: The number of samples to visualize.
@@ -31,8 +31,8 @@ class ValueVisualizer(Visualizer):
         ax.set_ylim(-0.05, 1.05)
 
         ax.legend()
-
-        output_path = self.output_dir / "value" / f"value_{epoch}.png"
+        postfix = "" if epoch == -1 else f"_{epoch}"
+        output_path = self.output_dir / "value" / f"value{postfix}.png"
         if not os.path.exists(output_path.parent):
             os.makedirs(output_path.parent)
         plt.savefig(output_path)

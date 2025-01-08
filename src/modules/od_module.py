@@ -171,7 +171,7 @@ class VMMD_od(VMMD):
         recomended_p_value = p_values[self.recommended_bandwidth_name].values[0]
         recommended_bandwidth = self.bandwidth.item()
 
-        # add the p-value of 1 to the plot in the top right corner
+        # add the p-value to the plot in the top right corner
         plt.text(0.5, 0.99, f'{self.recommended_bandwidth_name}\n({recommended_bandwidth}): {recomended_p_value}',
                  ha='center', va='top',
                  transform=ax.transAxes, color='black', fontsize=8)

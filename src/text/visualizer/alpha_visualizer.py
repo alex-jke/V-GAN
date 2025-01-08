@@ -15,7 +15,7 @@ class AlphaVisualizer(Visualizer):
     Class for visualizing data with using the alpha in text.
     """
 
-    def visualize(self, samples: int = 1, epoch: int = 0):
+    def visualize(self, samples: int = 1, epoch: int = -1):
         """
         Visualizes the data with alpha characters.
         :param samples: The number of samples to visualize.
@@ -61,7 +61,7 @@ class AlphaVisualizer(Visualizer):
             sample_length = len(strings)
 
             # Normalize the average subspace values
-            values = self.avg_subspace[sample_length]
+            values = self.avg_subspace[:sample_length]
             max, min = values.max(), values.min()
             if max != min:
                 values = (values - min) / (max - min)
@@ -84,7 +84,8 @@ class AlphaVisualizer(Visualizer):
         """
 
         # Save HTML content to a file
-        output_path = self.output_dir / "text" / f"text_{epoch}.html"
+        postfix = f"_{epoch}" if epoch >= 0 else ""
+        output_path = self.output_dir / "text" / f"text{postfix}.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)

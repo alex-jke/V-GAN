@@ -30,7 +30,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available(
 ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
 
-def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = 0):
+def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = -1):
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
     alpha_visualizer = AlphaVisualizer(**params)
     alpha_visualizer.visualize(samples=30, epoch=epoch)
@@ -68,6 +68,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
 
     if os.path.exists(export_path):
         vmmd.load_models(path_to_generator=Path(path) / "models" / "generator_0.pt", ndims=sequence_length)
+        epochs = -1
     else:
         for epoch in vmmd.fit(X=first_part):
             visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
@@ -80,15 +81,15 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     # print("Subspace with lowest probability:", subspaces.iloc[-1])
 
     p_value_df = vmmd.check_if_myopic(x_data=first_part.cpu().numpy(), count=1000)
-    print(p_value_df)
+    print(dataset.name, "\n", p_value_df, "\n")
 
     visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs)
 
 
 if __name__ == '__main__':
-    version = '0.36top10'
+    version = '0.37_penalty'
     model = GPT2()
-    penalty = 0
+    penalty = 0.1
     wiki_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 5000, "penalty_weight": penalty,
                    "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.05, "momentum": 0.9,
                    "weight_decay": 0.005, "version": version, "train": False}
