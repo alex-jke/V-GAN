@@ -28,7 +28,7 @@ SUBSPACE_PROBABILITY_COLUMN = 'probability'
 SUBSPACE_COLUMN = 'subspace'
 device = torch.device('cuda:0' if torch.cuda.is_available(
 ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
-
+subspaces = []
 
 def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = -1):
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
@@ -36,7 +36,8 @@ def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: s
     alpha_visualizer.visualize(samples=30, epoch=epoch)
 
     value_visualizer = ValueVisualizer(**params)
-    value_visualizer.visualize(samples=0, epoch=epoch)
+    value_visualizer.visualize(samples=0, epoch=epoch) #todo: maybe plot sample subspaces with probability as transparency
+    value_visualizer.visualize(samples=100, epoch=epoch)
 
 
 def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs: int, batch_size: int, samples: int,
@@ -66,14 +67,22 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     vmmd = VMMD_od(path_to_directory=export_path, epochs=epochs, batch_size=batch_size, lr=lr, momentum=momentum,
                    weight_decay=weight_decay, seed=None, penalty_weight=penalty_weight)
 
+    evals = []
+    subspaces.append(dataset.name)
     if os.path.exists(export_path):
         vmmd.load_models(path_to_generator=Path(path) / "models" / "generator_0.pt", ndims=sequence_length)
         epochs = -1
+        evals.append(model_eval(vmmd, first_part))
     else:
         for epoch in vmmd.fit(X=first_part):
-            visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
-         # , embedding=embedding)
 
+            visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
+            eval = model_eval(vmmd, first_part)
+            evals.append(eval)
+            subspaces.append(eval)
+
+         # , embedding=embedding)
+    
     # subspaces: pd.DataFrame = model_eval(model=vmmd, X_data=first_part.cpu()).sort_values(by='probability',
     # ascending=False)
     # subspace df has columns: 'subspace', 'probability',
@@ -83,32 +92,37 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     p_value_df = vmmd.check_if_myopic(x_data=first_part.cpu().numpy(), count=1000)
     print(dataset.name, "\n", p_value_df, "\n")
 
+    for eval in evals:
+        print(eval)
+
     visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs)
 
 
 if __name__ == '__main__':
-    version = '0.37_penalty'
+    version = '0.381_no_penalty_alt_gen'
     model = GPT2()
-    penalty = 0.1
-    wiki_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 5000, "penalty_weight": penalty,
-                   "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.05, "momentum": 0.9,
-                   "weight_decay": 0.005, "version": version, "train": False}
+    penalty = 0
+    wiki_params = {"model": model, "epochs": 4000, "batch_size": 500, "samples": 5_000, "penalty_weight": penalty,
+                   "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,
+                   "weight_decay": 0.005, "version": version, "train": False} #contains 34.000 datapoints
 
-    ag_news_params = {"model": model, "epochs": 2000, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
-                      "sequence_length": 50, "dataset": AGNews(), "lr": 0.05, "momentum": 0.9, "weight_decay": 0.005,
+    ag_news_params = {"model": model, "epochs": 10000, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
+                      "sequence_length": 50, "dataset": AGNews(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                       "version": version, "train": False}
 
-    imdb_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                   "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.08, "momentum": 0.9, "weight_decay": 0.005,
+    imdb_params = {"model": model, "epochs": 10000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+                   "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 3000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                       "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.05, "momentum": 0.9,
+    emotions_params = {"model": model, "epochs": 10000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+                       "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": False}
 
-    pipeline(**wiki_params)
-    pipeline(**ag_news_params)
-    pipeline(**imdb_params)
+    #pipeline(**ag_news_params)
     pipeline(**emotions_params)
+    pipeline(**imdb_params)
+    pipeline(**wiki_params)
+
+    print(subspaces)
 
     # dataset = EmotionDataset()

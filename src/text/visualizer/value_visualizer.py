@@ -30,9 +30,11 @@ class ValueVisualizer(Visualizer):
         # Set the y-axis to be between 0 and 1
         ax.set_ylim(-0.05, 1.05)
 
-        ax.legend()
+
+        if samples < 11:
+            ax.legend()
         postfix = "" if epoch == -1 else f"_{epoch}"
-        output_path = self.output_dir / "value" / f"value{postfix}.png"
+        output_path = self.output_dir / f"value_{samples}" / f"value{postfix}.png"
         if not os.path.exists(output_path.parent):
             os.makedirs(output_path.parent)
         plt.savefig(output_path)
