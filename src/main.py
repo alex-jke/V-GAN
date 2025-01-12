@@ -19,6 +19,8 @@ from text.dataset.imdb import IMBdDataset
 from text.dataset.wikipedia_slim import WikipediaPeopleDataset
 from text.tokenizer.dataset_tokenizer import DatasetTokenizer
 from text.visualizer.alpha_visualizer import AlphaVisualizer
+from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
+from text.visualizer.random_alpha_visualizer import RandomAlphaVisualizer
 from text.visualizer.value_visualizer import ValueVisualizer
 
 from vgan import VGAN
@@ -32,8 +34,12 @@ subspaces = []
 
 def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = -1):
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
-    alpha_visualizer = AlphaVisualizer(**params)
-    alpha_visualizer.visualize(samples=30, epoch=epoch)
+
+    average_alpha_visualizer = AverageAlphaVisualizer(**params)
+    average_alpha_visualizer.visualize(samples=30, epoch=epoch)
+
+    random_alpha_visualizer = RandomAlphaVisualizer(**params)
+    random_alpha_visualizer.visualize(samples=30, epoch=epoch)
 
     value_visualizer = ValueVisualizer(**params)
     value_visualizer.visualize(samples=0, epoch=epoch) #todo: maybe plot sample subspaces with probability as transparency
@@ -50,9 +56,11 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
     data: Tensor = dataset_tokenizer.get_tokenized_training_data(max_rows=samples)
     first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
+    first_part_cpu = first_part.cpu()
     first_part = first_part.to(device)
-    first_part = first_part.float()
-    # first_part = first_part.cuda().float() # todo: necessary for cuda, if statement wont work.
+    if device == 'cuda:0':
+        first_part = first_part.float()
+
 
     embedding = model.get_embedding_fun()
 
@@ -72,12 +80,12 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     if os.path.exists(export_path):
         vmmd.load_models(path_to_generator=Path(path) / "models" / "generator_0.pt", ndims=sequence_length)
         epochs = -1
-        evals.append(model_eval(vmmd, first_part))
+        #evals.append(model_eval(vmmd, first_part_cpu))
     else:
         for epoch in vmmd.fit(X=first_part):
 
             visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
-            eval = model_eval(vmmd, first_part)
+            eval = model_eval(vmmd, first_part_cpu)
             evals.append(eval)
             subspaces.append(eval)
 
@@ -99,26 +107,26 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
 
 
 if __name__ == '__main__':
-    version = '0.381_no_penalty_alt_gen'
+    version = '0.39_sigmoid'
     model = GPT2()
-    penalty = 0
-    wiki_params = {"model": model, "epochs": 4000, "batch_size": 500, "samples": 5_000, "penalty_weight": penalty,
+    penalty = 1
+    wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 5_000, "penalty_weight": penalty,
                    "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,
                    "weight_decay": 0.005, "version": version, "train": False} #contains 34.000 datapoints
 
-    ag_news_params = {"model": model, "epochs": 10000, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
+    ag_news_params = {"model": model, "epochs": 1000, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
                       "sequence_length": 50, "dataset": AGNews(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                       "version": version, "train": False}
 
-    imdb_params = {"model": model, "epochs": 10000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+    imdb_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 10000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+    emotions_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
-                       "weight_decay": 0.005, "version": version, "train": False}
+                       "weight_decay": 0.005, "version": version, "train": False} #contains 96.000 datapoints
 
-    #pipeline(**ag_news_params)
+    pipeline(**ag_news_params)
     pipeline(**emotions_params)
     pipeline(**imdb_params)
     pipeline(**wiki_params)

@@ -216,8 +216,8 @@ class VMMD:
                 fake_subspaces = generator(noise_tensor)
                 # batch_loss = loss_function(batch, fake_subspaces*batch + (fake_subspaces == 1e-08)*torch.mean(batch,dim=0), alphas=[0.1]) #Upper_lower_softmax
                 # batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch,1/batch.shape[1])*torch.mean(batch,dim=0), alphas=[0.1]) #Upper softmax
-                batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(
-                    batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss
+                #batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss
+                batch_loss = loss_function(fake_subspaces * batch, batch, fake_subspaces)
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
                 optimizer.step()
@@ -252,7 +252,8 @@ class VMMD:
             torch.manual_seed(self.seed)
         noise_tensor.normal_()
         u = self.generator(noise_tensor.to(self.device))
-        u = torch.greater_equal(u, 1/u.shape[1])
+        #u = torch.greater_equal(u, 1/u.shape[1])
+        u = u.detach()
         return u
 
 
@@ -264,7 +265,9 @@ def model_eval(model, X_data) -> pd.DataFrame:
     u = model.generate_subspaces(500)
     uX_data = u * \
               torch.mps.Tensor(X_sample).to(model.device) + \
-              torch.mean(X_sample, dim=0) * (~u)
+              torch.mean(X_sample, dim=0) * (1-u)
+    # round each value in u to one decimal
+
     mmd = tts.MMDStatistic(500, 500)
     mmd_val, distances = mmd(X_sample, uX_data, alphas=[0.01], ret_matrix=True)
     mmd_prop = tts.MMDStatistic(500, 500)
@@ -274,6 +277,8 @@ def model_eval(model, X_data) -> pd.DataFrame:
     print(f'pval of the MMD two sample test {mmd.pval(distances)}')
     print(
         f'pval of the MMD two sample test with proposed bandwidth {1 / model.bandwidth} is {mmd_prop.pval(distances_prop)}, with MMD {mmd_prop_val}')
+
+    u = torch.round(u * 10) / 10
     unique_subspaces, proba = np.unique(
         np.array(u.to('cpu')), axis=0, return_counts=True)
     proba = proba / np.array(u.to('cpu')).shape[0]

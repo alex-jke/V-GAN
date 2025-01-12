@@ -117,7 +117,6 @@ class VMMD_od(VMMD):
         for epoch in super().fit(X, embedding):
             yield epoch
 
-
     def check_if_myopic(self, x_data: np.array, bandwidth: Union[float, np.array] = 0.01, count=500) -> pd.DataFrame:
         """_summary_
 
@@ -139,7 +138,7 @@ class VMMD_od(VMMD):
         u_subspaces = self.generate_subspaces(count)
         ux_sample = u_subspaces * \
                     torch.mps.Tensor(x_sample).to(self.device) + \
-                    torch.mean(x_sample, dim=0) * (~u_subspaces)
+                    torch.mean(x_sample, dim=0) * (1-u_subspaces)
         if type(bandwidth) == float:
             bandwidth = [bandwidth]
 

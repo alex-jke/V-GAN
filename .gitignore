@@ -162,6 +162,7 @@ cython_debug/
 # Experiment file (to avoid a large data dump useless for the non-research user)
 
 experiments/
+experiments_remote/
 results/
 
 # Test notebook for mps/cuda compatibility
@@ -170,3 +171,4 @@ src/test.ipynb
 data/
 .DS_Store
 .vscode/
+/src/text/experiments_remote/

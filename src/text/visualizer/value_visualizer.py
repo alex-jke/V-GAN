@@ -18,10 +18,10 @@ class ValueVisualizer(Visualizer):
             subspaces = self.get_subspaces(samples)
 
             for i in range(samples):
-                ax.plot(subspaces[i].cpu().numpy(), label=f"Sample {i}")
+                ax.plot(subspaces[i].cpu().detach().numpy(), label=f"Sample {i}")
 
         # Plot the average subspace
-        ax.plot(self.avg_subspace.cpu().numpy(), label="Average")
+        ax.plot(self.avg_subspace.detach().cpu().numpy(), label="Average")
 
         ax.set_title("Average Subspace Value per Token position")
         ax.set_xlabel("Token Position")

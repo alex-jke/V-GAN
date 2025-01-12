@@ -58,7 +58,7 @@ class Generator_big(nn.Module):
         entry_size = 1
         increase = increase_per_layer
 
-        layer_1 = nn.Sequential(
+        self.layer_1 = nn.Sequential(
             nn.Linear(entry_size * latent_size, increase * latent_size),
             nn.LeakyReLU(0.2),
             nn.BatchNorm1d(increase * latent_size)
@@ -67,7 +67,7 @@ class Generator_big(nn.Module):
         increase *= increase_per_layer
         entry_size *= increase_per_layer
 
-        layer_2 = nn.Sequential(
+        self.layer_2 = nn.Sequential(
             nn.Linear(entry_size * latent_size, increase * latent_size),
             nn.LeakyReLU(0.2),
             nn.BatchNorm1d(increase * latent_size),
@@ -75,7 +75,7 @@ class Generator_big(nn.Module):
 
         increase *= increase_per_layer
         entry_size *= increase_per_layer
-        layer_3 = nn.Sequential(
+        self.layer_3 = nn.Sequential(
             nn.Linear(entry_size * latent_size, increase * latent_size),
             nn.LeakyReLU(0.2),
             nn.BatchNorm1d(increase * latent_size),
@@ -83,38 +83,15 @@ class Generator_big(nn.Module):
 
         increase *= increase_per_layer
         entry_size *= increase_per_layer
-        layer_4 = nn.Sequential(
+        self.layer_4 = nn.Sequential(
             nn.Linear(entry_size * latent_size, img_size),
-            upper_softmax(),
+            #upper_softmax(),
+            nn.Sigmoid()
         )
-
-        gen1 = nn.Sequential(
-            layer_1,
-            layer_2,
-            layer_3,
-            layer_4,
-        )
-
-
-        gen2 = nn.Sequential(
-            #nn.Linear(latent_size, 2 * latent_size),
-            nn.Linear(latent_size, latent_size * increase_per_layer),
-            #nn.ReLU(),
-            nn.LeakyReLU(0.2),
-            nn.BatchNorm1d(increase_per_layer * latent_size),
-            nn.Linear(increase_per_layer * latent_size, 4 * latent_size),
-            #nn.ReLU(),
-            nn.LeakyReLU(0.2),
-            nn.BatchNorm1d(4 * latent_size),
-            nn.Linear(4 * latent_size, 8 * latent_size),
-            #nn.ReLU(),
-            nn.LeakyReLU(0.2),
-            nn.BatchNorm1d(8 * latent_size),
-            nn.Linear(8 * latent_size, img_size),
-            upper_softmax() #todo: check is not diferentiable if all points 1/n. Should not be problem since not all points can be selected
-            #nn.Sigmoid()
-        )
-        self.main = gen1
 
     def forward(self, input):
-        return self.main(input)
+        l1 = self.layer_1(input)
+        l2 = self.layer_2(l1)
+        l3 = self.layer_3(l2)
+        output = self.layer_4(l3)
+        return output
