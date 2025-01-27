@@ -12,12 +12,26 @@ from .tokenizer import Tokenizer
 
 class HuggingModel(Tokenizer, Embedding, ABC):
 
-    def __init__(self, model_name, tokenizer, model):
-        self.model_name = model_name
-        self.tokenizer = tokenizer
+    @property
+    @abstractmethod
+    def model_name(self):
+        pass
+
+
+    @property
+    @abstractmethod
+    def tokenizer(self):
+        pass
+
+    @property
+    @abstractmethod
+    def model(self):
+        pass
+
+
+    def __init__(self):
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
-        self.model = model.to(self.device)
 
     def tokenize(self, data: str) -> List[int]:
         embedded = self.tokenizer(data, return_tensors='pt')
@@ -25,9 +39,6 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     def detokenize(self, words: List[int]) -> str:
         return self.tokenizer.decode(words)
-
-    def set_tokenizer(self, tokenizer: Tokenizer):
-        self.tokenizer = tokenizer
 
     def embed(self, data: str) -> np.ndarray:
         tokenized = self.tokenize(data)
@@ -65,7 +76,8 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             token = self.tokenizer.eos_token_id
         if token is None:
             raise ValueError("No padding token found in tokenizer.")
-        return token
+        #return token
+        return 0 #todo: might cause conflict with another symbol
 
     def get_embedding_fun(self) -> Callable[[Tensor], Tensor]:
         def embedding(data: Tensor) -> Tensor:
@@ -95,36 +107,5 @@ class HuggingModel(Tokenizer, Embedding, ABC):
     def max_token_length(self) -> int:
         return self.tokenizer.model_max_length
 
-class GPT2(HuggingModel):
-    def __init__(self):
-        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-        model = GPT2LMHeadModel.from_pretrained("gpt2")
-        super().__init__("gpt2", tokenizer, model)
 
-    def decode2tokenized(self, embedding: np.ndarray) -> int:
-        with torch.no_grad():
-            outputs = self.model.generate(input_ids=embedding)
-        return outputs
-class LLama(HuggingModel):
-    def __init__(self):
-        model_name = 'llama3.2'
-        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-        model = GPT2LMHeadModel.from_pretrained(model_name)
-        super().__init__(model_name, tokenizer, model)
 
-if __name__ == '__main__':
-    bert = GPT2()
-    text = "Hello, world! This is a test."
-    print("Original:", text)
-
-    tokenized = bert.tokenize(text)
-    print("Tokenized:", tokenized)
-
-    embedded = bert.embed_tokenized(tokenized)
-    print("Embedded:", embedded)
-
-    deemedbedded = bert.decode2tokenized(embedded)
-    print("Decoded:", bert.decode(embedded))
-
-    detokenized = bert.detokenize(tokenized)
-    print("Detokenized:", detokenized)

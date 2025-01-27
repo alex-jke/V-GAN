@@ -11,12 +11,22 @@ from .huggingmodel import HuggingModel
 
 
 class Bert(HuggingModel):
+
     def __init__(self):
-        model_name = 'bert-base-cased'
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModel.from_pretrained(model_name)
+        super().__init__()
         self.embedded_cache: Dict[int, Tensor] = {}
-        super().__init__(model_name, tokenizer, model)
+
+    @property
+    def tokenizer(self):
+        return AutoTokenizer.from_pretrained(self.model_name)
+
+    @property
+    def model_name(self):
+        return 'bert-base-cased'
+
+    @property
+    def model(self):
+        return AutoModel.from_pretrained(self.model_name).to(self.device)
 
     def decode2tokenized(self, embeddings: List[np.ndarray]) -> List[int]:
         """
@@ -113,12 +123,50 @@ class Bert(HuggingModel):
         return embeddings
 
 
+    def bert_encode(self, texts, tokenizer, model, max_length):
+        input_ids = []
+        attention_masks = []
+        model.to(self.device)
+
+        for text in texts:
+            # encoded_dict = tokenizer.encode_plus(
+            #     text,
+            #     add_special_tokens=True,
+            #     max_length=max_length,
+            #     pad_to_max_length=True,
+            #     return_attention_mask=True,
+            #     return_tensors='pt',
+            # )
+            encoded_dict = tokenizer.encode_plus(
+                text,
+                add_special_tokens=True,
+                max_length=max_length,
+                padding='max_length',  # Updated padding argument
+                return_attention_mask=True,
+                return_tensors='pt',
+                truncation=True
+            )
+
+            input_ids.append(encoded_dict['input_ids'].to(self.device))
+            attention_masks.append(encoded_dict['attention_mask'].to(self.device))
+
+        input_ids = torch.cat(input_ids, dim=0)
+        attention_masks = torch.cat(attention_masks, dim=0)
+
+        with torch.no_grad():
+            outputs = model(input_ids, attention_mask=attention_masks)
+
+        first_output = outputs[0]
+        middle_first_output = first_output[:, 0, :]
+        features = middle_first_output.cpu().numpy()
+        return features
+
 if __name__ == '__main__':
     bert = Bert()
     text = "Hello, world! This is a test."
     print("Original:", text)
 
-    embeddings = bert.get_token_embeddings()
+    """embeddings = bert.get_token_embeddings()
 
     tokenized = bert.tokenize(text)
     tokenized_tensor = torch.tensor(tokenized).unsqueeze(0).to(bert.device)
@@ -136,4 +184,7 @@ if __name__ == '__main__':
     print("Detokenized actual:", detokenized)
 
     detokenized = bert.detokenize(tokenized)
-    print("Detokenized should:", detokenized)
+    print("Detokenized should:", detokenized)"""
+
+    features = bert.bert_encode([text], bert.tokenizer, bert.model, 512)
+    print("Features:", features)

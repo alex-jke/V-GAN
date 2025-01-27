@@ -1,8 +1,14 @@
+import os
+from datetime import datetime
+from pathlib import Path
+
 from matplotlib import pyplot, pyplot as plt
 from sel_suod.models.base import sel_SUOD
 import numpy as np
+from torch import Tensor
+
 from src.vgan import VGAN
-from src.vmmd import VMMD
+from src.vmmd import VMMD, model_eval
 from src.models.Detector import Detector, Encoder, Decoder
 from src.models.Generator import Generator_big, Generator
 import torch_two_sample as tts
@@ -87,8 +93,8 @@ class VGAN_od(VGAN):
 
 class VMMD_od(VMMD):
     def __init__(self, batch_size=500, epochs=30, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04,
-                 path_to_directory=None, penalty_weight=0.0):
-        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory, penalty_weight)
+                 path_to_directory=None, penalty_weight=0.0, generator=None):
+        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory, penalty_weight, generator=generator)
         self.x_data = None
         self.recommended_bandwidth_name = "recommended bandwidth"
 
@@ -104,9 +110,9 @@ class VMMD_od(VMMD):
         self.subspaces = unique_subspaces
         self.proba = proba / proba.sum()
 
-    def fit(self, X, embedding=lambda x: x):
+    def fit(self, X, embedding=lambda x: x, yield_epochs=100):
         self.x_data = X
-        for epoch in super().fit(X, embedding):
+        for epoch in super().fit(X, embedding, yield_epochs):
             yield epoch
 
     def check_if_myopic(self, x_data: np.array, bandwidth: Union[float, np.array] = 0.01, count=500) -> pd.DataFrame:
@@ -169,3 +175,28 @@ class VMMD_od(VMMD):
 
         plot.savefig(path_to_directory / "train_history.png",
                      format="png", dpi=1200) #todo: change back to pdf
+
+if __name__ == "__main__":
+    # mean = [1,1,0,0,0,0,0,0,2,1]
+    # cov = [[1,1,0,0,0,0,0,0,0,0],[1,1,0,0,0,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0],[0,0,0,0,0,0,1,0,0,0],
+    #       [0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,0,0,1]]
+    mean = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    cov = [[1, 0, 0, 0, 0, 0, 0, 0, 500, 500], [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 1, 0, 0], [500, 0, 0, 0, 0, 0, 0, 0, 1, 500], [500, 0, 0, 0, 0, 0, 0, 0, 500, 1]]
+    X_data = Tensor(np.random.multivariate_normal(mean, cov, 2000))
+
+    dir = Path(os.getcwd()).parent / "experiments" / f"Example_normal_{datetime.now()}_vmmd"
+    model = VMMD_od(epochs=1500, path_to_directory=dir, lr=0.02, penalty_weight=0.025)
+    subspace_dir = dir / "subspaces"
+    if not os.path.exists(subspace_dir):
+        os.makedirs(subspace_dir)
+    for epoch in model.fit(X_data):
+        #print(epoch)
+        subspaces = model_eval(model, X_data.cpu())
+        subspaces.to_csv(dir / "subspaces" / f"subspaces_{epoch}.csv")
+        continue
+
+    model_eval(model, X_data)
+    #model.model_snapshot(dir, 500, show=True)
+    df = model.check_if_myopic(X_data.cpu().numpy(), count=1000)
+    print(df)
