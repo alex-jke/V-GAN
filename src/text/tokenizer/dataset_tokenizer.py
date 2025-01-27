@@ -23,6 +23,7 @@ class DatasetTokenizer:
         self.sequence_length = sequence_length
         self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
         self.dataset = dataset
+        self.padding_token = self.tokenizer.padding_token
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
@@ -93,7 +94,7 @@ class DatasetTokenizer:
         return filtered_df
 
     def _create_tokenized_dataset(self, dataset_name: str):
-
+        print("Tokenizing dataset...")
         if dataset_name == self.dataset_train_name:
             x, y = self.dataset.get_training_data()
         elif dataset_name == self.dataset_test_name:
@@ -102,9 +103,9 @@ class DatasetTokenizer:
             raise ValueError(f"Unknown dataset name: {dataset_name}")
 
         tokenized_x = pd.Series(x).apply(lambda x: self.tokenizer.tokenize(x))
-        padding_token = self.tokenizer.padding_token
+
         def vec_transform(x):
-            return [x + [padding_token] * (self.sequence_length - len(x))] \
+            return [x + [self.padding_token] * (self.sequence_length - len(x))] \
                 if len(x) < self.sequence_length else [x[:self.sequence_length]] + vec_transform(
                 x[self.sequence_length:])
 

@@ -15,6 +15,14 @@ class upper_softmax(nn.Module):
             torch.greater_equal(x, 1/x.shape[1])
         return x
 
+class pow_sigmoid(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        x = torch.nn.functional.sigmoid(x)
+        x = torch.pow(input=x, exponent=1024) #make the sigmoid converge to either 0 or 1 but keeping it differentiable.
+        return x
 
 class upper_lower_softmax(nn.Module):
     def __init__(self):
@@ -42,6 +50,7 @@ class Generator(nn.Module):
             nn.BatchNorm1d(latent_size // 2),
             nn.Linear(latent_size // 2, latent_size),
             upper_softmax()
+            #nn.Sigmoid(),
         )
 
     def forward(self, input):
@@ -86,6 +95,7 @@ class Generator_big(nn.Module):
         self.layer_4 = nn.Sequential(
             nn.Linear(entry_size * latent_size, img_size),
             #upper_softmax(),
+            #pow_sigmoid(),
             nn.Sigmoid()
         )
 

@@ -107,14 +107,14 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
 
 
 if __name__ == '__main__':
-    version = '0.39_sigmoid'
+    version = '0.4_long_padding+sigmoid+middle_penalty'
     model = GPT2()
     penalty = 1
-    wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 5_000, "penalty_weight": penalty,
+    wiki_params = {"model": model, "epochs": 600, "batch_size": 500, "samples": 5_000, "penalty_weight": penalty,
                    "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,
                    "weight_decay": 0.005, "version": version, "train": False} #contains 34.000 datapoints
 
-    ag_news_params = {"model": model, "epochs": 1000, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
+    ag_news_params = {"model": model, "epochs": 2000, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
                       "sequence_length": 50, "dataset": AGNews(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                       "version": version, "train": False}
 
@@ -122,15 +122,16 @@ if __name__ == '__main__':
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                       "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
-                       "weight_decay": 0.005, "version": version, "train": False} #contains 96.000 datapoints
+    emotions_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 4000, "penalty_weight": penalty,
+                       "sequence_length": 100, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
+                       "weight_decay": 0.005, "version": version, "train": False} #contains 96.000 datapoints,
+    # not longer than 200 tokens
 
     pipeline(**ag_news_params)
     pipeline(**emotions_params)
     pipeline(**imdb_params)
     pipeline(**wiki_params)
 
-    print(subspaces)
+    #print(subspaces)
 
     # dataset = EmotionDataset()

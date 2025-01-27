@@ -51,10 +51,12 @@ class VMMD:
         train_history = self.train_history
         plt.style.use('ggplot')
         generator_y = train_history['generator_loss']
+        mmd_loss_y = train_history['mmd_loss']
         x = np.linspace(1, len(generator_y), len(generator_y))
         fig, ax = plt.subplots()
         ax.plot(x, generator_y, color="cornflowerblue",
                 label="Generator loss", linewidth=2)
+        ax.plot(x, mmd_loss_y, color="red", label="MMD loss", linewidth=2)
 
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
@@ -138,8 +140,8 @@ class VMMD:
         """
         if device == None:
             device = self.device
-        generator = Generator_big(
-            img_size=ndims, latent_size=latent_size).to(device)
+        generator = Generator_big(img_size=ndims, latent_size=latent_size).to(device)
+        #generator = Generator(latent_size=ndims).to(device)
         return generator
 
     def fit(self, X: np.array, embedding = lambda x: x):
@@ -160,8 +162,8 @@ class VMMD:
 
         # MODEL INTIALIZATION#
         epochs = self.epochs
-        self.__latent_size = latent_size = max(int(X.shape[1]/16), 1)
         ndims = X.shape[1]
+        self.__latent_size = latent_size = max(int(X.shape[1]/16), 1)
         train_size = X.shape[0]
         self.batch_size = min(self.batch_size, train_size)
 
@@ -178,6 +180,7 @@ class VMMD:
         for epoch in range(epochs):
             print(f'\rEpoch {epoch} of {epochs}')
             generator_loss = 0
+            mmd_loss = 0
 
             # DATA LOADER#
             if cuda:
@@ -218,18 +221,20 @@ class VMMD:
                 # batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch,1/batch.shape[1])*torch.mean(batch,dim=0), alphas=[0.1]) #Upper softmax
                 #batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss
                 batch_loss = loss_function(fake_subspaces * batch, batch, fake_subspaces)
+                batch_mmd_loss = loss_function.get_loss(fake_subspaces * batch, batch, fake_subspaces, apply_penalty=False)
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
                 optimizer.step()
-                generator_loss += float(batch_loss.to(
-                    'cpu').detach().numpy())/batch_number
+                generator_loss += float(batch_loss.to('cpu').detach().numpy())/batch_number
+                mmd_loss += float(batch_mmd_loss.to('cpu').detach().numpy())/batch_number
 
             if epoch % 100 == 0:
                 self.generator = generator
                 yield epoch
 
-            print(f"Average loss in the epoch: {generator_loss}")
+            print(f"Average loss in the epoch: {generator_loss}, mmd loss: {mmd_loss}")
             self.train_history["generator_loss"].append(generator_loss)
+            self.train_history["mmd_loss"].append(mmd_loss)
 
         self.generator = generator
 
@@ -278,7 +283,7 @@ def model_eval(model, X_data) -> pd.DataFrame:
     print(
         f'pval of the MMD two sample test with proposed bandwidth {1 / model.bandwidth} is {mmd_prop.pval(distances_prop)}, with MMD {mmd_prop_val}')
 
-    u = torch.round(u * 10) / 10
+    #u = torch.round(u * 10) / 10
     unique_subspaces, proba = np.unique(
         np.array(u.to('cpu')), axis=0, return_counts=True)
     proba = proba / np.array(u.to('cpu')).shape[0]

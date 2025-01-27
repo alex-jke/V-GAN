@@ -91,15 +91,16 @@ class MMDLossConstrained(nn.Module):
     Constrained loss by the number of features selected
     '''
 
-    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3):
+    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3, middle_penalty = 1):
         super().__init__()
         self.kernel = kernel
         self.weight = weight
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
         self.subspace_penalty = subspace_amount_penalty
+        self.middle_penalty = middle_penalty
 
-    def forward(self, X, Y, U: torch.Tensor):
+    def get_loss(self, X, Y, U, apply_penalty = True):
         K = self.kernel(torch.vstack([X, Y]))
         self.bandwidth = self.kernel.bandwidth
         self.bandwidth_multipliers = self.kernel.bandwidth_multipliers
@@ -108,13 +109,21 @@ class MMDLossConstrained(nn.Module):
         XY = K[:X_size, X_size:].mean()
         YY = K[X_size:, X_size:].mean()
 
-        #ones = torch.ones(U.shape[1]).to(self.device)
-        #topk = torch.topk(U, 10, 0).values.float().mean(dim=0)
+        # ones = torch.ones(U.shape[1]).to(self.device)
+        # topk = torch.topk(U, 10, 0).values.float().mean(dim=0)
         avg = U.float().mean(dim=0).sum() / U.shape[1]
-        #avg_u = U.float().mean(dim=0)
-        #mean = torch.mean(ones - topk)
-        #penalty = self.weight * (mean)
-        penalty = self.weight * (avg) #self.weight*(mean)
+        # avg_u = U.float().mean(dim=0)
+        # mean = torch.mean(ones - topk)
+        # penalty = self.weight * (mean)
+        penalty = self.weight * (avg) if apply_penalty else 0 # self.weight*(mean)
 
-        return XX - 2 * XY + YY + penalty
+        # middle penalty to punish the generator for generating subspaces with prob close to 0.5
+        middle_matrix = (-U.float() * (U.float() - 1))
+        middle_penalty = middle_matrix.mean(dim=0).sum() / U.shape[1] if apply_penalty else 0
+        middle_penalty *= self.middle_penalty
 
+        mmd_loss = XX - 2 * XY + YY
+        return mmd_loss + penalty + middle_penalty
+
+    def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):
+        return self.get_loss(X, Y, U, apply_penalty)
