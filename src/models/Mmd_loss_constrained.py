@@ -115,6 +115,8 @@ class MMDLossConstrained(nn.Module):
         #mean = torch.mean(ones - topk)
         #penalty = self.weight * (mean)
         penalty = self.weight * (avg) #self.weight*(mean)
+        middle_penalty_tensor = (-U.float()) * (U.float() - 0.9) + U / 5
+        middle_penalty = middle_penalty_tensor.mean(dim=0).sum() / U.shape[1] * self.weight
 
-        return XX - 2 * XY + YY + penalty
+        return XX - 2 * XY + YY + penalty + middle_penalty
 

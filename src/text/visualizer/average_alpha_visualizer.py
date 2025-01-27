@@ -1,5 +1,7 @@
-from text.visualizer.alpha_visualizer import AlphaVisualizer
+import torch
 
+from text.visualizer.alpha_visualizer import AlphaVisualizer
+from torch import Tensor
 
 class AverageAlphaVisualizer(AlphaVisualizer):
 
@@ -10,7 +12,8 @@ class AverageAlphaVisualizer(AlphaVisualizer):
         """
 
         # create samples amount of the average subspace in a tensor.
-        subspaces = [self.avg_subspace] * samples
+        subspaces = ([self.avg_subspace] * samples)
+        subspaces = torch.stack(subspaces)
         sample_data = self.tokenized_data[:samples]
 
         self.export_html(sample_data, subspaces, "avg", epoch)

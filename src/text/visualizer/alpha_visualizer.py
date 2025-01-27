@@ -16,7 +16,7 @@ class AlphaVisualizer(Visualizer):
     Class for visualizing data with using the alpha in text.
     """
 
-    def export_html(self, sample_data: Tensor, subspaces: Tensor, folder_appendix: str, epoch: int = -1):
+    def export_html(self, sample_data: Tensor, subspaces: Tensor, folder_appendix: str, epoch: int = -1, normalize:bool = True):
         padding_token = self.tokenizer.detokenize([self.tokenizer.padding_token])
 
         # Initialize HTML content
@@ -48,14 +48,21 @@ class AlphaVisualizer(Visualizer):
             # print("Sample", i)
             int_list = [int(number) for number in sample_data[i].tolist()]
             # print("Original:", self.tokenizer.detokenize(int_list))
-            strings = [self.tokenizer.detokenize(token) for token in int_list if
-                       token != self.tokenizer.padding_token]
+
+            #strings = [self.tokenizer.detokenize(token) for token in int_list if token != self.tokenizer.padding_token]
+            strings = []
+            for token in int_list:
+                if token != self.tokenizer.padding_token:
+                    strings.append(self.tokenizer.detokenize(token))
+                else:
+                    strings.append("_")
+
             sample_length = len(strings)
 
             # Normalize the average subspace values
             values = subspaces[i][:sample_length]
             max, min = values.max(), values.min()
-            if max != min:
+            if max != min and normalize:
                 values = (values - min) / (max - min)
                 # print("Normalized values:", values)
 

@@ -1,3 +1,4 @@
+import inspect
 from random import random
 
 import torch
@@ -7,7 +8,6 @@ from matplotlib import pyplot
 
 from models.Generator import Generator, Generator_big
 import torch_two_sample as tts
-from models.Mmd_loss import MMDLoss
 from models.Mmd_loss_constrained import MMDLossConstrained
 from models.Mmd_loss_constrained import RBF as RBFConstrained
 from torch.utils.data import DataLoader
@@ -30,7 +30,7 @@ class VMMD:
     '''
 
     def __init__(self, batch_size=500, epochs=30, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None,
-                 weight=9):
+                 weight=0, generator = None):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.batch_size = batch_size
@@ -38,8 +38,11 @@ class VMMD:
         self.lr = lr
         self.momentum = momentum
         self.seed = seed
-        if self.seed == None:
+        if self.seed is None:
             self.seed = np.random.randint(10, 10000, 1)
+        self.provided_generator = generator
+        if generator is None:
+            self.provided_generator = Generator_big
         self.weight_decay = weight_decay
         self.path_to_directory = path_to_directory
         self.generator_optimizer = None
@@ -138,11 +141,17 @@ class VMMD:
         """
         if device == None:
             device = self.device
-        generator = Generator_big(
-            img_size=ndims, latent_size=latent_size).to(device)
+
+        # Check if only the constructor or a whole generator was passed.
+        if inspect.isclass(self.provided_generator):
+            generator = self.provided_generator(
+                img_size=ndims, latent_size=latent_size).to(device)
+        else:
+            generator = self.provided_generator
+
         return generator
 
-    def fit(self, X: np.array, embedding = lambda x: x):
+    def fit(self, X: np.array, embedding = lambda x: x, yield_epochs: int = 100):
         '''
         Fits the model to the data. The model is trained using the MMD loss function. The model is trained using the Adadelta optimizer.
         @param X: A two-dimensional numpy array with the data to be fitted.
@@ -217,6 +226,7 @@ class VMMD:
                 # batch_loss = loss_function(batch, fake_subspaces*batch + (fake_subspaces == 1e-08)*torch.mean(batch,dim=0), alphas=[0.1]) #Upper_lower_softmax
                 # batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch,1/batch.shape[1])*torch.mean(batch,dim=0), alphas=[0.1]) #Upper softmax
                 #batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss
+                # todo: normalize the batch before passing it.
                 batch_loss = loss_function(fake_subspaces * batch, batch, fake_subspaces)
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
@@ -224,7 +234,7 @@ class VMMD:
                 generator_loss += float(batch_loss.to(
                     'cpu').detach().numpy())/batch_number
 
-            if epoch % 100 == 0:
+            if epoch % yield_epochs == 0:
                 self.generator = generator
                 yield epoch
 
@@ -253,7 +263,9 @@ class VMMD:
         noise_tensor.normal_()
         u = self.generator(noise_tensor.to(self.device))
         #u = torch.greater_equal(u, 1/u.shape[1])
+        u = torch.greater_equal(u, 0.5) * 1
         u = u.detach()
+
         return u
 
 
@@ -263,6 +275,7 @@ def model_eval(model, X_data) -> pd.DataFrame:
     X_sample = torch.Tensor(pd.DataFrame(
         X_data).sample(500).to_numpy()).to(device)
     u = model.generate_subspaces(500)
+    u = u.float()
     uX_data = u * \
               torch.mps.Tensor(X_sample).to(model.device) + \
               torch.mean(X_sample, dim=0) * (1-u)
@@ -301,6 +314,9 @@ if __name__ == "__main__":
 
     model = VMMD(epochs=1500, path_to_directory=Path(os.getcwd()).parent / "experiments" /
                  f"Example_normal_{datetime.datetime.now()}_vmmd", lr=0.01)
-    model.fit(X_data)
+    for epoch in model.fit(X_data):
+        #print(epoch)
+        continue
+
     model_eval(model, X_data)
 

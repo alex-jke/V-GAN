@@ -1,4 +1,6 @@
+import random
 from cmath import log
+from typing import List, Tuple
 
 import torch
 from torch import nn
@@ -9,10 +11,12 @@ class upper_softmax(nn.Module):
     def __init__(self):
         super().__init__()  # Dummy intialization as there is no parameter to learn
 
+    # This function applies a softmax to the input tensor and then sets all values to one that are larger than 1/n.
     def forward(self, x):
         x = torch.nn.functional.softmax(x, 1)
-        x = torch.less(x, 1/x.shape[1])*x + \
-            torch.greater_equal(x, 1/x.shape[1])
+        x_less = torch.less(x, 1/x.shape[1])*x
+        x_ge = torch.greater_equal(x, 1/x.shape[1])
+        x = x_less + x_ge
         return x
 
 
@@ -49,49 +53,74 @@ class Generator(nn.Module):
 
 
 class Generator_big(nn.Module):
-    def __init__(self, latent_size, img_size):
+    def __init__(self, latent_size, img_size, activation_function: nn.Module=upper_softmax()):
         rel_size = int(img_size/latent_size)
-        layers = 4
-        increase_per_layer = int(log(rel_size, layers).real)
+        self.latent_size = latent_size
+        self.img_size = img_size
+        amount_layers = 4
+        self.increase = log(rel_size, amount_layers).real
         super(Generator_big, self).__init__()
+        self.final_activation_function = activation_function
 
-        entry_size = 1
-        increase = increase_per_layer
+        layers = [self.get_layer(layer) for layer in range(1, amount_layers)]
+        layers += [self.get_layer(amount_layers, last=True)]
+        self.main = nn.Sequential(*layers)
 
-        self.layer_1 = nn.Sequential(
-            nn.Linear(entry_size * latent_size, increase * latent_size),
+    def get_layer(self, layer: int, last=False):
+        input_size = round(pow(self.increase, layer - 1) * self.latent_size)
+        output_size = round(pow(self.increase, layer) * self.latent_size)
+
+        layer = nn.Sequential(
+            nn.Linear(input_size, output_size),
             nn.LeakyReLU(0.2),
-            nn.BatchNorm1d(increase * latent_size)
+            nn.BatchNorm1d(output_size)
         )
-
-        increase *= increase_per_layer
-        entry_size *= increase_per_layer
-
-        self.layer_2 = nn.Sequential(
-            nn.Linear(entry_size * latent_size, increase * latent_size),
-            nn.LeakyReLU(0.2),
-            nn.BatchNorm1d(increase * latent_size),
-        )
-
-        increase *= increase_per_layer
-        entry_size *= increase_per_layer
-        self.layer_3 = nn.Sequential(
-            nn.Linear(entry_size * latent_size, increase * latent_size),
-            nn.LeakyReLU(0.2),
-            nn.BatchNorm1d(increase * latent_size),
-        )
-
-        increase *= increase_per_layer
-        entry_size *= increase_per_layer
-        self.layer_4 = nn.Sequential(
-            nn.Linear(entry_size * latent_size, img_size),
+        last_layer = nn.Sequential(
+            nn.Linear(input_size, self.img_size),
             #upper_softmax(),
-            nn.Sigmoid()
+            self.final_activation_function
+            #nn.Sigmoid()
+        )
+
+        return last_layer if last else layer
+
+    def forward(self, input):
+        return self.main(input)
+
+class GeneratorUpperSoftmax(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, upper_softmax())
+
+class GeneratorSigmoid(Generator_big):
+    def __init__(self, latenz_size, img_size):
+        super().__init__(latenz_size, img_size, nn.Sigmoid())
+
+import torch
+import torch.nn as nn
+from typing import List, Tuple
+
+class FakeGenerator(nn.Module):
+    def __init__(self, subspaces: List[Tuple[List[int], float]]):
+        super(FakeGenerator, self).__init__()
+        self.subspaces = []
+        self.device = torch.device('cuda:0' if torch.cuda.is_available()
+                                   else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
+
+        for subspace, proba in subspaces:
+            for _ in range(int(proba * 100)):
+                self.subspaces.append(torch.tensor(subspace, dtype=torch.float32, requires_grad=True))
+
+        #shuffle the subspaces
+        random.shuffle(self.subspaces)
+        self.main = nn.Sequential(
+            nn.Linear(1, 1)
         )
 
     def forward(self, input):
-        l1 = self.layer_1(input)
-        l2 = self.layer_2(l1)
-        l3 = self.layer_3(l2)
-        output = self.layer_4(l3)
-        return output
+        batch_size = input.shape[0]
+        # Use torch.stack to create a tensor with gradient tracking
+        subspaces = torch.stack([self.subspaces[i % len(self.subspaces)] for i in range(batch_size)]).to(self.device)
+        # shuffle the subspaces
+        subspaces = subspaces[torch.randperm(subspaces.size()[0])]
+        return subspaces
+

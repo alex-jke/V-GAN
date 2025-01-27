@@ -10,12 +10,22 @@ from .huggingmodel import HuggingModel
 
 
 class GPT2(HuggingModel):
-    def __init__(self, max_length=300):
 
-        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-        model = GPT2Model.from_pretrained("gpt2")
+    def __init__(self):
+        super().__init__()
         self.embedded_cache: Dict[int, Tensor] = {}
-        super().__init__("gpt2", tokenizer, model)
+
+    @property
+    def tokenizer(self):
+        return GPT2Tokenizer.from_pretrained("gpt2")
+
+    @property
+    def model_name(self):
+        return "gpt2"
+
+    @property
+    def model(self):
+        return GPT2Model.from_pretrained("gpt2").to(self.device)
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
         """
