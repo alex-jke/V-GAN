@@ -5,7 +5,7 @@ import torch
 from torch import Tensor, LongTensor
 from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2ForCausalLM
 
-from text.Embedding.huggingmodel import HuggingModel
+from .huggingmodel import HuggingModel
 
 
 class DeepSeek1B(HuggingModel):

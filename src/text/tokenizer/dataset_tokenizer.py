@@ -13,7 +13,7 @@ from ..dataset.dataset import Dataset
 
 
 class DatasetTokenizer:
-    def __init__(self, tokenizer: Tokenizer, dataset: Dataset, sequence_length=300):
+    def __init__(self, tokenizer: Tokenizer, dataset: Dataset):
         self.tokenizer = tokenizer
         self.tokenizer_name = tokenizer.__class__.__name__
         self.dataset_train_name = "train"
@@ -21,8 +21,9 @@ class DatasetTokenizer:
         self.file_extension = ".csv"
         self.resource_path = Path(os.getcwd()) / 'text' / 'resources'
         self.path = Path(os.getcwd()) / 'text' / 'resources' / dataset.name
-        self.sequence_length = sequence_length
-        self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
+        #self.sequence_length = sequence_length
+        #self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
+        self.base_file_name = f"{self.tokenizer_name}_{dataset.name}"
         self.dataset = dataset
         self.padding_token = self.tokenizer.padding_token
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
@@ -60,12 +61,15 @@ class DatasetTokenizer:
     def _get_tensor(self, dataset_name, max_rows, class_label: str) -> Tensor:
         dataset = self._get_dataset(dataset_name, class_label)
         max_rows = max_rows if max_rows > 0 else len(dataset)
-        data: List[List[List[int]]] = [ast.literal_eval(dataset[self.dataset.x_label_name][i]) for i in range(max_rows)]
+        #data: List[List[List[int]]] = [ast.literal_eval(dataset[self.dataset.x_label_name][i]) for i in range(max_rows)]
+        data: List[List[int]] = [ast.literal_eval(dataset[self.dataset.x_label_name][i]) for i in range(max_rows)]
 
-        max_lists = max([len(list_of_lists) for list_of_lists in data])
+        #max_lists = max([len(list_of_lists) for list_of_lists in data])
+        max_length = max([len(token_list) for token_list in data])
 
         for i in range(len(data)):
-            data[i] = data[i] + [[self.tokenizer.padding_token] * self.sequence_length] * (max_lists - len(data[i]))
+            #data[i] = data[i] + [[self.tokenizer.padding_token] * self.sequence_length] * (max_lists - len(data[i]))
+            data[i] = data[i] + [self.padding_token] * (max_length - len(data[i]))
 
         data_tensor = torch.tensor(data, dtype=torch.int).to(self.device)
 
@@ -106,24 +110,31 @@ class DatasetTokenizer:
         length = len(x)
         print("tokenizing...")
         counter = Counter()
-        one_percent = int(length / 100)
+        #x = x[:int(length / 50000)]
+        #length = len(x)
         def tokenize(x):
             #if counter.counter % one_percent == 0:
-            sys.stdout.write(f"\r{counter.counter / one_percent}% tokenized")
+            sys.stdout.write(f"\r{counter.counter / length * 100}% tokenized ({counter.counter} / {length})")
             sys.stdout.flush()
             counter.increase_counter()
-            return self.tokenizer.tokenize(x)
+            tokenized = self.tokenizer.tokenize(x)
+            #print(tokenized)
+            return tokenized
 
         tokenized_x = pd.Series(x).apply(tokenize)
         print("done tokenizing")
-        padding_token = self.tokenizer.padding_token
+        max_length = tokenized_x.apply(lambda token_list: len(token_list)).max()
         def vec_transform(x):
+            """
             return [x + [self.padding_token] * (self.sequence_length - len(x))] \
                 if len(x) < self.sequence_length else [x[:self.sequence_length]] + vec_transform(
-                x[self.sequence_length:])
+                x[self.sequence_length:])"""
+            transformed = x + [self.padding_token] * (max_length - len(x))
+            #print("transformed", transformed)
+            return transformed
 
 
-        tokenized_padded = tokenized_x.apply(vec_transform)
+        tokenized_padded = tokenized_x.apply(vec_transform).reset_index(drop=True)
         tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded, self.dataset.y_label_name: y})
         if not os.path.exists(self.resource_path):
             os.mkdir(self.resource_path)

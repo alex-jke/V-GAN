@@ -28,6 +28,7 @@ from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
 from text.visualizer.random_alpha_visualizer import RandomAlphaVisualizer
 from text.visualizer.subspace_visualizer import SubspaceVisualizer
 from text.visualizer.value_visualizer import ValueVisualizer
+from text.visualizer.timer import Timer
 
 from vgan import VGAN
 from vmmd import VMMD, model_eval
@@ -60,7 +61,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
              penalty_weight: float = 0.0, generator= None, yield_epochs = 100, use_embedding= False):
     sequence_length = min(sequence_length, model.max_token_length())
 
-    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, sequence_length=sequence_length)
+    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset)
 
     # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
     data: Tensor = dataset_tokenizer.get_tokenized_training_data(max_rows=samples)
@@ -90,20 +91,17 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
         epochs = -1
         #evals.append(model_eval(vmmd, first_part_cpu))
     else:
+        timer = Timer(amount_epochs=epochs, export_path=export_path)
         for epoch in vmmd.fit(X=first_part_normalized, yield_epochs= yield_epochs, embedding = embedding):
+            timer.measure(epoch=epoch)
+            timer.pause()
 
             visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
             eval = model_eval(vmmd, first_part_normalized.cpu())
             evals.append(eval)
             subspaces.append(eval)
 
-         # , embedding=embedding)
-    
-    # subspaces: pd.DataFrame = model_eval(model=vmmd, X_data=first_part.cpu()).sort_values(by='probability',
-    # ascending=False)
-    # subspace df has columns: 'subspace', 'probability',
-    # print("Subspace with highest probability:", subspaces.iloc[0])
-    # print("Subspace with lowest probability:", subspaces.iloc[-1])
+            timer.resume()
 
     p_value_df = vmmd.check_if_myopic(x_data=first_part.cpu().numpy(), count=1000)
     print(dataset.name, "\n", p_value_df, "\n")
@@ -167,8 +165,8 @@ if __name__ == '__main__':
                         "lr": 0.01, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": False}
 
-    #pipeline(**ag_news_params)
-    pipeline(**emotions_params)
+    pipeline(**ag_news_params)
+    #pipeline(**emotions_params)
     #pipeline(**imdb_params)
     #pipeline(**wiki_params)
     #pipeline(**simple_params)
