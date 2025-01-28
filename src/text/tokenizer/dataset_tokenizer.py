@@ -1,5 +1,6 @@
 import ast
 import os
+import sys
 from pathlib import Path
 from typing import List
 
@@ -93,7 +94,7 @@ class DatasetTokenizer:
         return filtered_df
 
     def _create_tokenized_dataset(self, dataset_name: str):
-
+        print(f"creating tokenized dataset for {dataset_name}")
         if dataset_name == self.dataset_train_name:
             x, y = self.dataset.get_training_data()
         elif dataset_name == self.dataset_test_name:
@@ -101,7 +102,19 @@ class DatasetTokenizer:
         else:
             raise ValueError(f"Unknown dataset name: {dataset_name}")
 
-        tokenized_x = pd.Series(x).apply(lambda x: self.tokenizer.tokenize(x))
+        length = len(x)
+        print("tokenizing...")
+        counter = Counter()
+        one_percent = int(length / 100)
+        def tokenize(x):
+            #if counter.counter % one_percent == 0:
+            sys.stdout.write(f"\r{counter.counter / one_percent}% tokenized")
+            sys.stdout.flush()
+            counter.increase_counter()
+            return self.tokenizer.tokenize(x)
+
+        tokenized_x = pd.Series(x).apply(tokenize)
+        print("done tokenizing")
         padding_token = self.tokenizer.padding_token
         def vec_transform(x):
             return [x + [padding_token] * (self.sequence_length - len(x))] \
@@ -116,3 +129,10 @@ class DatasetTokenizer:
         if not os.path.exists(self.path):
             os.mkdir(self.path)
         tokenized_df.to_csv(self.path / f"{self.base_file_name}_{dataset_name}{self.file_extension}", index=False)
+
+class Counter:
+    def __init__(self):
+        self.counter = 0
+
+    def increase_counter(self):
+        self.counter = self.counter + 1

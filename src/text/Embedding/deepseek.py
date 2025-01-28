@@ -47,7 +47,7 @@ class DeepSeek1B(HuggingModel):
 
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
-            pass
+        raise NotImplemented
 
 
 if __name__ == '__main__':

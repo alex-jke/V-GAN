@@ -4,7 +4,6 @@ from typing import List, Callable
 import numpy as np
 import torch
 from torch import Tensor
-from transformers import AutoTokenizer, AutoModel, BertForMaskedLM, GPT2Tokenizer, GPT2LMHeadModel, GPT2Model
 
 from .embedding import Embedding
 from .tokenizer import Tokenizer
@@ -34,8 +33,11 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
     def tokenize(self, data: str) -> List[int]:
-        embedded = self.tokenizer(data, return_tensors='pt')
-        return embedded['input_ids'].tolist()[0]
+        tokenized = self.tokenizer(data, return_tensors='pt')
+        input_ids = tokenized['input_ids']
+        input_list = input_ids.tolist()
+        first_elem = input_list[0]
+        return first_elem
 
     def detokenize(self, words: List[int]) -> str:
         return self.tokenizer.decode(words)
@@ -79,14 +81,24 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         #return token
         return 0 #todo: might cause conflict with another symbol
 
+    def aggregateEmbeddings(self, embeddings: Tensor):
+        """
+        The function defines how given a collection of embeddings it is aggregated into a single embedding.
+        :param embeddings: A three-dimensional tensor of embeddings. The first dimension is the size of the embeddings,
+        the second is the batch dimension and the third is the number of tokens
+        :return: A two-dimensional Tensor, where the first dimension is the batch dimension and the second is the
+        embedding dimension
+        """
+        aggregated = embeddings.mean(dim=-1)
+        return aggregated
+
     def get_embedding_fun(self) -> Callable[[Tensor], Tensor]:
         def embedding(data: Tensor) -> Tensor:
             """
-            This method takes a tensor of tokenized reviews and returns the embeddings.
-            :param data: A two-dimensional tensor of tokenized reviews. The first dimension is the number of reviews and the
+            This method takes a tensor of tokenized datapoints and returns the embeddings.
+            :param data: A two-dimensional tensor of tokenized datapoints. The first dimension is the number of datapoints and the
             second is the number of tokens.
-            :return: A three-dimensional tensor of embeddings. The first dimension is the size of the embeddings,
-            the second is the number of reviews, and the third is the number of tokens.
+            :return: A two-dimensional Tensor aggregated in accordance to the aggregate function.
             """
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
             with torch.no_grad():
@@ -101,7 +113,8 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                     except:
                         print(embeddings.shape, unsqueezed.shape)
                         raise
-            return embeddings
+            aggregated = self.aggregateEmbeddings(embeddings = embeddings)
+            return aggregated
         return embedding
 
     def max_token_length(self) -> int:
