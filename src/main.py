@@ -7,10 +7,11 @@ import pandas as pd
 import torch
 from torch import Tensor
 
-from models.Generator import GeneratorSigmoid, FakeGenerator
+from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax
 from modules.od_module import VMMD_od
 from text.Embedding.bert import Bert
 from text.Embedding.gpt2 import GPT2
+from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2ExtraSubspace import GPT2ExtraSubspaces
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.tokenizer import Tokenizer
@@ -56,7 +57,7 @@ def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: s
 
 def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs: int, batch_size: int, samples: int,
              train: bool = False, lr: float = 0.001, momentum=0.99, weight_decay=0.04, version: str = '0',
-             penalty_weight: float = 0.0, generator= None, yield_epochs = 100):
+             penalty_weight: float = 0.0, generator= None, yield_epochs = 100, use_embedding= False):
     sequence_length = min(sequence_length, model.max_token_length())
 
     dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, sequence_length=sequence_length)
@@ -70,9 +71,8 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     first_part = first_part.float()
     first_part_normalized = first_part #torch.nn.functional.normalize(first_part, p=2, dim=1)
 
-    embedding = model.get_embedding_fun()
+    embedding = model.get_embedding_fun() if use_embedding else lambda x: x
 
-    export_path = None
     path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}",
                         f"{dataset.name}_{sequence_length}_vmmd_{model.model_name}"
                         f"_{epochs}_{penalty_weight}")
@@ -90,7 +90,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
         epochs = -1
         #evals.append(model_eval(vmmd, first_part_cpu))
     else:
-        for epoch in vmmd.fit(X=first_part_normalized, yield_epochs= yield_epochs):
+        for epoch in vmmd.fit(X=first_part_normalized, yield_epochs= yield_epochs, embedding = embedding):
 
             visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
             eval = model_eval(vmmd, first_part_normalized.cpu())
@@ -112,6 +112,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
         print(eval)
 
     visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs)
+    return vmmd
 
 
 def all_fake():
@@ -121,23 +122,28 @@ def all_fake():
                       ([0,0, 0,0,1,1], 0.34)]
     samples = ["an example", "two words", "another one", "a fourth"]
 
+
+    amount_samples = 2000
+    batch_size = amount_samples // 4
     simple_params = {"model": GPT2ExtraSubspaces(3),
-                     "epochs": 15, "batch_size": 500, "samples": 2000,
+                     "epochs": 15, "batch_size": batch_size, "samples": amount_samples,
                      "penalty_weight": 0,
                      "sequence_length": 6,
-                     "dataset": SimpleDataset(samples=samples, amount_samples=3000),
+                     "dataset": SimpleDataset(samples=samples, amount_samples=int(amount_samples / 0.8 + 1)),
                      "generator": FakeGenerator(fake_subspaces),
                      "lr": 0.1, "momentum": 0.9,
                      "weight_decay": 0.005, "version": version, "train": False, "yield_epochs": 10}
-    pipeline(**simple_params)
+    vmmd = pipeline(**simple_params)
+    #average_loss = vmmd.train_history['generator_loss'].mean()
+    #p_value = vmmd.check_if_myopic(vmmd.X_data.cpu().numpy(), count=1000).iloc[0, 0]
 
 
 
 if __name__ == '__main__':
-    version = '0.41_sigmoid+zero_token+normalized'
-    generator = GeneratorSigmoid
-    model = GPT2()
-    penalty = 1
+    version = '0.42_embedding'
+    generator = GeneratorUpperSoftmax
+    model = DeepSeek1B()
+    penalty = 0
     wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 5_000, "penalty_weight": penalty,
                    "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,
                    "weight_decay": 0.005, "version": version, "train": False} #contains 34.000 datapoints
@@ -152,7 +158,7 @@ if __name__ == '__main__':
 
     emotions_params = {"model": model, "epochs": 200, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
-                       "weight_decay": 0.005, "version": version, "train": False} #contains 96.000 datapoints
+                       "weight_decay": 0.005, "version": version, "train": False, "use_embedding": True} #contains 96.000 datapoints
 
     simple_params = {"model": GPT2ExtraSubspaces(3), "epochs": 4000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 6 ,
@@ -162,7 +168,7 @@ if __name__ == '__main__':
                        "weight_decay": 0.005, "version": version, "train": False}
 
     #pipeline(**ag_news_params)
-    #pipeline(**emotions_params)
+    pipeline(**emotions_params)
     #pipeline(**imdb_params)
     #pipeline(**wiki_params)
     #pipeline(**simple_params)
