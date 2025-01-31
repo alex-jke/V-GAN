@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from torch import Tensor
 
 from .visualizer import Visualizer
+from ..UI.cli import ConsoleUserInterface
 
 SUBSPACE_COLUMN = 'subspace'
 SUBSPACE_PROBABILITY_COLUMN = 'probability'
@@ -18,7 +19,7 @@ class AlphaVisualizer(Visualizer):
 
     def export_html(self, sample_data: Tensor, subspaces: Tensor, folder_appendix: str, epoch: int = -1, normalize:bool = True):
         padding_token = self.tokenizer.detokenize([self.tokenizer.padding_token])
-
+        ui = ConsoleUserInterface()
         # Initialize HTML content
         html_content = """
                 <!DOCTYPE html>
@@ -44,7 +45,9 @@ class AlphaVisualizer(Visualizer):
                 """
 
         y_pos = 1  # Vertical position
+        ui.update(f"Visualizing samples: ")
         for i in range(sample_data.size(0)):
+            ui.update(f"{i}, ")
             # print("Sample", i)
             int_list = [int(number) for number in sample_data[i].tolist()]
             # print("Original:", self.tokenizer.detokenize(int_list))

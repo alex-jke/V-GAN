@@ -43,10 +43,10 @@ def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: s
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
 
     average_alpha_visualizer = AverageAlphaVisualizer(**params)
-    average_alpha_visualizer.visualize(samples=30, epoch=epoch)
+    average_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
     random_alpha_visualizer = RandomAlphaVisualizer(**params)
-    random_alpha_visualizer.visualize(samples=30, epoch=epoch)
+    random_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
     value_visualizer = ValueVisualizer(**params)
     value_visualizer.visualize(samples=0, epoch=epoch) #todo: maybe plot sample subspaces with probability as transparency
@@ -155,9 +155,10 @@ if __name__ == '__main__':
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 200, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+    emotions_params = {"model": model, "epochs": 200, "batch_size": 100, "samples": 500, "penalty_weight": penalty,
                        "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
-                       "weight_decay": 0.005, "version": version, "train": False, "use_embedding": True} #contains 96.000 datapoints
+                       "weight_decay": 0.005, "version": version, "train": True, "use_embedding": True,
+                       "yield_epochs": 20} #contains 96.000 datapoints
 
     simple_params = {"model": GPT2ExtraSubspaces(3), "epochs": 4000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 6 ,

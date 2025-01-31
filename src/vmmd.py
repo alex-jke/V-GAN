@@ -233,6 +233,7 @@ class VMMD:
                 optimizer.step()
                 generator_loss += float(batch_loss.to(
                     'cpu').detach().numpy())/batch_number
+                #print("finished batch")
 
             if epoch % yield_epochs == 0:
                 self.generator = generator
