@@ -156,10 +156,10 @@ if __name__ == '__main__':
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 500, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
+    emotions_params = {"model": model, "epochs": 1000, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.05, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": True, "use_embedding": True,
-                       "yield_epochs": 20} #contains 96.000 datapoints
+                       "yield_epochs": 100} #contains 96.000 datapoints
 
     simple_params = {"model": GPT2ExtraSubspaces(3), "epochs": 4000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 6 ,
