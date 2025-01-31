@@ -18,7 +18,7 @@ class Bert(HuggingModel):
 
     @property
     def _tokenizer(self):
-        return AutoTokenizer.from_pretrained(self.model_name)
+        return AutoTokenizer.from_pretrained(self._model_name)
 
     @property
     def _model_name(self):
@@ -26,7 +26,7 @@ class Bert(HuggingModel):
 
     @property
     def _model(self):
-        return AutoModel.from_pretrained(self.model_name).to(self.device)
+        return AutoModel.from_pretrained(self._model_name).to(self.device)
 
     def decode2tokenized(self, embeddings: List[np.ndarray]) -> List[int]:
         """
@@ -97,6 +97,9 @@ class Bert(HuggingModel):
         file = open(csv_file, 'x')
         token_size = len(self.tokenizer)
 
+    def aggregateEmbeddings(self, embeddings: Tensor):
+        return embeddings[0]
+
 
     def fully_embed_tokenized(self, tokenized: Tensor) -> Tensor:
         """
@@ -111,9 +114,9 @@ class Bert(HuggingModel):
             return cached
 
         token_vec = torch.tensor(tokenized).unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
-        attention_mask = torch.ones_like(token_vec).to(self.device)
+        #attention_mask = torch.ones_like(token_vec).to(self.device)
         # if a token is a padding token, set the mask to 0
-        attention_mask[token_vec == self.tokenizer.pad_token_id] = 0
+        attention_mask = torch.not_equal(token_vec, self.padding_token)
         with torch.no_grad():
             outputs = self.model(token_vec, attention_mask=attention_mask)
             # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension

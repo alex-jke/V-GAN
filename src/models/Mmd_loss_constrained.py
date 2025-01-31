@@ -94,7 +94,7 @@ class MMDLossConstrained(nn.Module):
     Constrained loss by the number of features selected
     '''
 
-    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3, middle_penalty = 1):
+    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3, middle_penalty = 0):
         super().__init__()
         self.kernel = kernel
         self.weight = weight
