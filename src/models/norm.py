@@ -55,6 +55,8 @@ class L2Norm(VectorNorm):
         Computes the L2 norm of the input vectors. The distance matrix is a square matrix where the element
         (i, j) is the L2 norm between the ith and jth Vector. That is ||X[i] - X[j]||.
         """
+        if X.dtype == torch.long:
+            X = X.float()
         return torch.cdist(X, X)
 
 

@@ -14,7 +14,7 @@ from ..dataset.dataset import Dataset
 
 
 class DatasetTokenizer:
-    def __init__(self, tokenizer: Tokenizer, dataset: Dataset):
+    def __init__(self, tokenizer: Tokenizer, dataset: Dataset, max_samples: int = None):
         self.tokenizer = tokenizer
         self.tokenizer_name = tokenizer.__class__.__name__
         self.dataset_train_name = "train"
@@ -22,46 +22,48 @@ class DatasetTokenizer:
         self.file_extension = ".csv"
         self.resource_path = Path(os.getcwd()) / 'text' / 'resources'
         self.path = Path(os.getcwd()) / 'text' / 'resources' / dataset.name
+        self.base_file_name = f"{self.tokenizer_name}_{dataset.name}"
+        self.max_samples = max_samples
+        self.dataset_path = self.path / f"{self.base_file_name}_{self.dataset_train_name}{self.file_extension}_{self.max_samples}"
         #self.sequence_length = sequence_length
         #self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
-        self.base_file_name = f"{self.tokenizer_name}_{dataset.name}"
         self.dataset = dataset
         self.padding_token = self.tokenizer.padding_token
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
-    def get_tokenized_training_data(self, max_rows:int = -1, class_label: str = None) -> Tensor:
+    def get_tokenized_training_data(self, class_label: str = None) -> Tensor:
         """
         Get the tokenized training data. If the tokenized data does not exist, it will be created. This way, the
         tokenized data is only created once.
         :param max_rows: The maximum number of rows to return. If -1, all rows are returned.
         :param class_label: The class label to return. If None, the first class label is returned.
         :return: A three-dimensional tensor of the tokenized training data. The Tensor is of shape
-        (max_rows, sequence_length, max_length / sequence_length + 1).
+        (max_rows, sequence_length, max_samples / sequence_length + 1).
         """
         if class_label is None:
             class_label = self.dataset.get_possible_labels()[0]
 
-        return self._get_tensor(self.dataset_train_name, max_rows, class_label=class_label)
+        return self._get_tensor(self.dataset_train_name, class_label=class_label)
 
-    def get_tokenized_testing_data(self, max_rows:int = -1, class_label: str = None) -> Tensor:
+    def get_tokenized_testing_data(self, class_label: str = None) -> Tensor:
         """
         Get the tokenized testing data. If the tokenized data does not exist, it will be created. This way, the
         tokenized data is only created once.
         :param max_rows: The maximum number of rows to return. If -1, all rows are returned.
         :param class_label: The class label to return. If None, the first class label is returned.
         :return: A three-dimensional tensor of the tokenized testing data. The Tensor is of shape
-        (max_rows, max_length / sequence_length + 1, sequence_length).
+        (max_rows, max_samples / sequence_length + 1, sequence_length).
         """
 
         if class_label is None:
             class_label = self.dataset.get_possible_labels()[0]
 
-        return self._get_tensor(self.dataset_test_name, max_rows, class_label=class_label)
+        return self._get_tensor(self.dataset_test_name, class_label=class_label)
 
-    def _get_tensor(self, dataset_name, max_rows, class_label: str) -> Tensor:
+    def _get_tensor(self, dataset_name, class_label: str) -> Tensor:
         dataset = self._get_dataset(dataset_name, class_label)
-        max_rows = max_rows if max_rows > 0 else len(dataset)
+        max_rows = self.max_samples if self.max_samples is not None else len(dataset)
         #data: List[List[List[int]]] = [ast.literal_eval(dataset[self.dataset.x_label_name][i]) for i in range(max_rows)]
         data: List[List[int]] = [ast.literal_eval(dataset[self.dataset.x_label_name][i]) for i in range(max_rows)]
 
@@ -91,17 +93,16 @@ class DatasetTokenizer:
         return tensor[:, :max_sequence_length]
 
     def _get_dataset(self, dataset_name: str, class_label: str) -> pd.DataFrame:
-        file_path = self.path / f"{self.base_file_name}_{dataset_name}{self.file_extension}"
-        if not os.path.exists(file_path):
+        if not os.path.exists(self.dataset_path):
             self._create_tokenized_dataset(dataset_name)
         y_label = self.dataset.y_label_name
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(self.dataset_path)
         filtered_df = df[df[y_label] == class_label].reset_index(drop=True)
         return filtered_df
 
 
     def _tokenize(self, x: ndarray) -> pd.DataFrame:
-        length = len(x)
+        length = len(x) if self.max_samples is None else self.max_samples
         print("tokenizing...")
         counter = Counter()
         path = self.path / f"{self.base_file_name}_temp.csv"
@@ -126,22 +127,27 @@ class DatasetTokenizer:
             tokenized_x = tokenized_df[self.dataset.x_label_name]
             start_row = len(tokenized_x)
             counter = Counter(start_row)
-            x = x[start_row:]
+
+        if start_row >= length:
+            #return pd.DataFrame({self.dataset.x_label_name: tokenized_x})
+            return tokenized_x
 
         for i in range(start_row, length, 100):
             if i + 100 < length:
-                tokenized_x = pd.Series(x[i:i + 100]).apply(tokenize)
+                newly_tokenized = pd.Series(x[i:i + 100]).apply(tokenize)
             else:
-                tokenized_x = pd.Series(x[i:]).apply(tokenize)
+                newly_tokenized = pd.Series(x[i:length]).apply(tokenize)
 
-            tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_x})
+            tokenized_df = pd.DataFrame({self.dataset.x_label_name: newly_tokenized})
 
             if i == 0:
                 tokenized_df.to_csv(path, index=False)
             else:
                 tokenized_df.to_csv(path, mode='a', header=False, index=False)
 
-        return tokenized_x
+        fully_tokenized = pd.read_csv(path)
+        #return pd.DataFrame({self.dataset.x_label_name: fully_tokenized})
+        return fully_tokenized
 
     def _create_tokenized_dataset(self, dataset_name: str):
         print(f"creating tokenized dataset for {dataset_name}")
@@ -155,25 +161,30 @@ class DatasetTokenizer:
         tokenized_x = self._tokenize(x)
 
         print("done tokenizing")
-        max_length = tokenized_x.apply(lambda token_list: len(token_list)).max()
+        # As a series of length 1 is passed to the apply function, the tokenized data for that row is the first element
+        # Furthermore, the tokenized data is a string of the form "[1, 2, 3, 4, 5]" which is split by the comma
+        max_token_length = tokenized_x.apply(lambda token_list: len(token_list.split(","))).max()
 
         def vec_transform(x):
             """
             return [x + [self.padding_token] * (self.sequence_length - len(x))] \
                 if len(x) < self.sequence_length else [x[:self.sequence_length]] + vec_transform(
                 x[self.sequence_length:])"""
-            transformed = x + [self.padding_token] * (max_length - len(x))
+            transformed = x[:-1] + ", " + str([self.padding_token] * (max_token_length - len(x)))[1:]
             #print("transformed", transformed)
             return transformed
 
 
-        tokenized_padded = tokenized_x.apply(vec_transform).reset_index(drop=True)
-        tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded, self.dataset.y_label_name: y})
+        tokenized_padded = tokenized_x.apply(lambda row: vec_transform(row)).reset_index(drop=True)
+        y_trimmed = y[:len(tokenized_padded)].reset_index(drop=True)
+        #tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded, self.dataset.y_label_name: y_trimmed})
+        tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded})
+        tokenized_df[self.dataset.y_label_name] = y_trimmed
         if not os.path.exists(self.resource_path):
             os.mkdir(self.resource_path)
         if not os.path.exists(self.path):
             os.mkdir(self.path)
-        tokenized_df.to_csv(self.path / f"{self.base_file_name}_{dataset_name}{self.file_extension}", index=False)
+        tokenized_df.to_csv(self.dataset_path, index=False)
 
 class Counter:
     def __init__(self, start_value: int = 0):

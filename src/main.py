@@ -61,10 +61,10 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
              penalty_weight: float = 0.0, generator= None, yield_epochs = 100, use_embedding= False):
     sequence_length = min(sequence_length, model.max_token_length())
 
-    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset)
+    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, max_samples=samples)
 
     # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
-    data: Tensor = dataset_tokenizer.get_tokenized_training_data(max_rows=samples)
+    data: Tensor = dataset_tokenizer.get_tokenized_training_data()
     #first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
     first_part = data[:, :sequence_length]
     first_part_cpu = first_part.cpu()
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     generator = GeneratorUpperSoftmax
     model = DeepSeek1B()
     penalty = 0
-    wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 5_000, "penalty_weight": penalty,
+    wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 8_0, "penalty_weight": penalty,
                    "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,
                    "weight_decay": 0.005, "version": version, "train": False} #contains 34.000 datapoints
 
@@ -166,8 +166,8 @@ if __name__ == '__main__':
                         "lr": 0.01, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": False}
 
-    pipeline(**ag_news_params)
-    #pipeline(**emotions_params)
+    #pipeline(**ag_news_params)
+    pipeline(**emotions_params)
     #pipeline(**imdb_params)
     #pipeline(**wiki_params)
     #pipeline(**simple_params)
