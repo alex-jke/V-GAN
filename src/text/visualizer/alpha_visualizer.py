@@ -17,6 +17,10 @@ class AlphaVisualizer(Visualizer):
     Class for visualizing data with using the alpha in text.
     """
 
+    def __init__(self, amount_samples):
+        self.amount_samples = amount_samples
+        self.samples = []
+
     def export_html(self, sample_data: Tensor, subspaces: Tensor, folder_appendix: str, epoch: int = -1, normalize:bool = True):
         padding_token = self.tokenizer.detokenize([self.tokenizer.padding_token])
         ui = ConsoleUserInterface()
@@ -53,12 +57,16 @@ class AlphaVisualizer(Visualizer):
             # print("Original:", self.tokenizer.detokenize(int_list))
 
             #strings = [self.tokenizer.detokenize(token) for token in int_list if token != self.tokenizer.padding_token]
-            strings = []
-            for token in int_list:
-                if token != self.tokenizer.padding_token:
-                    strings.append(self.tokenizer.detokenize(token))
-                else:
-                    strings.append("_")
+            if i >= len(self.samples):
+                strings = []
+                for token in int_list:
+                    if token != self.tokenizer.padding_token:
+                        strings.append(self.tokenizer.detokenize(token))
+                    else:
+                        strings.append("_")
+                self.samples.append(strings)
+            else:
+                strings = self.samples[i]
 
             sample_length = len(strings)
 

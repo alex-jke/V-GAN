@@ -273,18 +273,19 @@ class VMMD:
 def model_eval(model, X_data) -> pd.DataFrame:
     device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
+    sample_amount = min(500, X_data.shape[0])
     X_sample = torch.Tensor(pd.DataFrame(
-        X_data).sample(500).to_numpy()).to(device)
-    u = model.generate_subspaces(500)
+        X_data).sample(sample_amount).to_numpy()).to(device)
+    u = model.generate_subspaces(sample_amount)
     u = u.float()
     uX_data = u * \
               torch.mps.Tensor(X_sample).to(model.device) + \
               torch.mean(X_sample, dim=0) * (1-u)
     # round each value in u to one decimal
 
-    mmd = tts.MMDStatistic(500, 500)
-    mmd_val, distances = mmd(X_sample, uX_data, alphas=[0.01], ret_matrix=True)
-    mmd_prop = tts.MMDStatistic(500, 500)
+    mmd = tts.MMDStatistic(sample_amount, sample_amount)
+    mmd_val, distances = mmd(uX_data, X_data, alphas=[0.01], ret_matrix=True)
+    mmd_prop = tts.MMDStatistic(sample_amount, sample_amount)
     mmd_prop_val, distances_prop = mmd_prop(
         X_sample, uX_data, alphas=[1 / model.bandwidth], ret_matrix=True)
     PYDEVD_WARN_EVALUATION_TIMEOUT = 200
