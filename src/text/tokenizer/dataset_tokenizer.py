@@ -134,10 +134,6 @@ class DatasetTokenizer:
             start_row = len(tokenized_x)
             counter = Counter(start_row)
 
-        if start_row >= length:
-            #return pd.DataFrame({self.dataset.x_label_name: tokenized_x})
-            return tokenized_x
-
         for i in range(start_row, length, 100):
             if i + 100 < length:
                 newly_tokenized = pd.Series(x[i:i + 100]).apply(tokenize)
@@ -169,20 +165,20 @@ class DatasetTokenizer:
         print("done tokenizing")
         # As a series of length 1 is passed to the apply function, the tokenized data for that row is the first element
         # Furthermore, the tokenized data is a string of the form "[1, 2, 3, 4, 5]" which is split by the comma
-        max_token_length = tokenized_x.apply(lambda token_list: len(token_list.split(","))).max()
+        max_token_length = tokenized_x.apply(lambda token_list: len(token_list[0].split(",")), axis=1).max()
 
         def vec_transform(x):
             """
             return [x + [self.padding_token] * (self.sequence_length - len(x))] \
                 if len(x) < self.sequence_length else [x[:self.sequence_length]] + vec_transform(
                 x[self.sequence_length:])"""
-            tokens_amount = len(x.split(","))
-            transformed = x[:-1] + ", " + str([self.padding_token] * (max_token_length - tokens_amount))[1:]
+            tokens_amount = len(x[0].split(","))
+            transformed = x[0][:-1] + ", " + str([self.padding_token] * (max_token_length - tokens_amount))[1:]
             #print("transformed", transformed)
             return transformed
 
 
-        tokenized_padded = tokenized_x.apply(lambda row: vec_transform(row)).reset_index(drop=True)
+        tokenized_padded = tokenized_x.apply(lambda row: vec_transform(row), axis=1).reset_index(drop=True)
         y_trimmed = y[:len(tokenized_padded)].reset_index(drop=True)
         #tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded, self.dataset.y_label_name: y_trimmed})
         tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded})
