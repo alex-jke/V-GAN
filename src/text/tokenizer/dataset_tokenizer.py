@@ -104,7 +104,7 @@ class DatasetTokenizer:
         length = len(x)
         print("tokenizing...")
         counter = Counter()
-        path = self.path / f"{self.base_file_name}"
+        path = self.path / f"{self.base_file_name}_temp.csv"
 
         # x = x[:int(length / 50000)]
         # length = len(x)
@@ -117,6 +117,29 @@ class DatasetTokenizer:
             # print(tokenized)
             return tokenized
 
+        # Save the tokenized data to a csv file at path every 100 samples to avoid data loss on crash. If the file
+        # already exists, for the given amount of samples, the data is loaded from the file.
+        start_row = 0
+
+        if os.path.exists(path):
+            tokenized_df = pd.read_csv(path)
+            tokenized_x = tokenized_df[self.dataset.x_label_name]
+            start_row = len(tokenized_x)
+            counter = Counter(start_row)
+            x = x[start_row:]
+
+        for i in range(start_row, length, 100):
+            if i + 100 < length:
+                tokenized_x = pd.Series(x[i:i + 100]).apply(tokenize)
+            else:
+                tokenized_x = pd.Series(x[i:]).apply(tokenize)
+
+            tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_x})
+
+            if i == 0:
+                tokenized_df.to_csv(path, index=False)
+            else:
+                tokenized_df.to_csv(path, mode='a', header=False, index=False)
         tokenized_x = pd.Series(x).apply(tokenize)
         return tokenized_x
 
@@ -153,8 +176,8 @@ class DatasetTokenizer:
         tokenized_df.to_csv(self.path / f"{self.base_file_name}_{dataset_name}{self.file_extension}", index=False)
 
 class Counter:
-    def __init__(self):
-        self.counter = 0
+    def __init__(self, start_value: int = 0):
+        self.counter = start_value
 
     def increase_counter(self):
         self.counter = self.counter + 1
