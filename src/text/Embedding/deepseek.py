@@ -18,7 +18,7 @@ class DeepSeek1B(HuggingModel):
 
     @property
     def _tokenizer(self) -> AutoTokenizer:
-        return AutoTokenizer.from_pretrained(f"deepseek-ai/{self.model_name}", trust_remote_code=True)
+        return AutoTokenizer.from_pretrained(f"deepseek-ai/{self._model_name}", trust_remote_code=True)
 
     @property
     def _model_name(self) -> str:
@@ -26,7 +26,7 @@ class DeepSeek1B(HuggingModel):
 
     @property
     def _model(self) -> Qwen2ForCausalLM:
-        return AutoModelForCausalLM.from_pretrained(f"deepseek-ai/{self.model_name}", trust_remote_code=True).to(self.device)
+        return AutoModelForCausalLM.from_pretrained(f"deepseek-ai/{self._model_name}", trust_remote_code=True).to(self.device)
 
     def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
         pass
