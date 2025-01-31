@@ -165,8 +165,8 @@ if __name__ == '__main__':
                         "lr": 0.01, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": False}
 
-    pipeline(**ag_news_params)
-    #pipeline(**emotions_params)
+    #pipeline(**ag_news_params)
+    pipeline(**emotions_params)
     #pipeline(**imdb_params)
     #pipeline(**wiki_params)
     #pipeline(**simple_params)

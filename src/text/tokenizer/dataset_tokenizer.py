@@ -120,7 +120,7 @@ class DatasetTokenizer:
         # Save the tokenized data to a csv file at path every 100 samples to avoid data loss on crash. If the file
         # already exists, for the given amount of samples, the data is loaded from the file.
         start_row = 0
-
+        tokenized_x = pd.DataFrame()
         if os.path.exists(path):
             tokenized_df = pd.read_csv(path)
             tokenized_x = tokenized_df[self.dataset.x_label_name]
@@ -140,7 +140,7 @@ class DatasetTokenizer:
                 tokenized_df.to_csv(path, index=False)
             else:
                 tokenized_df.to_csv(path, mode='a', header=False, index=False)
-        tokenized_x = pd.Series(x).apply(tokenize)
+
         return tokenized_x
 
     def _create_tokenized_dataset(self, dataset_name: str):
