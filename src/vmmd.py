@@ -214,20 +214,20 @@ class VMMD:
                 if cuda:
                     batch = batch.cuda()
                 elif mps:
-                    batch = batch.to(torch.float32).to(
-                        torch.device('mps'))  # float64 not suported with mps
-
+                    #batch = batch.to(torch.float32).to(torch.device('mps'))  # float64 not suported with mps
+                    batch.to('mps') # For tokeniz
                 # SAMPLE NOISE#
                 noise_tensor.normal_()
 
                 # OPTIMIZATION STEP#
                 optimizer.zero_grad()
                 fake_subspaces = generator(noise_tensor)
+                masked = torch.greater_equal(fake_subspaces, 0.5) * 1
                 # batch_loss = loss_function(batch, fake_subspaces*batch + (fake_subspaces == 1e-08)*torch.mean(batch,dim=0), alphas=[0.1]) #Upper_lower_softmax
                 # batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch,1/batch.shape[1])*torch.mean(batch,dim=0), alphas=[0.1]) #Upper softmax
                 #batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss
                 # todo: normalize the batch before passing it.
-                batch_loss = loss_function(fake_subspaces * batch, batch, fake_subspaces)
+                batch_loss = loss_function(masked * batch, batch, fake_subspaces)
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
                 optimizer.step()

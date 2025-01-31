@@ -65,11 +65,12 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
 
     # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
     data: Tensor = dataset_tokenizer.get_tokenized_training_data(max_rows=samples)
-    first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
+    #first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
+    first_part = data[:, :sequence_length]
     first_part_cpu = first_part.cpu()
     first_part = first_part.to(device)
-    #if device == 'cuda:0':
-    first_part = first_part.float()
+    if device.type == 'cuda':
+        first_part = first_part.float()
     first_part_normalized = first_part #torch.nn.functional.normalize(first_part, p=2, dim=1)
 
     embedding = model.get_embedding_fun() if use_embedding else lambda x: x
@@ -146,9 +147,9 @@ if __name__ == '__main__':
                    "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,
                    "weight_decay": 0.005, "version": version, "train": False} #contains 34.000 datapoints
 
-    ag_news_params = {"model": model, "epochs": 600, "batch_size": 200, "samples": 1000, "penalty_weight": penalty,
+    ag_news_params = {"model": model, "epochs": 600, "batch_size": 64, "samples": 1024, "penalty_weight": penalty,
                       "sequence_length": 50, "dataset": AGNews(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
-                      "version": version, "train": False}
+                      "version": version, "train": False, "use_embedding": True, "yield_epochs": 10} # contains 4000 datapoints
 
     imdb_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
@@ -165,14 +166,14 @@ if __name__ == '__main__':
                         "lr": 0.01, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": False}
 
-    #pipeline(**ag_news_params)
-    pipeline(**emotions_params)
+    pipeline(**ag_news_params)
+    #pipeline(**emotions_params)
     #pipeline(**imdb_params)
     #pipeline(**wiki_params)
     #pipeline(**simple_params)
     #all_fake()
 
-    #print(model.detokenize([0]))
+    #print(model.detokenize([151646]))
 
     #print(subspaces)
 

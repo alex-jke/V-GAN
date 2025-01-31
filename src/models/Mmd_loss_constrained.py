@@ -32,21 +32,24 @@ class RBF(nn.Module):
 
         return self.bandwidth
 
-    def forward(self, X: torch.Tensor):
+    def forward(self, X: torch.Tensor, Y: torch.Tensor):
         '''
         X: torch.Tensor
             The input tensor of shape (n_samples, feature_dim * 2) (X and Y are concatenated)
             Alternatively, a shape of (embedding_dim, n_samples, feature_dim)
         '''
-        X_embedded = self.embedding(X)
-        if len(X_embedded.shape) == SHAPE_LEN_VECTOR:
+        X_embedded = self.embedding(X) #todo: does an embedding function make sense when the tokens are concatenated?
+        Y_embedded = self.embedding(Y)
+
+        embedded = torch.vstack([X_embedded, Y_embedded])
+        if len(embedded.shape) == SHAPE_LEN_VECTOR:
             norm = self.vector_norm.compute_distance_matrix
-        elif len(X_embedded.shape) == SHAPE_LEN_MATRIX:
+        elif len(embedded.shape) == SHAPE_LEN_MATRIX:
             norm = self.matrix_norm.compute_distance_matrix
         else:
             raise ValueError("Input Tensor has to either be of shape (BxN) or (ExBxN)")
 
-        distances = norm(X_embedded)
+        distances = norm(embedded)
 
         squared_distances = distances ** 2
 
@@ -101,7 +104,8 @@ class MMDLossConstrained(nn.Module):
         self.middle_penalty = middle_penalty
 
     def get_loss(self, X, Y, U, apply_penalty = True):
-        K = self.kernel(torch.vstack([X, Y]))
+        #K = self.kernel(torch.vstack([X, Y]))
+        K = self.kernel(X, Y)
         self.bandwidth = self.kernel.bandwidth
         self.bandwidth_multipliers = self.kernel.bandwidth_multipliers
         X_size = X.shape[0]

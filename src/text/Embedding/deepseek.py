@@ -1,10 +1,11 @@
-from typing import List, Dict
+from typing import List, Dict, Callable
 
 import numpy as np
 import torch
 from torch import Tensor, LongTensor
 from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2ForCausalLM
 
+from text.UI.cli import ConsoleUserInterface
 from .huggingmodel import HuggingModel
 
 
@@ -13,6 +14,7 @@ class DeepSeek1B(HuggingModel):
     def __init__(self):
         super().__init__()
         self.embedded_cache: Dict[int, Tensor] = {}
+        self.ui = ConsoleUserInterface()
 
     @property
     def tokenizer(self) -> AutoTokenizer:
@@ -36,14 +38,25 @@ class DeepSeek1B(HuggingModel):
             return cached
 
         token_vec = torch.tensor(tokenized).to(self.device)
-        with torch.no_grad():
-            print("now embedding...")
-            outputs = self.model.model(token_vec)
 
+        with torch.no_grad():
+            self.ui.update("embedding...")
+            outputs = self.model.model(token_vec)
+            self.ui.update("done | ")
             embeddings = outputs.last_hidden_state.T
 
         self.embedded_cache[key] = embeddings
         return embeddings
+
+    def aggregateEmbeddings(self, embeddings: Tensor):
+        return torch.mean(embeddings, dim=1)
+
+    def get_embedding_fun(self) -> Callable[[Tensor], Tensor]:
+        def embedding(tensor: Tensor) -> Tensor:
+            embedded = self.fully_embed_tokenized(tensor)
+            aggregated = self.aggregateEmbeddings(embedded)
+            return aggregated
+        return embedding
 
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:

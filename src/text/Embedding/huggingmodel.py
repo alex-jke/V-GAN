@@ -7,6 +7,7 @@ from torch import Tensor
 
 from .embedding import Embedding
 from .tokenizer import Tokenizer
+from ..UI.cli import ConsoleUserInterface
 
 
 class HuggingModel(Tokenizer, Embedding, ABC):
@@ -101,8 +102,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             :return: A two-dimensional Tensor aggregated in accordance to the aggregate function.
             """
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
+            ui = ConsoleUserInterface()
             with torch.no_grad():
                 for (i, partial_review) in enumerate(data):
+                    ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
                     embedded: Tensor = self.fully_embed_tokenized(partial_review.int()) #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension
