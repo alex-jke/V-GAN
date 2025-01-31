@@ -40,16 +40,14 @@ device = torch.device('cuda:0' if torch.cuda.is_available(
 ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 subspaces = []
 
-avg_vis: AverageAlphaVisualizer = None
-ran_vis: RandomAlphaVisualizer = None
 
 def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = -1):
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
 
-    average_alpha_visualizer = AverageAlphaVisualizer(**params) if avg_vis is None else avg_vis.set_params(**params)
+    average_alpha_visualizer = AverageAlphaVisualizer(**params)
     average_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
-    random_alpha_visualizer = RandomAlphaVisualizer(**params) if ran_vis is None else ran_vis.set_params(**params)
+    random_alpha_visualizer = RandomAlphaVisualizer(**params)
     random_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
     value_visualizer = ValueVisualizer(**params)
@@ -158,7 +156,7 @@ if __name__ == '__main__':
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 100, "batch_size": 100, "samples": 500, "penalty_weight": penalty,
+    emotions_params = {"model": model, "epochs": 100, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": True, "use_embedding": True,
                        "yield_epochs": 20} #contains 96.000 datapoints

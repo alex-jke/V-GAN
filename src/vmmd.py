@@ -283,6 +283,7 @@ def model_eval(model, X_data) -> pd.DataFrame:
               torch.mean(X_sample, dim=0) * (1-u)
     # round each value in u to one decimal
 
+    X_data = X_data.to(device)
     uX_data = uX_data.to(device)
     mmd = tts.MMDStatistic(sample_amount, sample_amount)
     mmd_val, distances = mmd(uX_data, X_data, alphas=[0.01], ret_matrix=True)
