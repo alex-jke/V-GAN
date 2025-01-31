@@ -6,6 +6,7 @@ from typing import List
 
 import pandas as pd
 import torch
+from numpy import ndarray
 from torch import Tensor, tensor
 
 from ..Embedding.tokenizer import Tokenizer
@@ -98,6 +99,27 @@ class DatasetTokenizer:
         filtered_df = df[df[y_label] == class_label].reset_index(drop=True)
         return filtered_df
 
+
+    def _tokenize(self, x: ndarray) -> pd.DataFrame:
+        length = len(x)
+        print("tokenizing...")
+        counter = Counter()
+        path = self.path / f"{self.base_file_name}"
+
+        # x = x[:int(length / 50000)]
+        # length = len(x)
+        def tokenize(x):
+            # if counter.counter % one_percent == 0:
+            sys.stdout.write(f"\r{counter.counter / length * 100}% tokenized ({counter.counter} / {length})")
+            sys.stdout.flush()
+            counter.increase_counter()
+            tokenized = self.tokenizer.tokenize(x)
+            # print(tokenized)
+            return tokenized
+
+        tokenized_x = pd.Series(x).apply(tokenize)
+        return tokenized_x
+
     def _create_tokenized_dataset(self, dataset_name: str):
         print(f"creating tokenized dataset for {dataset_name}")
         if dataset_name == self.dataset_train_name:
@@ -107,23 +129,11 @@ class DatasetTokenizer:
         else:
             raise ValueError(f"Unknown dataset name: {dataset_name}")
 
-        length = len(x)
-        print("tokenizing...")
-        counter = Counter()
-        #x = x[:int(length / 50000)]
-        #length = len(x)
-        def tokenize(x):
-            #if counter.counter % one_percent == 0:
-            sys.stdout.write(f"\r{counter.counter / length * 100}% tokenized ({counter.counter} / {length})")
-            sys.stdout.flush()
-            counter.increase_counter()
-            tokenized = self.tokenizer.tokenize(x)
-            #print(tokenized)
-            return tokenized
+        tokenized_x = self._tokenize(x)
 
-        tokenized_x = pd.Series(x).apply(tokenize)
         print("done tokenizing")
         max_length = tokenized_x.apply(lambda token_list: len(token_list)).max()
+
         def vec_transform(x):
             """
             return [x + [self.padding_token] * (self.sequence_length - len(x))] \
