@@ -134,10 +134,6 @@ class DatasetTokenizer:
             start_row = len(tokenized_x)
             counter = Counter(start_row)
 
-        if start_row >= length:
-            #return pd.DataFrame({self.dataset.x_label_name: tokenized_x})
-            return tokenized_x
-
         for i in range(start_row, length, 100):
             if i + 100 < length:
                 newly_tokenized = pd.Series(x[i:i + 100]).apply(tokenize)
