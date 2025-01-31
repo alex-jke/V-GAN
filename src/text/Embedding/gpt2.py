@@ -69,6 +69,8 @@ class GPT2(HuggingModel):
         :param tokenized: A list of token indices.
         :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
         """
+        #todo: check if this makes sense.
+        tokenized = tokenized.int()
         key = hash(tokenized)
         cached = self.embedded_cache.get(key)
         if cached is not None:
