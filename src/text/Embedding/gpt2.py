@@ -16,15 +16,15 @@ class GPT2(HuggingModel):
         self.embedded_cache: Dict[int, Tensor] = {}
 
     @property
-    def tokenizer(self):
+    def _tokenizer(self):
         return GPT2Tokenizer.from_pretrained("gpt2")
 
     @property
-    def model_name(self):
+    def _model_name(self):
         return "gpt2"
 
     @property
-    def model(self):
+    def _model(self):
         return GPT2Model.from_pretrained("gpt2").to(self.device)
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
@@ -105,9 +105,9 @@ if __name__ == '__main__':
     tokenized = gpt2.tokenize(text)
     print("Tokenized:", tokenized)
 
-    embedded: List[np.array] = gpt2.embed_tokenized(tokenized)
+    #embedded: List[np.array] = gpt2.embed_tokenized(tokenized)
     #only print the first 100 symbols
-    print("Embedded:", str(embedded)[:100])
+    #print("Embedded:", str(embedded)[:100])
 
     #deemedbedded = gpt2.decode2tokenized(embedded)
     #print("Decoded embedding to tokens:", gpt2.decode2tokenized(embedded))

@@ -17,15 +17,15 @@ class DeepSeek1B(HuggingModel):
         self.ui = ConsoleUserInterface()
 
     @property
-    def tokenizer(self) -> AutoTokenizer:
+    def _tokenizer(self) -> AutoTokenizer:
         return AutoTokenizer.from_pretrained(f"deepseek-ai/{self.model_name}", trust_remote_code=True)
 
     @property
-    def model_name(self) -> str:
+    def _model_name(self) -> str:
         return "DeepSeek-R1-Distill-Qwen-1.5B"
 
     @property
-    def model(self) -> Qwen2ForCausalLM:
+    def _model(self) -> Qwen2ForCausalLM:
         return AutoModelForCausalLM.from_pretrained(f"deepseek-ai/{self.model_name}", trust_remote_code=True).to(self.device)
 
     def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:

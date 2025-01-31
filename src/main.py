@@ -15,6 +15,7 @@ from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2ExtraSubspace import GPT2ExtraSubspaces
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.tokenizer import Tokenizer
+from text.UI.cli import ConsoleUserInterface
 from text.dataset.SimpleDataset import SimpleDataset
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
@@ -170,7 +171,7 @@ if __name__ == '__main__':
                        "weight_decay": 0.005, "version": version, "train": False}
 
     #pipeline(**ag_news_params)
-    pipeline(**emotions_params)
+    #pipeline(**emotions_params)
     #pipeline(**imdb_params)
     #pipeline(**wiki_params)
     #pipeline(**simple_params)
@@ -179,5 +180,15 @@ if __name__ == '__main__':
     #print(model.detokenize([151646]))
 
     #print(subspaces)
+    ui = ConsoleUserInterface()
+    for i in range(30):
+        tokenized = model.tokenize("This is an example sentence to test the tokenizer. As an example, this sentence should also be a bit longer. "
+                                   "As for some reason the tokinizer is not working as expected, we need to test it. It has gotten pretty slow for some reason.")
+        ui.update(f"tokenized {i}")
+
+    for i in range(30):
+        tokenizer = model.tokenizer
+        detokenized = [tokenizer.decode([token]) for token in tokenized]
+        ui.update(f"detokenized {i}")
 
     # dataset = EmotionDataset()

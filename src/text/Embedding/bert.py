@@ -17,15 +17,15 @@ class Bert(HuggingModel):
         self.embedded_cache: Dict[int, Tensor] = {}
 
     @property
-    def tokenizer(self):
+    def _tokenizer(self):
         return AutoTokenizer.from_pretrained(self.model_name)
 
     @property
-    def model_name(self):
+    def _model_name(self):
         return 'bert-base-cased'
 
     @property
-    def model(self):
+    def _model(self):
         return AutoModel.from_pretrained(self.model_name).to(self.device)
 
     def decode2tokenized(self, embeddings: List[np.ndarray]) -> List[int]:

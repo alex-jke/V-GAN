@@ -14,24 +14,27 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     @property
     @abstractmethod
-    def model_name(self):
+    def _model_name(self):
         pass
 
 
     @property
     @abstractmethod
-    def tokenizer(self):
+    def _tokenizer(self):
         pass
 
     @property
     @abstractmethod
-    def model(self):
+    def _model(self):
         pass
 
 
     def __init__(self):
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
+        self.tokenizer = self._tokenizer
+        self.model = self._model.to(self.device)
+        self.model_name = self._model_name
 
     def tokenize(self, data: str) -> List[int]:
         tokenized = self.tokenizer(data, return_tensors='pt')
@@ -104,7 +107,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
             ui = ConsoleUserInterface()
             with torch.no_grad():
-                ui.display("Embedding...")
+                #ui.display("Embedding...")
                 for (i, partial_review) in enumerate(data):
                     ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
