@@ -108,8 +108,8 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     p_value_df = vmmd.check_if_myopic(x_data=first_part.cpu().numpy(), count=1000)
     print(dataset.name, "\n", p_value_df, "\n")
 
-    for eval in evals:
-        print(eval)
+    #for eval in evals:
+        #print(eval)
 
     visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs)
     return vmmd
@@ -141,7 +141,7 @@ def all_fake():
 
 if __name__ == '__main__':
     version = '0.42_embedding'
-    generator = GeneratorUpperSoftmax
+    generator = GeneratorSigmoid
     model = GPT2()
     penalty = 0
     wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 8_0, "penalty_weight": penalty,
@@ -156,8 +156,8 @@ if __name__ == '__main__':
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 100, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
-                       "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.5, "momentum": 0.9,
+    emotions_params = {"model": model, "epochs": 500, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
+                       "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.05, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": True, "use_embedding": True,
                        "yield_epochs": 20} #contains 96.000 datapoints
 
@@ -178,15 +178,4 @@ if __name__ == '__main__':
     #print(model.detokenize([151646]))
 
     #print(subspaces)
-    ui = ConsoleUserInterface()
-    for i in range(30):
-        tokenized = model.tokenize("This is an example sentence to test the tokenizer. As an example, this sentence should also be a bit longer. "
-                                   "As for some reason the tokinizer is not working as expected, we need to test it. It has gotten pretty slow for some reason.")
-        ui.update(f"tokenized {i}")
-
-    for i in range(30):
-        tokenizer = model.tokenizer
-        detokenized = [tokenizer.decode([token]) for token in tokenized]
-        ui.update(f"detokenized {i}")
-
     # dataset = EmotionDataset()

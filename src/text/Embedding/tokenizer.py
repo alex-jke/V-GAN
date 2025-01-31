@@ -14,5 +14,5 @@ class Tokenizer(ABC):
 
     @property
     @abstractmethod
-    def padding_token(self) -> int:
+    def _padding_token(self) -> int:
         pass

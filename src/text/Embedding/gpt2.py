@@ -75,8 +75,9 @@ class GPT2(HuggingModel):
             return cached
 
         token_vec = torch.tensor(tokenized).to(self.device)
+        attention_mask = torch.not_equal(token_vec, self.padding_token)
         with torch.no_grad():
-            outputs = self.model(token_vec)
+            outputs = self.model(token_vec, attention_mask=attention_mask)
             embeddings = outputs.last_hidden_state.T
 
         self.embedded_cache[key] = embeddings

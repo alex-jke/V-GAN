@@ -227,7 +227,8 @@ class VMMD:
                 # batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch,1/batch.shape[1])*torch.mean(batch,dim=0), alphas=[0.1]) #Upper softmax
                 #batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss
                 # todo: normalize the batch before passing it.
-                batch_loss = loss_function(masked * batch, batch, fake_subspaces)
+                masked_batch = masked * batch
+                batch_loss = loss_function(masked_batch, batch, fake_subspaces)
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
                 optimizer.step()
