@@ -61,7 +61,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
              penalty_weight: float = 0.0, generator= None, yield_epochs = 100, use_embedding= False):
     sequence_length = min(sequence_length, model.max_token_length())
 
-    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, max_samples=samples)
+    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, max_samples=samples, min_samples=samples)
 
     # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
     data: Tensor = dataset_tokenizer.get_tokenized_training_data()
@@ -141,7 +141,7 @@ def all_fake():
 if __name__ == '__main__':
     version = '0.42_embedding'
     generator = GeneratorUpperSoftmax
-    model = DeepSeek1B()
+    model = GPT2()
     penalty = 0
     wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 8_0, "penalty_weight": penalty,
                    "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,

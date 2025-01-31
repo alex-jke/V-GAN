@@ -8,7 +8,7 @@ class ConsoleUserInterface(UserInterface):
         print(data)
 
     def update(self, data: str):
-        sys.stdout.write(data)
+        sys.stdout.write("\r"+ data)
         sys.stdout.flush()
 
 

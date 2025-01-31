@@ -14,7 +14,7 @@ from ..dataset.dataset import Dataset
 
 
 class DatasetTokenizer:
-    def __init__(self, tokenizer: Tokenizer, dataset: Dataset, max_samples: int = None):
+    def __init__(self, tokenizer: Tokenizer, dataset: Dataset, max_samples: int = None, min_samples: int = None):
         self.tokenizer = tokenizer
         self.tokenizer_name = tokenizer.__class__.__name__
         self.dataset_train_name = "train"
@@ -24,6 +24,7 @@ class DatasetTokenizer:
         self.path = Path(os.getcwd()) / 'text' / 'resources' / dataset.name
         self.base_file_name = f"{self.tokenizer_name}_{dataset.name}"
         self.max_samples = max_samples
+        self.min_samples = min_samples
         self.dataset_path = self.path / f"{self.base_file_name}_{self.dataset_train_name}{self.file_extension}_{self.max_samples}"
         #self.sequence_length = sequence_length
         #self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
@@ -41,8 +42,8 @@ class DatasetTokenizer:
         :return: A three-dimensional tensor of the tokenized training data. The Tensor is of shape
         (max_rows, sequence_length, max_samples / sequence_length + 1).
         """
-        if class_label is None:
-            class_label = self.dataset.get_possible_labels()[0]
+        #if class_label is None:
+            #class_label = self.dataset.get_possible_labels()[0]
 
         return self._get_tensor(self.dataset_train_name, class_label=class_label)
 
@@ -97,7 +98,12 @@ class DatasetTokenizer:
             self._create_tokenized_dataset(dataset_name)
         y_label = self.dataset.y_label_name
         df = pd.read_csv(self.dataset_path)
+        if class_label is None:
+            return df
         filtered_df = df[df[y_label] == class_label].reset_index(drop=True)
+        if self.min_samples is not None and len(filtered_df) < self.min_samples:
+            self.max_samples = self.max_samples +(self.min_samples - len(filtered_df)) * (self.max_samples / len(filtered_df))
+            return self._get_dataset(dataset_name, class_label)
         return filtered_df
 
 
@@ -170,7 +176,8 @@ class DatasetTokenizer:
             return [x + [self.padding_token] * (self.sequence_length - len(x))] \
                 if len(x) < self.sequence_length else [x[:self.sequence_length]] + vec_transform(
                 x[self.sequence_length:])"""
-            transformed = x[:-1] + ", " + str([self.padding_token] * (max_token_length - len(x)))[1:]
+            tokens_amount = len(x.split(","))
+            transformed = x[:-1] + ", " + str([self.padding_token] * (max_token_length - tokens_amount))[1:]
             #print("transformed", transformed)
             return transformed
 
