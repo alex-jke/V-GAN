@@ -32,10 +32,10 @@ class DeepSeek1B(HuggingModel):
         pass
 
     def fully_embed_tokenized(self, tokenized: Tensor) -> Tensor:
-        key = hash(tokenized)
-        cached = self.embedded_cache.get(key)
-        if cached is not None:
-            return cached
+        #key = hash(tokenized)
+        #cached = self.embedded_cache.get(key)
+        #if cached is not None:
+        #    return cached
 
         token_vec = torch.tensor(tokenized).to(self.device)
 
@@ -45,7 +45,7 @@ class DeepSeek1B(HuggingModel):
             self.ui.update("done | ")
             embeddings = outputs.last_hidden_state.T
 
-        self.embedded_cache[key] = embeddings
+        #self.embedded_cache[key] = embeddings
         return embeddings
 
     def aggregateEmbeddings(self, embeddings: Tensor):
