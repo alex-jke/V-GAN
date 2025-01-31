@@ -13,6 +13,9 @@ class Visualizer(ABC):
     """
 
     def __init__(self, model, tokenized_data: Tensor, tokenizer: Tokenizer, path: str):
+        self.set_params(model, tokenized_data, tokenizer, path)
+
+    def set_params(self, model, tokenized_data: Tensor, tokenizer: Tokenizer, path: str):
         self.num_subspaces = 500
         # Tensor is of the shape (num_subspaces, sequence_length)
         self.model = model

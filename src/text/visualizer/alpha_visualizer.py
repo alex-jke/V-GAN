@@ -17,9 +17,9 @@ class AlphaVisualizer(Visualizer):
     Class for visualizing data with using the alpha in text.
     """
 
-    def __init__(self, amount_samples):
-        self.amount_samples = amount_samples
+    def __init__(self, model, tokenized_data, tokenizer, path):
         self.samples = []
+        super().__init__(model, tokenized_data, tokenizer, path)
 
     def export_html(self, sample_data: Tensor, subspaces: Tensor, folder_appendix: str, epoch: int = -1, normalize:bool = True):
         padding_token = self.tokenizer.detokenize([self.tokenizer.padding_token])
