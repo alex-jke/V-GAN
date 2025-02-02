@@ -150,7 +150,7 @@ if __name__ == '__main__':
     #generator = GeneratorSigmoid
     models = [Bert(), GPT2(), DeepSeek1B()]
     generators = [GeneratorUpperSoftmax, GeneratorSigmoid]
-    version = '0.453_paper_params'
+    version = '0.454_paper_params'
     penalty = 0.5
     weight_decay = 0.04  # 0.005
     lr = 0.007

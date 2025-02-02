@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple, List
 
 import numpy as np
+from pandas import Series
 from sklearn.model_selection import train_test_split
 
 
@@ -11,12 +12,12 @@ class Dataset(ABC):
         self.imported = False
         self.x_train = self.y_train = self.x_test = self.y_test = None
 
-    def get_training_data(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_training_data(self) -> Tuple[Series, Series]:
         if not self.imported:
             self._import_data()
         return self.x_train, self.y_train
 
-    def get_testing_data(self) -> Tuple[np.ndarray, np.ndarray]:
+    def get_testing_data(self) -> Tuple[Series, Series]:
         if not self.imported:
             self._import_data()
         return self.x_test, self.y_test

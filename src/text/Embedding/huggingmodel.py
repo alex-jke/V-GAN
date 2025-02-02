@@ -3,6 +3,7 @@ from typing import List, Callable
 
 import numpy as np
 import torch
+from numpy import ndarray
 from torch import Tensor
 
 from .embedding import Embedding
@@ -44,6 +45,13 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         input_list = input_ids.tolist()
         first_elem = input_list[0]
         return first_elem
+
+    def tokenize_batch(self, data: List[str]) -> Tensor:
+        tokenized_list = [Tensor(self.tokenize(d)) for d in data]
+        max_length = max([len(t) for t in tokenized_list])
+        padded_token_list = [torch.nn.functional.pad(t, (0, max_length - len(t)), value=self.padding_token) for t in tokenized_list]
+        tensor = torch.stack(padded_token_list)
+        return tensor
 
     def detokenize(self, words: List[int]) -> str:
         return self.tokenizer.decode(words)

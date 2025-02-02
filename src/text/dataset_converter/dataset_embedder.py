@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Callable
 
 import pandas as pd
+import torch
 from torch import Tensor
 
 from src.text.Embedding.huggingmodel import HuggingModel
@@ -17,6 +18,8 @@ class DatasetEmbedder:
         self.ui = ConsoleUserInterface()
         self.dir_path = Path(os.getcwd()) / 'text' / 'resources' / dataset.name / "embedding"
         self.path = self.dir_path / f"{model._model_name}.csv"
+        self.device = torch.device('cuda:0' if torch.cuda.is_available(
+        ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
     def embed(self, tokenized_dataset: Tensor) -> Tensor:
         """
@@ -31,7 +34,7 @@ class DatasetEmbedder:
 
     def _get_embedded_tensor(self, tokenized_dataset: Tensor) -> Tensor:
         embedded_dataframe: pd.DataFrame = self._get_embedded_dataframe(tokenized_dataset)
-        tensor: Tensor = Tensor(embedded_dataframe.to_numpy())
+        tensor: Tensor = Tensor(embedded_dataframe.to_numpy()).to(self.device)
         return tensor
 
 
@@ -53,7 +56,7 @@ class DatasetEmbedder:
             remainder_dataset = tokenized_dataset[i:end_index]
             embedded = self.embedding_function(remainder_dataset)
             embedded_tensor = embedded.permute(1, 0)
-            embedded_dataset = pd.DataFrame(embedded_tensor.numpy())
+            embedded_dataset = pd.DataFrame(embedded_tensor.cpu().numpy())
             embedded_dataset.to_csv(self.path, index=False, mode='a', header=False)
 
         df = pd.read_csv(self.path)

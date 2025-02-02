@@ -32,6 +32,7 @@ class DatasetTokenizer:
         self.padding_token = self.tokenizer.padding_token
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
+        self.class_label = None
 
     def get_tokenized_training_data(self, class_label: str = None) -> Tensor:
         """
@@ -56,6 +57,7 @@ class DatasetTokenizer:
 
         if class_label is None:
             class_label = self.dataset.get_possible_labels()[0]
+            self.class_label = class_label
 
         return self._get_tensor(self.dataset_test_name, class_label=class_label)
 
@@ -141,7 +143,7 @@ class DatasetTokenizer:
 
             if i == 0:
                 if not os.path.exists(path):
-                    os.makedirs(self.path)
+                    os.makedirs(self.path, exist_ok=True)
                 tokenized_df.to_csv(path, index=False)
             else:
                 tokenized_df.to_csv(path, mode='a', header=False, index=False)
