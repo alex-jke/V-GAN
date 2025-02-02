@@ -68,7 +68,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, max_samples=samples, min_samples=samples)
     data: Tensor = dataset_tokenizer.get_tokenized_training_data()
 
-    dataset_embedder = DatasetEmbedder(embedding_function=embedding)
+    dataset_embedder = DatasetEmbedder(dataset=dataset, model=model)
     # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
     #first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
     if not use_embedding:
@@ -78,7 +78,8 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
                 first_part = first_part.float()
         first_part_normalized = first_part #torch.nn.functional.normalize(first_part, p=2, dim=1)
     else:
-        first_part_normalized = dataset_embedder.embed(data)
+        first_part = dataset_embedder.embed(data)
+        first_part_normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
         embedding = lambda x: x
 
 
@@ -162,7 +163,7 @@ if __name__ == '__main__':
                    "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
                    "version": version, "train": False}
 
-    emotions_params = {"model": model, "epochs": 1000, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
+    emotions_params = {"model": model, "epochs": 100, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
                        "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.05, "momentum": 0.9,
                        "weight_decay": 0.005, "version": version, "train": True, "use_embedding": True,
                        "yield_epochs": 100} #contains 96.000 datapoints
