@@ -23,7 +23,8 @@ from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.synthetic_dataset import SyntheticDataset
 from text.dataset.wikipedia_slim import WikipediaPeopleDataset
-from text.tokenizer.dataset_tokenizer import DatasetTokenizer
+from text.dataset_converter.dataset_embedder import DatasetEmbedder
+from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 from text.visualizer.alpha_visualizer import AlphaVisualizer
 from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
 from text.visualizer.random_alpha_visualizer import RandomAlphaVisualizer
@@ -45,10 +46,10 @@ def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: s
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
 
     average_alpha_visualizer = AverageAlphaVisualizer(**params)
-    average_alpha_visualizer.visualize(samples=5, epoch=epoch)
+    #average_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
     random_alpha_visualizer = RandomAlphaVisualizer(**params)
-    random_alpha_visualizer.visualize(samples=5, epoch=epoch)
+    #random_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
     value_visualizer = ValueVisualizer(**params)
     value_visualizer.visualize(samples=0, epoch=epoch) #todo: maybe plot sample subspaces with probability as transparency
@@ -62,19 +63,24 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
              penalty_weight: float = 0.0, generator= None, yield_epochs = 100, use_embedding= False):
     sequence_length = min(sequence_length, model.max_token_length())
 
-    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, max_samples=samples, min_samples=samples)
-
-    # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
-    data: Tensor = dataset_tokenizer.get_tokenized_training_data()
-    #first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
-    first_part = data[:, :sequence_length]
-    first_part_cpu = first_part.cpu()
-    first_part = first_part.to(device)
-    if device.type == 'cuda':
-        first_part = first_part.float()
-    first_part_normalized = first_part #torch.nn.functional.normalize(first_part, p=2, dim=1)
-
     embedding = model.get_embedding_fun() if use_embedding else lambda x: x
+
+    dataset_tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, max_samples=samples, min_samples=samples)
+    data: Tensor = dataset_tokenizer.get_tokenized_training_data()
+
+    dataset_embedder = DatasetEmbedder(embedding_function=embedding)
+    # Tensor is of the shape (max_rows, max_length / sequence_length + 1, sequence_length)
+    #first_part = data[:, 0, :]  # Convert to (max_rows, sequence_length) by taking first sequence_length tokens.
+    if not use_embedding:
+        first_part = data[:, :sequence_length]
+        first_part = first_part.to(device)
+        if device.type == 'cuda':
+                first_part = first_part.float()
+        first_part_normalized = first_part #torch.nn.functional.normalize(first_part, p=2, dim=1)
+    else:
+        first_part_normalized = dataset_embedder.embed(data)
+        embedding = lambda x: x
+
 
     path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}",
                         f"{dataset.name}_{sequence_length}_vmmd_{model.model_name}"
@@ -109,7 +115,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     print(dataset.name, "\n", p_value_df, "\n")
 
     #for eval in evals:
-        #print(eval)
+    #print(eval)
 
     visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs)
     return vmmd
@@ -140,7 +146,7 @@ def all_fake():
 
 
 if __name__ == '__main__':
-    version = '0.42_embedding'
+    version = '0.43_embedding'
     generator = GeneratorSigmoid
     model = GPT2()
     penalty = 0

@@ -37,10 +37,9 @@ class DatasetTokenizer:
         """
         Get the tokenized training data. If the tokenized data does not exist, it will be created. This way, the
         tokenized data is only created once.
-        :param max_rows: The maximum number of rows to return. If -1, all rows are returned.
         :param class_label: The class label to return. If None, the first class label is returned.
-        :return: A three-dimensional tensor of the tokenized training data. The Tensor is of shape
-        (max_rows, sequence_length, max_samples / sequence_length + 1).
+        :return: A two-dimensional tensor of the tokenized training data. The Tensor is of shape
+        (max_rows, max_sample_length).
         """
         #if class_label is None:
             #class_label = self.dataset.get_possible_labels()[0]
@@ -50,9 +49,7 @@ class DatasetTokenizer:
     def get_tokenized_testing_data(self, class_label: str = None) -> Tensor:
         """
         Get the tokenized testing data. If the tokenized data does not exist, it will be created. This way, the
-        tokenized data is only created once.
-        :param max_rows: The maximum number of rows to return. If -1, all rows are returned.
-        :param class_label: The class label to return. If None, the first class label is returned.
+        tokenized data is only created once.        :param class_label: The class label to return. If None, the first class label is returned.
         :return: A three-dimensional tensor of the tokenized testing data. The Tensor is of shape
         (max_rows, max_samples / sequence_length + 1, sequence_length).
         """
