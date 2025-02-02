@@ -222,7 +222,6 @@ class VMMD:
                 # OPTIMIZATION STEP#
                 optimizer.zero_grad()
                 fake_subspaces = generator(noise_tensor)
-                masked = torch.greater_equal(fake_subspaces, 0.5) * 1
                 # batch_loss = loss_function(batch, fake_subspaces*batch + (fake_subspaces == 1e-08)*torch.mean(batch,dim=0), alphas=[0.1]) #Upper_lower_softmax
                 # batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch,1/batch.shape[1])*torch.mean(batch,dim=0), alphas=[0.1]) #Upper softmax
                 #batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss

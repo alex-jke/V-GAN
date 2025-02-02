@@ -94,7 +94,7 @@ class VGAN_od(VGAN):
 class VMMD_od(VMMD):
     def __init__(self, batch_size=500, epochs=30, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04,
                  path_to_directory=None, penalty_weight=0.0, generator=None):
-        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory, penalty_weight, generator=generator)
+        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory, weight = penalty_weight, generator=generator)
         self.x_data = None
         self.recommended_bandwidth_name = "recommended bandwidth"
 
@@ -127,7 +127,7 @@ class VMMD_od(VMMD):
         Returns:
             pd.DataFrame: DataFrame containing the p.value of the test with all the different bandwidths.
         """
-        assert count <= x_data.shape[0], "Selected 'count' is greater than the number of samples in the dataset"
+        assert count <= x_data.shape[0], f"Selected 'count': {count} is greater than the number of samples {x_data.shape[0]} in the dataset"
         results = []
 
         x_data = normalize(x_data, axis=0)

@@ -70,11 +70,11 @@ class GPT2(HuggingModel):
         :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
         """
         #todo: check if this makes sense.
-        tokenized = tokenized.int()
-        key = hash(tokenized)
-        cached = self.embedded_cache.get(key)
-        if cached is not None:
-            return cached
+        #tokenized = tokenized.int()
+        #key = hash(tokenized)
+        #cached = self.embedded_cache.get(key)
+        #if cached is not None:
+            #return cached
 
         token_vec = torch.tensor(tokenized).to(self.device)
         attention_mask = torch.not_equal(token_vec, self.padding_token)
@@ -82,7 +82,7 @@ class GPT2(HuggingModel):
             outputs = self.model(token_vec, attention_mask=attention_mask)
             embeddings = outputs.last_hidden_state.T
 
-        self.embedded_cache[key] = embeddings
+        #self.embedded_cache[key] = embeddings
         return embeddings
 
     def tokens_to_vecs(self, token: List[int]) -> Tensor:

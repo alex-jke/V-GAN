@@ -98,7 +98,8 @@ class Bert(HuggingModel):
         token_size = len(self.tokenizer)
 
     def aggregateEmbeddings(self, embeddings: Tensor):
-        return embeddings[0]
+        cls_token = embeddings[:,:,0]
+        return cls_token
 
 
     def fully_embed_tokenized(self, tokenized: Tensor) -> Tensor:
@@ -108,12 +109,15 @@ class Bert(HuggingModel):
         :param tokenized: A list of token indices.
         :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
         """
-        key = hash(tokenized)
-        cached = self.embedded_cache.get(key)
-        if cached is not None:
-            return cached
+        #key = hash(tokenized)
+        #cached = self.embedded_cache.get(key)
+        #if cached is not None:
+            #return cached
+
+        maximum_length = 512
 
         token_vec = torch.tensor(tokenized).unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
+        token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
         #attention_mask = torch.ones_like(token_vec).to(self.device)
         # if a token is a padding token, set the mask to 0
         attention_mask = torch.not_equal(token_vec, self.padding_token)
@@ -122,7 +126,7 @@ class Bert(HuggingModel):
             # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension
             embeddings = outputs.last_hidden_state.T[:, :, 0]
 
-        self.embedded_cache[key] = embeddings
+        #self.embedded_cache[key] = embeddings
         return embeddings
 
 

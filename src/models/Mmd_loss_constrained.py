@@ -94,7 +94,7 @@ class MMDLossConstrained(nn.Module):
     Constrained loss by the number of features selected
     '''
 
-    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3, middle_penalty = 0):
+    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3, middle_penalty = None):
         super().__init__()
         self.kernel = kernel
         self.weight = weight
@@ -102,6 +102,8 @@ class MMDLossConstrained(nn.Module):
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
         self.subspace_penalty = subspace_amount_penalty
         self.middle_penalty = middle_penalty
+        if self.middle_penalty is None:
+            self.middle_penalty = weight
 
     def get_loss(self, X, Y, U, apply_penalty = True):
         #K = self.kernel(torch.vstack([X, Y]))

@@ -76,14 +76,14 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
         first_part = first_part.to(device)
         if device.type == 'cuda':
                 first_part = first_part.float()
-        first_part_normalized = first_part #torch.nn.functional.normalize(first_part, p=2, dim=1)
+        first_part_normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
     else:
         first_part = dataset_embedder.embed(data)
         first_part_normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
         embedding = lambda x: x
 
 
-    path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}",
+    path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}", generator_name_map[generator],
                         f"{dataset.name}_{sequence_length}_vmmd_{model.model_name}"
                         f"_{epochs}_{penalty_weight}")
     export_path = path
@@ -145,41 +145,50 @@ def all_fake():
     #p_value = vmmd.check_if_myopic(vmmd.X_data.cpu().numpy(), count=1000).iloc[0, 0]
 
 
-
+generator_name_map = {GeneratorSigmoid: "sigmoid", GeneratorUpperSoftmax: "upper_softmax"}
 if __name__ == '__main__':
-    version = '0.43_embedding'
-    generator = GeneratorSigmoid
-    model = GPT2()
-    penalty = 0
-    wiki_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 8_0, "penalty_weight": penalty,
-                   "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": 0.25, "momentum": 0.9,
-                   "weight_decay": 0.005, "version": version, "train": False} #contains 34.000 datapoints
+    #generator = GeneratorSigmoid
+    models = [Bert(), GPT2(), DeepSeek1B()]
+    generators = [GeneratorUpperSoftmax, GeneratorSigmoid]
+    version = '0.453_paper_params'
+    penalty = 0.5
+    weight_decay = 0.04  # 0.005
+    lr = 0.007
+    momentum = 0.99  # 0.9
+    use_embedding = True
+    for generator in generators:
+        for model in models:
 
-    ag_news_params = {"model": model, "epochs": 600, "batch_size": 64, "samples": 1024, "penalty_weight": penalty,
-                      "sequence_length": 50, "dataset": AGNews(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
-                      "version": version, "train": False, "use_embedding": True, "yield_epochs": 10} # contains 4000 datapoints
+            wiki_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+                           "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": lr, "momentum": momentum,
+                           "weight_decay": weight_decay, "version": version, "train": False, "yield_epochs": 100,
+                           "generator": generator, "use_embedding": use_embedding} #contains 34.000 datapoints
 
-    imdb_params = {"model": model, "epochs": 1000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                   "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.5, "momentum": 0.9, "weight_decay": 0.005,
-                   "version": version, "train": False}
+            ag_news_params = {"model": model, "epochs": 2000, "batch_size": 256, "samples": 1024, "penalty_weight": penalty,
+                              "sequence_length": 50, "dataset": AGNews(), "lr": lr, "momentum": momentum, "weight_decay": weight_decay,
+                              "version": version, "train": False, "use_embedding": use_embedding, "yield_epochs": 100, "generator": generator} # contains 4000 datapoints
 
-    emotions_params = {"model": model, "epochs": 100, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
-                       "sequence_length": 50, "dataset": EmotionDataset(), "lr": 0.05, "momentum": 0.9,
-                       "weight_decay": 0.005, "version": version, "train": True, "use_embedding": True,
-                       "yield_epochs": 100} #contains 96.000 datapoints
+            imdb_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+                           "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.007, "momentum": momentum, "weight_decay": weight_decay,
+                           "version": version, "train": False, "generator": generator, "use_embedding": use_embedding}
 
-    simple_params = {"model": GPT2ExtraSubspaces(3), "epochs": 4000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                       "sequence_length": 6 ,
-                        "dataset": SimpleDataset(samples=["an example", "two words", "another one"], amount_samples=3000),
-                        "generator": generator,
-                        "lr": 0.01, "momentum": 0.9,
-                       "weight_decay": 0.005, "version": version, "train": False}
+            emotions_params = {"model": model, "epochs": 2000, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
+                               "sequence_length": 50, "dataset": EmotionDataset(), "lr": lr, "momentum": momentum,
+                               "weight_decay": weight_decay, "version": version, "train": True, "use_embedding": use_embedding,
+                               "yield_epochs": 100, "generator": generator} #contains 96.000 datapoints
 
-    #pipeline(**ag_news_params)
-    pipeline(**emotions_params)
-    #pipeline(**imdb_params)
-    #pipeline(**wiki_params)
-    #pipeline(**simple_params)
+            simple_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
+                             "sequence_length": 6 , "use_embedding": use_embedding,
+                             "dataset": SimpleDataset(samples=["an example", "two words", "another one"], amount_samples=3000),
+                             "generator": generator,
+                             "lr": lr, "momentum": momentum,
+                             "weight_decay": weight_decay, "version": version, "train": False}
+
+            pipeline(**emotions_params)
+            pipeline(**ag_news_params)
+            pipeline(**imdb_params)
+            pipeline(**wiki_params)
+            pipeline(**simple_params)
     #all_fake()
 
     #print(model.detokenize([151646]))

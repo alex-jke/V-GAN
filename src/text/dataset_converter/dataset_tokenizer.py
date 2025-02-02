@@ -140,6 +140,8 @@ class DatasetTokenizer:
             tokenized_df = pd.DataFrame({self.dataset.x_label_name: newly_tokenized})
 
             if i == 0:
+                if not os.path.exists(path):
+                    os.makedirs(self.path)
                 tokenized_df.to_csv(path, index=False)
             else:
                 tokenized_df.to_csv(path, mode='a', header=False, index=False)

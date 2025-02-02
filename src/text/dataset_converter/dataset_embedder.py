@@ -56,5 +56,6 @@ class DatasetEmbedder:
             embedded_dataset = pd.DataFrame(embedded_tensor.numpy())
             embedded_dataset.to_csv(self.path, index=False, mode='a', header=False)
 
-        return pd.read_csv(self.path)
+        df = pd.read_csv(self.path)
+        return df
 
