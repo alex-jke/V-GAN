@@ -26,7 +26,8 @@ class Bert(HuggingModel):
 
     @property
     def _model(self):
-        return AutoModel.from_pretrained(self._model_name).to(self.device)
+        return AutoModel.from_pretrained(self._model_name,
+                                         use_cache=False).to(self.device)
 
     def decode2tokenized(self, embeddings: List[np.ndarray]) -> List[int]:
         """
@@ -115,13 +116,14 @@ class Bert(HuggingModel):
             #return cached
 
         maximum_length = 512
-
-        token_vec = torch.tensor(tokenized).unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
-        token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
-        #attention_mask = torch.ones_like(token_vec).to(self.device)
-        # if a token is a padding token, set the mask to 0
-        attention_mask = torch.not_equal(token_vec, self.padding_token)
         with torch.no_grad():
+            tokenized = tokenized.clone().detach().to(self.device)
+            token_vec = tokenized.unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
+            token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
+            #attention_mask = torch.ones_like(token_vec).to(self.device)
+            # if a token is a padding token, set the mask to 0
+            attention_mask = torch.not_equal(token_vec, self.padding_token)
+
             outputs = self.model(token_vec, attention_mask=attention_mask)
             # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension
             embeddings = outputs.last_hidden_state.T[:, :, 0]

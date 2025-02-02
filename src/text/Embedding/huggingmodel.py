@@ -116,14 +116,15 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                     embedded: Tensor = self.fully_embed_tokenized(partial_review.int()) #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension
                     unsqueezed = embedded.unsqueeze(1)
+                    aggregated = self.aggregateEmbeddings(embeddings = unsqueezed)
 
                     try:
-                        embeddings = torch.cat((embeddings, unsqueezed), dim=1)
+                        embeddings = torch.cat((embeddings, aggregated), dim=1)
                     except:
-                        print(embeddings.shape, unsqueezed.shape)
+                        print(embeddings.shape, aggregated.shape)
                         raise
-            aggregated = self.aggregateEmbeddings(embeddings = embeddings)
-            return aggregated
+                #aggregated = self.aggregateEmbeddings(embeddings = embeddings)
+            return embeddings
         return embedding
 
     def max_token_length(self) -> int:

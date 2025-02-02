@@ -1,5 +1,6 @@
 import unittest
 
+import torch
 from torch import Tensor
 
 from text.Embedding.bert import Bert
@@ -23,14 +24,15 @@ class MyTestCase(unittest.TestCase):
                                                                f"{embedded.shape}, expected: {dimensions[i]}, 1")
 
     def test_imdb(self):
-        model = Bert()
-        dataset = IMBdDataset()
-        tokenizer = DatasetTokenizer(model, dataset, max_samples=2000)
-        tokenized_data = tokenizer.get_tokenized_training_data().to(model.device)
-        embedding_fun = model.get_embedding_fun()
-        embedded = embedding_fun(tokenized_data)
-        self.assertEqual(embedded.shape[0], 2000, f"Model {model.model_name} has wrong dimension: "
-                                                   f"{embedded.shape}, expected: 2000, 768")
+        with torch.no_grad():
+            model = Bert()
+            dataset = IMBdDataset()
+            tokenizer = DatasetTokenizer(model, dataset, max_samples=2000)
+            tokenized_data = tokenizer.get_tokenized_training_data().to(model.device)
+            embedding_fun = model.get_embedding_fun()
+            embedded = embedding_fun(tokenized_data)
+            self.assertEqual(embedded.shape[1], 2000, f"Model {model.model_name} has wrong dimension: "
+                                                       f"{embedded.shape}, expected: 2000, 768")
 
 if __name__ == '__main__':
     unittest.main()
