@@ -51,7 +51,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         max_length = max([len(t) for t in tokenized_list])
         padded_token_list = [torch.nn.functional.pad(t, (0, max_length - len(t)), value=self.padding_token) for t in tokenized_list]
         tensor = torch.stack(padded_token_list)
-        return tensor
+        return tensor.int()
 
     def detokenize(self, words: List[int]) -> str:
         return self.tokenizer.decode(words)
