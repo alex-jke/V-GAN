@@ -42,14 +42,15 @@ device = torch.device('cuda:0' if torch.cuda.is_available(
 subspaces = []
 
 
-def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = -1):
+def visualize(tokenized_data: Tensor, tokenizer: Tokenizer, model: VMMD, path: str, epoch: int = -1, text_visualization: bool = True):
     params = {"model": model, "tokenized_data": tokenized_data, "tokenizer": tokenizer, "path": path}
 
-    average_alpha_visualizer = AverageAlphaVisualizer(**params)
-    #average_alpha_visualizer.visualize(samples=5, epoch=epoch)
+    if text_visualization:
+        average_alpha_visualizer = AverageAlphaVisualizer(**params)
+        average_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
-    random_alpha_visualizer = RandomAlphaVisualizer(**params)
-    #random_alpha_visualizer.visualize(samples=5, epoch=epoch)
+        random_alpha_visualizer = RandomAlphaVisualizer(**params)
+        random_alpha_visualizer.visualize(samples=5, epoch=epoch)
 
     value_visualizer = ValueVisualizer(**params)
     value_visualizer.visualize(samples=0, epoch=epoch) #todo: maybe plot sample subspaces with probability as transparency
@@ -107,7 +108,8 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
             timer.measure(epoch=epoch)
             timer.pause()
 
-            visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch)
+            visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epoch,
+                      text_visualization= not use_embedding)
             eval = model_eval(vmmd, first_part_normalized.cpu())
             evals.append(eval)
             subspaces.append(eval)
@@ -180,7 +182,7 @@ if __name__ == '__main__':
                                   "version": version, "train": False, "use_embedding": use_embedding, "yield_epochs": 400, "generator": generator} # contains 4000 datapoints
 
 
-                imdb_params = {"model": model, "epochs": 4000, "batch_size": 250, "samples": 2000, "penalty_weight": penalty,
+                imdb_params = {"model": model, "epochs": 6000, "batch_size": 500, "samples": 2500, "penalty_weight": penalty,
                                "sequence_length": 300, "dataset": IMBdDataset(), "lr": lr, "momentum": momentum, "weight_decay": weight_decay,
                                "version": version, "train": False, "generator": generator, "use_embedding": use_embedding, "yield_epochs": 200}
 
@@ -191,13 +193,13 @@ if __name__ == '__main__':
                                  "generator": generator,
                                  "lr": lr, "momentum": momentum,
                                  "weight_decay": weight_decay, "version": version, "train": False}
-                #if not skip_first:
-                pipeline(**emotions_params)
-                skip_first = False
-                pipeline(**ag_news_params)
+                if not skip_first:
+                    pipeline(**emotions_params)
+                    pipeline(**ag_news_params)
                 pipeline(**imdb_params)
                 pipeline(**wiki_params)
                 pipeline(**simple_params)
+                skip_first = False
     #all_fake()
 
     #print(model.detokenize([151646]))

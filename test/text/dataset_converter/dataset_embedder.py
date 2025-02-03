@@ -25,9 +25,9 @@ class DatasetEmbedderTest(unittest.TestCase):
 
     def test_imdb(self):
         with torch.no_grad():
-            model = Bert()
+            model = DeepSeek1B()
             dataset = IMBdDataset()
-            tokenizer = DatasetTokenizer(model, dataset, max_samples=2000)
+            tokenizer = DatasetTokenizer(model, dataset, max_samples=100)
             tokenized_data = tokenizer.get_tokenized_training_data().to(model.device)
             embedding_fun = model.get_embedding_fun()
             embedded = embedding_fun(tokenized_data)

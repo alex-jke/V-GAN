@@ -50,7 +50,7 @@ class DeepSeek1B(HuggingModel):
     def aggregateEmbeddings(self, embeddings: Tensor):
         return torch.mean(embeddings, dim=1)
 
-    def get_embedding_fun(self, chunk_size = 100) -> Callable[[Tensor], Tensor]:
+    def get_embedding_fun(self, chunk_size = 50) -> Callable[[Tensor], Tensor]:
 
         def embedding(tensor: Tensor) -> Tensor:
             chunks = torch.split(tensor, chunk_size, dim=0)
@@ -58,7 +58,7 @@ class DeepSeek1B(HuggingModel):
             for chunk in chunks:
                 fully_embedded = self.fully_embed_tokenized(chunk)
                 aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
-                aggregated = torch.cat((aggregated, aggregated_chunk), dim=0)
+                aggregated = torch.cat((aggregated, aggregated_chunk), dim=1)
             return aggregated
         return embedding
 
