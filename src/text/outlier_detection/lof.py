@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 from transformers.models.cvt.convert_cvt_original_pytorch_checkpoint_to_pytorch import embeddings
@@ -20,6 +20,7 @@ class LOF(OutlierDetectionModel, ABC):
         self.x_test = None
         self.y_test: List[int] = None
         self.y_train: int = None
+        self.predicted_inlier = self.actual_inlier = None
         self.lof = LocalOutlierFactor()
         super().__init__(dataset=dataset, model=model, train_size=train_size, test_size=test_size)
         self.prepareDataset()
@@ -29,12 +30,14 @@ class LOF(OutlierDetectionModel, ABC):
 
     def predict(self):
         predictions = self.lof.fit_predict(self.x_test.cpu())
-        predicted_inlier = [1 if x == 1 else 0 for x in predictions]
-        actual_inlier = [1 if x == self.y_train else 0 for x in self.y_test]
-        correct_predictions = [1 if x == y else 0 for x, y in zip(predicted_inlier, actual_inlier)]
-        return (f"Method: {self.name}\n"
-                f"\tcorrect: {sum(correct_predictions) / len(correct_predictions) * 100}%\n"
-                f"\tpercentage inlier: {sum(actual_inlier) / len(actual_inlier) * 100}%")
+        self.predicted_inlier = [1 if x == 1 else 0 for x in predictions]
+        self.actual_inlier = [1 if x == self.y_train else 0 for x in self.y_test]
+
+    def _get_predictions_expected(self) -> Tuple[List[int], List[int]]:
+        if self.predicted_inlier is None or self.actual_inlier is None:
+            self.predict()
+        return self.predicted_inlier, self.actual_inlier
+
 
     @abstractmethod
     def prepareDataset(self):
@@ -66,7 +69,10 @@ class EmbeddingLOF(LOF):
         return f"EmbeddingLOF_{self.model.model_name}_{self.dataset.name}"
 
 if __name__ == '__main__':
+    current_time = pd.Timestamp.now()
     lof = EmbeddingLOF(dataset=EmotionDataset(), model=GPT2(), train_size=1000, test_size=100)
     lof.train()
-    print(lof.predict())
+    lof.predict()
+    print(lof.evaluate())
+    print("Time taken: ", pd.Timestamp.now() - current_time)
     #print(lof.y_test.tolist())
