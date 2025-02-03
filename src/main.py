@@ -84,6 +84,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
 
 
     path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}", generator_name_map[generator],
+                        model._model_name,
                         f"{dataset.name}_{sequence_length}_vmmd_{model.model_name}"
                         f"_{epochs}_{penalty_weight}")
     export_path = path
@@ -156,6 +157,7 @@ if __name__ == '__main__':
     lr = 0.007
     momentum = 0.99  # 0.9
     use_embedding = True
+    skip_first = True
     for generator in generators:
         for model in models:
 
@@ -183,12 +185,13 @@ if __name__ == '__main__':
                              "generator": generator,
                              "lr": lr, "momentum": momentum,
                              "weight_decay": weight_decay, "version": version, "train": False}
-
-            pipeline(**emotions_params)
-            pipeline(**ag_news_params)
-            pipeline(**imdb_params)
-            pipeline(**wiki_params)
-            pipeline(**simple_params)
+            if not skip_first:
+                pipeline(**emotions_params)
+                pipeline(**ag_news_params)
+                pipeline(**imdb_params)
+                pipeline(**wiki_params)
+                pipeline(**simple_params)
+            skip_first = False
     #all_fake()
 
     #print(model.detokenize([151646]))
