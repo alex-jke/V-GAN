@@ -10,7 +10,7 @@ from text.dataset.imdb import IMBdDataset
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 
-class MyTestCase(unittest.TestCase):
+class DatasetEmbedderTest(unittest.TestCase):
     sample_text = "Hello world"
     def test_embedding_dim(self):
         models = [GPT2(), Bert(), DeepSeek1B()]
