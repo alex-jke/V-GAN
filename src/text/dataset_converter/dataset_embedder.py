@@ -52,6 +52,7 @@ class DatasetEmbedder:
 
         step_size = 500
         for i in range(start_index, len(tokenized_dataset), 500):
+            self.ui.update(data=f"Creating embedded dataset... {i}/{len(tokenized_dataset)}")
             end_index = i + step_size if i + step_size < len(tokenized_dataset) else len(tokenized_dataset)
             remainder_dataset = tokenized_dataset[i:end_index]
             embedded = self.embedding_function(remainder_dataset)

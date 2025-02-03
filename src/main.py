@@ -76,14 +76,15 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
         first_part = first_part.to(device)
         if device.type == 'cuda':
                 first_part = first_part.float()
-        first_part_normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
+        # normalization does not make sense for vectors of tokens.
+        first_part_normalized = first_part#torch.nn.functional.normalize(first_part, p=2, dim=1)
     else:
         first_part = dataset_embedder.embed(data)
         first_part_normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
         embedding = lambda x: x
 
-
-    path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}", generator_name_map[generator],
+    embedding_str = "embedding" if use_embedding else "token"
+    path = os.path.join(os.getcwd(), 'text', 'experiments', f"{version}", embedding_str, generator_name_map[generator],
                         model._model_name,
                         f"{dataset.name}_{sequence_length}_vmmd_{model.model_name}"
                         f"_{epochs}_{penalty_weight}")
@@ -149,49 +150,48 @@ def all_fake():
 generator_name_map = {GeneratorSigmoid: "sigmoid", GeneratorUpperSoftmax: "upper_softmax"}
 if __name__ == '__main__':
     #generator = GeneratorSigmoid
-    models = [Bert(), GPT2(), DeepSeek1B()]
+    models = [DeepSeek1B(), GPT2(), Bert()]
     generators = [GeneratorUpperSoftmax, GeneratorSigmoid]
-    version = '0.454_paper_params'
+    version = '0.455'
     penalty = 0.5
     weight_decay = 0.04  # 0.005
     lr = 0.007
     momentum = 0.99  # 0.9
-    use_embedding = True
+    use_embedding = [True, False]
     skip_first = True
-    for generator in generators:
-        for model in models:
+    for use_embedding in use_embedding:
+        for generator in generators:
+            for model in models:
 
-            wiki_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                           "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": lr, "momentum": momentum,
-                           "weight_decay": weight_decay, "version": version, "train": False, "yield_epochs": 100,
-                           "generator": generator, "use_embedding": use_embedding} #contains 34.000 datapoints
+                wiki_params = {"model": model, "epochs": 5000, "batch_size": 500, "samples": 10000, "penalty_weight": penalty,
+                               "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": lr, "momentum": momentum,
+                               "weight_decay": weight_decay, "version": version, "train": False, "yield_epochs": 100,
+                               "generator": generator, "use_embedding": use_embedding} #contains 34.000 datapoints
 
-            ag_news_params = {"model": model, "epochs": 2000, "batch_size": 256, "samples": 1024, "penalty_weight": penalty,
-                              "sequence_length": 50, "dataset": AGNews(), "lr": lr, "momentum": momentum, "weight_decay": weight_decay,
-                              "version": version, "train": False, "use_embedding": use_embedding, "yield_epochs": 100, "generator": generator} # contains 4000 datapoints
+                ag_news_params = {"model": model, "epochs": 8000, "batch_size": 256, "samples": 1024, "penalty_weight": penalty,
+                                  "sequence_length": 50, "dataset": AGNews(), "lr": lr, "momentum": momentum, "weight_decay": weight_decay,
+                                  "version": version, "train": False, "use_embedding": use_embedding, "yield_epochs": 100, "generator": generator} # contains 4000 datapoints
 
-            imdb_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                           "sequence_length": 300, "dataset": IMBdDataset(), "lr": 0.007, "momentum": momentum, "weight_decay": weight_decay,
-                           "version": version, "train": False, "generator": generator, "use_embedding": use_embedding}
+                imdb_params = {"model": model, "epochs": 4000, "batch_size": 250, "samples": 2000, "penalty_weight": penalty,
+                               "sequence_length": 300, "dataset": IMBdDataset(), "lr": lr, "momentum": momentum, "weight_decay": weight_decay,
+                               "version": version, "train": False, "generator": generator, "use_embedding": use_embedding}
 
-            emotions_params = {"model": model, "epochs": 2000, "batch_size": 100, "samples": 2000, "penalty_weight": penalty,
-                               "sequence_length": 50, "dataset": EmotionDataset(), "lr": lr, "momentum": momentum,
-                               "weight_decay": weight_decay, "version": version, "train": True, "use_embedding": use_embedding,
-                               "yield_epochs": 100, "generator": generator} #contains 96.000 datapoints
+                emotions_params = {"model": model, "epochs": 4000, "batch_size": 100, "samples": 20000, "penalty_weight": penalty,
+                                   "sequence_length": 50, "dataset": EmotionDataset(), "lr": lr, "momentum": momentum,
+                                   "weight_decay": weight_decay, "version": version, "train": False, "use_embedding": use_embedding,
+                                   "yield_epochs": 100, "generator": generator} #contains 96.000 datapoints
 
-            simple_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 2000, "penalty_weight": penalty,
-                             "sequence_length": 6 , "use_embedding": use_embedding,
-                             "dataset": SimpleDataset(samples=["an example", "two words", "another one"], amount_samples=3000),
-                             "generator": generator,
-                             "lr": lr, "momentum": momentum,
-                             "weight_decay": weight_decay, "version": version, "train": False}
-            if not skip_first:
+                simple_params = {"model": model, "epochs": 4000, "batch_size": 500, "samples": 10_000, "penalty_weight": penalty,
+                                 "sequence_length": 6 , "use_embedding": use_embedding,
+                                 "dataset": SimpleDataset(samples=["an example", "two words", "another one"], amount_samples=30_000),
+                                 "generator": generator,
+                                 "lr": lr, "momentum": momentum,
+                                 "weight_decay": weight_decay, "version": version, "train": False}
                 pipeline(**emotions_params)
                 pipeline(**ag_news_params)
                 pipeline(**imdb_params)
                 pipeline(**wiki_params)
                 pipeline(**simple_params)
-            skip_first = False
     #all_fake()
 
     #print(model.detokenize([151646]))

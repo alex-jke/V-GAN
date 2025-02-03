@@ -40,9 +40,9 @@ class DeepSeek1B(HuggingModel):
         token_vec = torch.tensor(tokenized).to(self.device)
 
         with torch.no_grad():
-            self.ui.update("embedding...")
+            #self.ui.update("embedding...")
             outputs = self.model.model(token_vec)
-            self.ui.update("done | ")
+            #self.ui.update("done | ")
             embeddings = outputs.last_hidden_state.T
 
         #self.embedded_cache[key] = embeddings
