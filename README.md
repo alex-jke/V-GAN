@@ -16,7 +16,7 @@ To install, simply use the requirements.txt file
 Additionally, if you plan to train VGAN, you should also install the torch-two-sample package: 
 
 ```
-git clone git@github.com:josipd/torch-two-sample.git
+git clone https://github.com/josipd/torch-two-sample.git
 cd torch-two-sample
 pip install .
 ```

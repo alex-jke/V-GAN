@@ -124,3 +124,26 @@ class FakeGenerator(nn.Module):
         subspaces = subspaces[torch.randperm(subspaces.size()[0])]
         return subspaces
 
+
+class BinaryStraightThrough(nn.Module):
+    def __init__(self, threshold=0.5):
+        super().__init__()
+        self.threshold = threshold
+
+    def forward(self, x):
+        # Forward: Threshold to 0/1
+        x_binary = (x > self.threshold).int()
+        # Backward: Pass gradients through sigmoid
+        x_binary = x_binary + (x - x.detach())
+        return x_binary
+
+
+class GeneratorSigmoidSTE(GeneratorSigmoid):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size)
+        self.binarize = BinaryStraightThrough()
+
+    def forward(self, input):
+        x = super().forward(input)
+        return self.binarize(x)
+

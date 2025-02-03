@@ -133,3 +133,12 @@ class MMDLossConstrained(nn.Module):
 
     def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):
         return self.get_loss(X, Y, U, apply_penalty)
+
+if __name__ == "__main__":
+    # Two identical Gaussians should have MMD ≈ 0
+    mmd = MMDLossConstrained(weight=0.0)
+    X = torch.randn(1000, 1536).to(mmd.device)
+    Y = torch.randn(1000, 1536).to(mmd.device)
+    loss = mmd(X, Y, U=torch.ones(1000, 1536).to(mmd.device))
+    assert loss.item() < 1e-4, f"MMD implementation is flawed: loss between identical Gaussians: {loss.item()}"
+

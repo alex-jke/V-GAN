@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 import pandas as pd
-from transformers.models.cvt.convert_cvt_original_pytorch_checkpoint_to_pytorch import embeddings
 
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel

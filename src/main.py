@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 from torch import Tensor
 
-from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax
+from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE
 from modules.od_module import VMMD_od
 from text.Embedding.bert import Bert
 from text.Embedding.gpt2 import GPT2
@@ -147,12 +147,13 @@ def all_fake():
     #p_value = vmmd.check_if_myopic(vmmd.X_data.cpu().numpy(), count=1000).iloc[0, 0]
 
 
-generator_name_map = {GeneratorSigmoid: "sigmoid", GeneratorUpperSoftmax: "upper_softmax"}
+generator_name_map = {GeneratorSigmoid: "sigmoid", GeneratorUpperSoftmax: "upper_softmax",
+                      GeneratorSigmoidSTE: "sigmoid_ste"}
 if __name__ == '__main__':
     #generator = GeneratorSigmoid
     models = [DeepSeek1B(), GPT2(), Bert()]
-    generators = [GeneratorUpperSoftmax, GeneratorSigmoid]
-    version = '0.455'
+    generators = [GeneratorSigmoidSTE, GeneratorUpperSoftmax, GeneratorSigmoid]
+    version = '0.457'
     penalty = 0.5
     weight_decay = 0.04  # 0.005
     lr = 0.007
@@ -162,6 +163,12 @@ if __name__ == '__main__':
     for use_embedding in use_embedding:
         for generator in generators:
             for model in models:
+                emotions_params = {"model": model, "epochs": 2000, "batch_size": 500, "samples": 20000,
+                                   "penalty_weight": penalty,
+                                   "sequence_length": 50, "dataset": EmotionDataset(), "lr": lr / 3, "momentum": momentum,
+                                   "weight_decay": weight_decay, "version": version, "train": False,
+                                   "use_embedding": use_embedding,
+                                   "yield_epochs": 100, "generator": generator}  # contains 96.000 datapoints
 
                 wiki_params = {"model": model, "epochs": 5000, "batch_size": 500, "samples": 10000, "penalty_weight": penalty,
                                "sequence_length": 1000, "dataset": WikipediaPeopleDataset(), "lr": lr, "momentum": momentum,
@@ -170,16 +177,13 @@ if __name__ == '__main__':
 
                 ag_news_params = {"model": model, "epochs": 8000, "batch_size": 256, "samples": 1024, "penalty_weight": penalty,
                                   "sequence_length": 50, "dataset": AGNews(), "lr": lr, "momentum": momentum, "weight_decay": weight_decay,
-                                  "version": version, "train": False, "use_embedding": use_embedding, "yield_epochs": 100, "generator": generator} # contains 4000 datapoints
+                                  "version": version, "train": False, "use_embedding": use_embedding, "yield_epochs": 400, "generator": generator} # contains 4000 datapoints
+
 
                 imdb_params = {"model": model, "epochs": 4000, "batch_size": 250, "samples": 2000, "penalty_weight": penalty,
                                "sequence_length": 300, "dataset": IMBdDataset(), "lr": lr, "momentum": momentum, "weight_decay": weight_decay,
-                               "version": version, "train": False, "generator": generator, "use_embedding": use_embedding}
+                               "version": version, "train": False, "generator": generator, "use_embedding": use_embedding, "yield_epochs": 200}
 
-                emotions_params = {"model": model, "epochs": 4000, "batch_size": 100, "samples": 20000, "penalty_weight": penalty,
-                                   "sequence_length": 50, "dataset": EmotionDataset(), "lr": lr, "momentum": momentum,
-                                   "weight_decay": weight_decay, "version": version, "train": False, "use_embedding": use_embedding,
-                                   "yield_epochs": 100, "generator": generator} #contains 96.000 datapoints
 
                 simple_params = {"model": model, "epochs": 4000, "batch_size": 500, "samples": 10_000, "penalty_weight": penalty,
                                  "sequence_length": 6 , "use_embedding": use_embedding,
@@ -187,7 +191,9 @@ if __name__ == '__main__':
                                  "generator": generator,
                                  "lr": lr, "momentum": momentum,
                                  "weight_decay": weight_decay, "version": version, "train": False}
+                #if not skip_first:
                 pipeline(**emotions_params)
+                skip_first = False
                 pipeline(**ag_news_params)
                 pipeline(**imdb_params)
                 pipeline(**wiki_params)

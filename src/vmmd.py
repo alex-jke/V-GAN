@@ -7,6 +7,7 @@ from collections import defaultdict
 from matplotlib import pyplot
 
 from models.Generator import Generator, Generator_big
+
 import torch_two_sample as tts
 from models.Mmd_loss_constrained import MMDLossConstrained
 from models.Mmd_loss_constrained import RBF as RBFConstrained
