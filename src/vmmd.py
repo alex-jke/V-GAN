@@ -152,7 +152,11 @@ class VMMD:
 
         return generator
 
-    def fit(self, X: np.array, embedding = lambda x: x, yield_epochs: int = 100):
+    def fit(self, X: np.array):
+        for _ in self.yield_fit(X):
+            continue
+
+    def yield_fit(self, X: np.array, embedding = lambda x: x, yield_epochs: int = None):
         '''
         Fits the model to the data. The model is trained using the MMD loss function. The model is trained using the Adadelta optimizer.
         @param X: A two-dimensional numpy array with the data to be fitted.
@@ -237,7 +241,7 @@ class VMMD:
                     'cpu').detach().numpy())/batch_number
                 #print("finished batch")
 
-            if epoch % yield_epochs == 0:
+            if yield_epochs is not None and epoch % yield_epochs == 0:
                 self.generator = generator
                 yield epoch
 

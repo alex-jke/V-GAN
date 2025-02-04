@@ -92,7 +92,7 @@ class VGAN_od(VGAN):
 
 
 class VMMD_od(VMMD):
-    def __init__(self, batch_size=500, epochs=30, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04,
+    def __init__(self, batch_size=500, epochs=2000, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04,
                  path_to_directory=None, penalty_weight=0.0, generator=None):
         super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory, weight = penalty_weight, generator=generator)
         self.x_data = None
@@ -110,9 +110,13 @@ class VMMD_od(VMMD):
         self.subspaces = unique_subspaces
         self.proba = proba / proba.sum()
 
-    def fit(self, X, embedding=lambda x: x, yield_epochs=100):
+    def fit(self, X):
         self.x_data = X
-        for epoch in super().fit(X, embedding, yield_epochs):
+        super().fit(X)
+
+    def yield_fit(self, X, embedding=lambda x: x, yield_epochs=None):
+        self.x_data = X
+        for epoch in super().yield_fit(X, embedding, yield_epochs):
             yield epoch
 
     def check_if_myopic(self, x_data: np.array, bandwidth: Union[float, np.array] = 0.01, count=500) -> pd.DataFrame:

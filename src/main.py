@@ -104,7 +104,7 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
         #evals.append(model_eval(vmmd, first_part_cpu))
     else:
         timer = Timer(amount_epochs=epochs, export_path=export_path)
-        for epoch in vmmd.fit(X=first_part_normalized, yield_epochs= yield_epochs, embedding = embedding):
+        for epoch in vmmd.yield_fit(X=first_part_normalized, yield_epochs= yield_epochs, embedding = embedding):
             timer.measure(epoch=epoch)
             timer.pause()
 

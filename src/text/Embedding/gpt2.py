@@ -76,7 +76,7 @@ class GPT2(HuggingModel):
         #if cached is not None:
             #return cached
 
-        token_vec = torch.tensor(tokenized).to(self.device)
+        token_vec = tokenized.clone().detach().to(self.device)
         attention_mask = torch.not_equal(token_vec, self.padding_token)
         with torch.no_grad():
             outputs = self.model(token_vec, attention_mask=attention_mask)

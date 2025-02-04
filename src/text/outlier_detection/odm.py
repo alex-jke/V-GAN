@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+from time import time
 from typing import Tuple, List, Callable
 
 import pandas as pd
+import torch.nn.functional
 from torch import Tensor
 
 from text.Embedding.huggingmodel import HuggingModel
@@ -18,7 +20,7 @@ class OutlierDetectionModel(ABC):
     """
     Abstract class for outlier detection models. Specifically for one-class classification.
     """
-    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, inlier_label: int | None = None ):
+    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, inlier_label: int | None = None):
         self.dataset = dataset
         self.model = model
         self.train_size = train_size
@@ -27,6 +29,7 @@ class OutlierDetectionModel(ABC):
         if inlier_label is None:
             self.inlier_label = self.dataset.get_possible_labels()[0]
         self._x_test = self._y_test = self._x_train = self._y_train = None
+        self.device = self.model.device
 
     @abstractmethod
     def train(self):
@@ -41,7 +44,11 @@ class OutlierDetectionModel(ABC):
         pass
 
     @abstractmethod
-    def _get_predictions_expected(self) -> Tuple[List[int], List[int]]:
+    def _get_predictions(self) -> List[int]:
+        pass
+
+    @abstractmethod
+    def get_space(self):
         pass
 
     @property
@@ -68,10 +75,16 @@ class OutlierDetectionModel(ABC):
             raise ValueError(not_initizalied_error_msg)
         return self._y_test
 
+    def start_timer(self):
+        self.start_time = time()
+
+    def stop_timer(self):
+        self.time_elapsed = time() - self.start_time
 
     def evaluate(self):
         # Get predicted and actual labels
-        predicted_inlier, actual_inlier = self._get_predictions_expected()
+        predicted_inlier = self._get_predictions()
+        actual_inlier = [1 if x == self.inlier_label else 0 for x in self.y_test]
 
         # Calculate accuracy
         correct_predictions = [1 if x == y else 0 for x, y in zip(predicted_inlier, actual_inlier)]
@@ -81,6 +94,7 @@ class OutlierDetectionModel(ABC):
         true_positives = sum([1 if x == 1 and y == 1 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
         false_positives = sum([1 if x == 1 and y == 0 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
         false_negatives = sum([1 if x == 0 and y == 1 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
+        true_negatives = sum([1 if x == 0 and y == 0 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
 
         # Calculate recall and precision
         recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
@@ -93,19 +107,51 @@ class OutlierDetectionModel(ABC):
         percentage_inlier = sum(actual_inlier) / len(actual_inlier) * 100
         percentage_outlier = 100 - percentage_inlier
 
+        self.results = pd.DataFrame({
+            "actual": actual_inlier,
+            "predicted": predicted_inlier
+        })
+
+        metrics = pd.DataFrame({
+            "method": [self.name],
+            "space": [self.get_space()],
+            "accuracy": [accuracy],
+            "recall": [recall],
+            "precision": [precision],
+            "auc": [auc],
+            "percentage_inlier": [percentage_inlier],
+            "percentage_outlier": [percentage_outlier],
+            "true_positives": [true_positives],
+            "false_positives": [false_positives],
+            "false_negatives": [false_negatives],
+            "true_negatives": [true_negatives],
+            "total_samples": [len(actual_inlier)],
+            "time_taken": [self.time_elapsed]
+        })
+
         # Return evaluation metrics
-        return (f"Method: {self.name}\n"
-                f"\taccuracy: {accuracy * 100:.2f}%\n"
-                f"\trecall: {recall * 100:.2f}%\n"
-                f"\tprecision: {precision * 100:.2f}%\n"
-                f"\tauc: {auc:.4f}"
-                f"\tpercentage inlier: {percentage_inlier:.2f}%\n"
-                f"\tpercentage outlier: {percentage_outlier:.2f}%\n"
-                f"\ttrue positives: {true_positives}\n"
-                f"\tfalse positives: {false_positives}\n"
-                f"\tfalse negatives: {false_negatives}\n"
-                f"\tamount of samples: {len(actual_inlier)}"
-                )
+        print(f"Method: {self.name}\n"
+                f"{'='*40}\n"
+                f"  Space:              {self.get_space()}\n"
+                f"{'-'*40}\n"
+                f"  Accuracy:           {accuracy * 100:>7.2f}%\n"
+                f"  Recall:             {recall * 100:>7.2f}%\n"
+                f"  Precision:          {precision * 100:>7.2f}%\n"
+                f"  AUC:                {auc:>7.4f}\n"
+                f"{'-'*40}\n"
+                f"  Percentage Inlier:  {percentage_inlier:>7.2f}%\n"
+                f"  Percentage Outlier: {percentage_outlier:>7.2f}%\n"
+                f"{'-'*40}\n"
+                f"  True Positives:     {true_positives:>7}\n"
+                f"  False Positives:    {false_positives:>7}\n"
+                f"  False Negatives:    {false_negatives:>7}\n"
+                f"  True Negatives:     {true_negatives:>7}\n"
+                f"{'-'*40}\n"
+                f"  Total Samples:      {len(actual_inlier):>7}\n"
+                f"  Time Taken:         {self.time_elapsed:>7.2f} seconds\n"
+                f"{'='*40}")
+
+        return metrics
 
     def use_embedding(self) -> None:
         """Processes and embeds training and testing data.
@@ -126,10 +172,20 @@ class OutlierDetectionModel(ABC):
 
     def use_tokenized(self) -> None:
         """Sets the train and test data for the classification model to use the tokenized data."""
-        self._x_train, self._y_train = self._get_tokenized_with_labels(train=True)
-        self._x_test, self._y_test = self._get_tokenized_with_labels(train=False)
+        _x_train, self._y_train = self._get_tokenized_with_labels(train=True)
+        _x_test, self._y_test = self._get_tokenized_with_labels(train=False)
 
-    def _get_tokenized_with_labels(self, train: bool) -> Tuple[Tensor, pd.Series]:
+        train_length = _x_train.shape[1]
+        test_length = _x_test.shape[1]
+
+        pad_length = max(train_length, test_length)
+
+        self._x_train = torch.nn.functional.pad(_x_train, (0, pad_length - train_length), value=self.model.padding_token)
+        self._x_test = torch.nn.functional.pad(_x_test, (0, pad_length - test_length), value=self.model.padding_token)
+
+
+
+    def _get_tokenized_with_labels(self, train: bool) -> Tuple[Tensor, Tensor]:
         """
         Tokenizes data and returns both tokenized data and corresponding labels.
         Handles both training and test cases.
@@ -141,14 +197,15 @@ class OutlierDetectionModel(ABC):
             data, labels = self.dataset.get_testing_data()
             filtered_data, filtered_labels = self._process_testing_data(data, labels)
 
+        filtered_labels_tensor = Tensor(filtered_labels.tolist()).int().to(self.model.device)
         tokenized_data = self._filter_and_tokenize(filtered_data, self.train_size if train else self.test_size)
-        return tokenized_data, filtered_labels
+        return tokenized_data, filtered_labels_tensor
 
     def _process_training_data(self, data: pd.Series, labels: pd.Series) -> Tuple[pd.Series, pd.Series]:
         """Filters training data to samples matching the inlier label used for training. Thus, the Dataset
         now only contains inliers."""
         filtered_data = data[labels == self.inlier_label]
-        selected_label = pd.Series([self.inlier_label] * len(filtered_data))
+        selected_label = pd.Series([self.inlier_label] * self.test_size)
         return filtered_data, selected_label
 
     def _process_testing_data(self, data: pd.Series, labels: pd.Series) -> Tuple[pd.Series, pd.Series]:
