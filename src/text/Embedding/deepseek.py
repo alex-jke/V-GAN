@@ -36,7 +36,7 @@ class DeepSeek1B(HuggingModel):
         #cached = self.embedded_cache.get(key)
         #if cached is not None:
         #    return cached
-        token_vec = tokenized.clone().detach().to(self.device)
+        token_vec = tokenized.clone().detach().int().to(self.device)
         attention_mask = torch.not_equal(token_vec, self.padding_token)
 
         with torch.no_grad():
