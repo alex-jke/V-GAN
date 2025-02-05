@@ -57,7 +57,7 @@ def perform_experiment(dataset: Dataset, model: HuggingModel):
             result_df = pd.concat([result_df, od_model.evaluate(output_path)])
         except: #todo: find better solution
             error_df = pd.concat([error_df,
-                                  pd.DataFrame({"model": od_model.name})
+                                  pd.DataFrame({"model":[ od_model.name]})
                                   ])
     print(result_df)
     visualizer = ResultVisualizer(result_df, output_path)

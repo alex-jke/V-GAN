@@ -59,18 +59,21 @@ class VGAN_ODM(OutlierDetectionModel):
             #print("Main subspace found, removing other subspaces")
 
         # Project the dataset into each of the generated subspaces
-        projected_datasets = [self.project_dataset(train, subspace) for subspace in self.subspaces]
-        # Fit a detector on each of the projected datasets
-        self.detectors = [self._get_detector().fit(projected_dataset.cpu().numpy()) for projected_dataset in projected_datasets]
+        #projected_datasets = [self.project_dataset(train, subspace) for subspace in self.subspaces]
+        # Fit a detector on each of the projected datasets. To avoid memory issues, we fit the detectors one by one and project the dataset one by one
+        self.detectors = [self._get_detector().fit(self.project_dataset(train, subspace).cpu().numpy()) for subspace in self.subspaces]
 
     def predict(self):
         test = self.x_test.to(self.device)
-        projected_datasets = [self.project_dataset(test, subspace) for subspace in self.subspaces]
+        #projected_datasets = [self.project_dataset(test, subspace) for subspace in self.subspaces]
         # Predict on each of the projected test datasets
-        predictions =Tensor([detector.predict(projected_test.cpu().numpy()) for detector, projected_test in zip(self.detectors, projected_datasets)])
+        predictions =Tensor([detector.predict(self.project_dataset(test, subspace).cpu().numpy())
+                             for detector, subspace in zip(self.detectors, self.subspaces)])
         # Combine the predictions of each detector weighted by the probability of the subspace
         predictions_aggregated = (predictions.T * self.proba).sum(dim=1)
         self.predictions = predictions_aggregated.round().int().tolist()
+        del self.detectors
+        del self.subspaces
 
     def _get_name(self):
         return f"VGAN + {self.base_detector.__name__} + {self.space[0]}"
