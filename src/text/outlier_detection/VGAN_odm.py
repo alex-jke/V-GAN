@@ -72,8 +72,8 @@ class VGAN_ODM(OutlierDetectionModel):
         # Combine the predictions of each detector weighted by the probability of the subspace
         predictions_aggregated = (predictions.T * self.proba).sum(dim=1)
         self.predictions = predictions_aggregated.round().int().tolist()
-        del self.detectors
-        del self.subspaces
+        #del self.detectors
+        #del self.subspaces
 
     def _get_name(self):
         return f"VGAN + {self.base_detector.__name__} + {self.space[0]}"

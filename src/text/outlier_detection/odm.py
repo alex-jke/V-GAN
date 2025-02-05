@@ -190,8 +190,10 @@ class OutlierDetectionModel(ABC):
         self._y_test = y_test
 
         # Generate embeddings and reshape
-        self._x_train = self._generate_embeddings(tokenized_train, embedding_func)
-        self._x_test = self._generate_embeddings(tokenized_test, embedding_func)
+        #self._x_train = self._generate_embeddings(tokenized_train, embedding_func)
+        #self._x_test = self._generate_embeddings(tokenized_test, embedding_func)
+        self._x_train = embedding_func(tokenized_train)
+        self._x_test = embedding_func(tokenized_test)
 
     def use_tokenized(self) -> None:
         """Sets the train and test data for the classification model to use the tokenized data."""
@@ -240,7 +242,4 @@ class OutlierDetectionModel(ABC):
         filtered_data = data[:length]
         return self.model.tokenize_batch(filtered_data.tolist())
 
-    def _generate_embeddings(self, tokenized_data: Tensor, embedding_func: Callable[[Tensor], Tensor]) -> Tensor:
-        """Generates embeddings and adjusts tensor dimensions."""
-        return embedding_func(tokenized_data)
 

@@ -23,20 +23,20 @@ from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.trivial_odm import TrivialODM
 from text.visualizer.result_visualizer import ResultVisualizer
 
-def perform_experiment(dataset: Dataset, model: HuggingModel):
+def perform_experiment(dataset: Dataset, emb_model: HuggingModel):
     partial_params = {
         "dataset": dataset,
-        "model": model,
-        "train_size": 1000, #todo: add ability to not crash when chosen too large
-        "test_size": 100,
+        "model": emb_model,
+        "train_size": 200, #todo: add ability to not crash when chosen too large
+        "test_size": 10,
     }
     params = {**partial_params, **{"use_embedding": True}}
     bases = [pyod_LUNAR, pyod_ECOD, pyod_LOF]
     models: List[OutlierDetectionModel] = ([LOF(**params), LUNAR(**params), ECOD(**params)]
-                                           + [FeatureBagging(**partial_params, base_detector=base, use_embedding=True)
-                                              for base in bases]
-                                           + [FeatureBagging(**partial_params, base_detector=base, use_embedding=False)
-                                              for base in bases]
+                                           #+ [FeatureBagging(**partial_params, base_detector=base, use_embedding=True)
+                                            #  for base in bases]
+                                           #+ [FeatureBagging(**partial_params, base_detector=base, use_embedding=False)
+                                            #  for base in bases] #todo: there seems to be a memory leak in the feature bagging class.
                                            + [VGAN_ODM(**partial_params, base_detector=base, use_embedding=False) for
                                               base in bases]
                                            + [VGAN_ODM(**partial_params, base_detector=base, use_embedding=True) for
@@ -46,7 +46,7 @@ def perform_experiment(dataset: Dataset, model: HuggingModel):
 
     result_df = pd.DataFrame()
     dataset._import_data()
-    output_path = Path(os.getcwd()) / 'results' / 'outlier_detection_full' / dataset.name / model.model_name
+    output_path = Path(os.getcwd()) / 'results' / 'outlier_detection_noFB' / dataset.name / emb_model.model_name
     error_df = pd.DataFrame({"model": [], "error": []})
     for i, od_model in enumerate(models):
         try:
@@ -60,20 +60,25 @@ def perform_experiment(dataset: Dataset, model: HuggingModel):
                                   pd.DataFrame({"model":[ od_model.name],
                                                             "error": [str(e)]}) ])
         finally:
-            del od_model
+            #del od_model
+            continue
     print(result_df)
     visualizer = ResultVisualizer(result_df, output_path)
     columns = result_df.columns
     column_names = [column for column in columns if column != "method"]
     [visualizer.visualize(x_column="method", y_column=column) for column in column_names]
-    output_path.mkdir(parents=True, exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True) # If all models fail above still create a df containing the errors.
     result_df.to_csv(output_path / "results.csv", index=False)
     error_df.to_csv(output_path / "errors.csv", index=False)
 
 if __name__ == '__main__':
     datasets = [EmotionDataset(), IMBdDataset(), AGNews()]
     models = [GPT2(), Bert(), DeepSeek1B()]
-    for model in models:
+    skip = True
+    for embedding_model in models:
         for dataset in datasets:
-            perform_experiment(dataset=dataset, model=model)
+            if skip:
+                skip = False
+                continue
+            perform_experiment(dataset=dataset, emb_model=embedding_model)
 

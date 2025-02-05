@@ -20,7 +20,7 @@ class ResultVisualizer():
         plt.xticks(rotation=90)
         plt.title(f"{y_column} by {x_column}")
         plt.tight_layout()
-        path = self.output_dir / f"{y_column}_by_{x_column}.pdf"
+        path = self.output_dir / f"{y_column}_by_{x_column}.png"
         if not self.output_dir.exists():
             self.output_dir.mkdir(parents=True, exist_ok=True)
         plt.savefig(path)
