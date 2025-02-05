@@ -142,14 +142,15 @@ class OutlierDetectionModel(ABC):
             "recall": [recall],
             "precision": [precision],
             "auc": [auc],
+            "time_taken": [self.time_elapsed],
             "percentage_inlier": [percentage_inlier],
             "percentage_outlier": [percentage_outlier],
             "true_positives": [true_positives],
             "false_positives": [false_positives],
             "false_negatives": [false_negatives],
             "true_negatives": [true_negatives],
-            "total_samples": [len(actual_inlier)],
-            "time_taken": [self.time_elapsed]
+            "total_test_samples": [len(actual_inlier)],
+            "total_train_samples": [len(self.y_train)]
         })
 
         # Return evaluation metrics
