@@ -62,7 +62,10 @@ class VGAN_ODM(OutlierDetectionModel):
         # Project the dataset into each of the generated subspaces
         #projected_datasets = [self.project_dataset(train, subspace) for subspace in self.subspaces]
         # Fit a detector on each of the projected datasets. To avoid memory issues, we fit the detectors one by one and project the dataset one by one
-        self.detectors = [self._get_detector().fit(self.project_dataset(train, subspace).cpu().numpy()) for subspace in self.subspaces]
+        for subspace in self.subspaces:
+            detector = self._get_detector()
+            detector.fit(self.project_dataset(train, subspace).cpu().numpy())
+            self.detectors.append(detector)
 
     def predict(self):
         test = self.x_test.to(self.device)
