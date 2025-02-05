@@ -122,7 +122,8 @@ def pipeline(dataset: Dataset, model: HuggingModel, sequence_length: int, epochs
     #for eval in evals:
     #print(eval)
 
-    visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs)
+    visualize(tokenized_data=first_part, tokenizer=model, model=vmmd, path=export_path, epoch=epochs,
+              text_visualization= not use_embedding)
     return vmmd
 
 
@@ -155,12 +156,12 @@ if __name__ == '__main__':
     #generator = GeneratorSigmoid
     models = [DeepSeek1B(), GPT2(), Bert()]
     generators = [GeneratorSigmoidSTE, GeneratorUpperSoftmax, GeneratorSigmoid]
-    version = '0.457'
+    version = '0.458'
     penalty = 0.5
     weight_decay = 0.04  # 0.005
     lr = 0.007
     momentum = 0.99  # 0.9
-    use_embedding = [True, False]
+    use_embedding = [False]
     skip_first = True
     for use_embedding in use_embedding:
         for generator in generators:
@@ -196,8 +197,8 @@ if __name__ == '__main__':
                 if not skip_first:
                     pipeline(**emotions_params)
                     pipeline(**ag_news_params)
-                pipeline(**imdb_params)
-                pipeline(**wiki_params)
+                    pipeline(**imdb_params)
+                    pipeline(**wiki_params)
                 pipeline(**simple_params)
                 skip_first = False
     #all_fake()

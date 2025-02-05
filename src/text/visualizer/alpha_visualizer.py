@@ -51,7 +51,6 @@ class AlphaVisualizer(Visualizer):
         y_pos = 1  # Vertical position
         ui.update(f"Visualizing samples: ")
         for i in range(sample_data.size(0)):
-            ui.update(f"{i}, ")
             # print("Sample", i)
             int_list = [int(number) for number in sample_data[i].tolist()]
             # print("Original:", self.tokenizer.detokenize(int_list))
@@ -61,7 +60,7 @@ class AlphaVisualizer(Visualizer):
                 strings = []
                 for token in int_list:
                     if token != self.tokenizer.padding_token:
-                        strings.append(self.tokenizer.detokenize(token))
+                        strings.append(self.tokenizer.detokenize([token]))
                     else:
                         strings.append("_")
                 self.samples.append(strings)

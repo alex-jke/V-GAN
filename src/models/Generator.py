@@ -66,9 +66,9 @@ class Generator_big(nn.Module):
         layers += [self.get_layer(amount_layers, last=True)]
         self.main = nn.Sequential(*layers)
 
-    def get_layer(self, layer: int, last=False):
-        input_size = round(pow(self.increase, layer - 1) * self.latent_size)
-        output_size = round(pow(self.increase, layer) * self.latent_size)
+    def get_layer(self, layer_num: int, last=False):
+        input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+        output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
 
         layer = nn.Sequential(
             nn.Linear(input_size, output_size),
@@ -81,7 +81,7 @@ class Generator_big(nn.Module):
             self.final_activation_function
             #nn.Sigmoid()
         )
-
+        #todo: check that the layers are created correctly.
         return last_layer if last else layer
 
     def forward(self, input):
