@@ -23,7 +23,7 @@ from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.trivial_odm import TrivialODM
 from text.visualizer.result_visualizer import ResultVisualizer
 
-def perform_experiment(dataset: Dataset, model: HuggingModel):
+def perform_experiment(dataset: Dataset, model: HuggingModel, skip_error=True):
     partial_params = {
         "dataset": dataset,
         "model": model,
@@ -56,6 +56,8 @@ def perform_experiment(dataset: Dataset, model: HuggingModel):
             od_model.stop_timer()
             result_df = pd.concat([result_df, od_model.evaluate(output_path)])
         except Exception as e: #todo: find better solution
+            if not skip_error:
+                raise e
             error_df = pd.concat([error_df,
                                   pd.DataFrame({"model":[ od_model.name],
                                                             "error": [str(e)]}) ])

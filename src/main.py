@@ -194,13 +194,13 @@ if __name__ == '__main__':
                                  "generator": generator,
                                  "lr": lr, "momentum": momentum,
                                  "weight_decay": weight_decay, "version": version, "train": False}
-                if not skip_first:
-                    pipeline(**emotions_params)
-                    pipeline(**ag_news_params)
-                    pipeline(**imdb_params)
-                    pipeline(**wiki_params)
+                #if not skip_first:
+                #pipeline(**emotions_params)
+                #pipeline(**ag_news_params)
+                #pipeline(**imdb_params)
+                #pipeline(**wiki_params)
                 pipeline(**simple_params)
-                skip_first = False
+                #skip_first = False
     #all_fake()
 
     #print(model.detokenize([151646]))

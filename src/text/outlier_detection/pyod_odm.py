@@ -17,9 +17,9 @@ from text.outlier_detection.odm import OutlierDetectionModel
 class PyODM(OutlierDetectionModel, ABC):
     def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, use_embedding = True):
         self.space = "Embedding" if use_embedding else "Tokenized"
-        self.od_model = self._get_model()
         self.initializing_fun = self.use_embedding if use_embedding else self.use_tokenized
         super().__init__(dataset, model, train_size, test_size)
+        self.od_model = self._get_model()
 
     def train(self):
         self.initializing_fun()
@@ -102,7 +102,7 @@ class EmbeddingBaseDetector(BaseDetector):
         super().__init__()
 
     def fit(self, X: ndarray, y=None):
-        self._estimator = self.base_detector()()
+        self._estimator = self.base_detector()(contamination = self.contamination)
         embedded = self._embed(X)
         self._estimator.fit(embedded, y)
         self.decision_scores_ = self._estimator.decision_scores_
