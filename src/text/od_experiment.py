@@ -47,7 +47,7 @@ def perform_experiment(dataset: Dataset, model: HuggingModel):
     result_df = pd.DataFrame()
     dataset._import_data()
     output_path = Path(os.getcwd()) / 'results' / 'outlier_detection_full' / dataset.name / model.model_name
-    error_df = pd.DataFrame({"model": []})
+    error_df = pd.DataFrame({"model": [], "error": []})
     for i, od_model in enumerate(models):
         try:
             od_model.start_timer()
@@ -55,10 +55,10 @@ def perform_experiment(dataset: Dataset, model: HuggingModel):
             od_model.predict()
             od_model.stop_timer()
             result_df = pd.concat([result_df, od_model.evaluate(output_path)])
-        except: #todo: find better solution
+        except Exception as e: #todo: find better solution
             error_df = pd.concat([error_df,
-                                  pd.DataFrame({"model":[ od_model.name]})
-                                  ])
+                                  pd.DataFrame({"model":[ od_model.name],
+                                                            "error": [str(e)]}) ])
         finally:
             del od_model
     print(result_df)
