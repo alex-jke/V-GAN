@@ -49,6 +49,7 @@ def perform_experiment(dataset: Dataset, emb_model: HuggingModel, skip_error=Tru
     output_path = Path(os.getcwd()) / 'results' / 'outlier_detection_noFB' / dataset.name / emb_model.model_name
     error_df = pd.DataFrame({"model": [], "error": []})
     for i, od_model in enumerate(models):
+        print(f"testing mode: {od_model.name}")
         try:
             od_model.start_timer()
             od_model.train()
@@ -76,7 +77,7 @@ def perform_experiment(dataset: Dataset, emb_model: HuggingModel, skip_error=Tru
 if __name__ == '__main__':
     datasets = [EmotionDataset(), IMBdDataset(), AGNews()]
     models = [GPT2(), Bert(), DeepSeek1B()]
-    for embedding_model in models:
-        for dataset in datasets:
+    for dataset in datasets:
+        for embedding_model in models:
             perform_experiment(dataset=dataset, emb_model=embedding_model)
 
