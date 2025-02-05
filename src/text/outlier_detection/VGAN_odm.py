@@ -1,31 +1,44 @@
+from pathlib import Path
 from typing import Tuple, List, Type
 
 import numpy as np
+import pandas as pd
 from pyod.models.base import BaseDetector
 from pyod.models.lof import LOF
 from pyod.models.lunar import LUNAR
 from torch import Tensor
 
+import main
+from models.Generator import GeneratorSigmoidSTE
 from modules.od_module import VMMD_od
 
 from text.Embedding.gpt2 import GPT2
 from text.dataset.SimpleDataset import SimpleDataset
 from text.dataset.emotions import EmotionDataset
 from text.outlier_detection.odm import OutlierDetectionModel
+from text.outlier_detection.pyod_odm import EmbeddingBaseDetector
 from vmmd import VMMD
 
 
 class VGAN_ODM(OutlierDetectionModel):
 
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, use_embedding=False):
-        self.vgan = VMMD(epochs=400, weight=0.1, lr=0.5)
-        self.number_of_subspaces = 500
+        self.space = "Embedding" if use_embedding else "Tokenized"
+        self.model = model
+        self.vgan = VMMD_od(epochs=2000, penalty_weight=0.5, generator=GeneratorSigmoidSTE)
+        self.number_of_subspaces = 100
         self.base_detector: Type[BaseDetector] = base_detector
         if base_detector is None:
             self.base_detector = LUNAR
+
         self.detectors: List[BaseDetector] = []
         self.init_dataset = self.use_embedding if use_embedding else self.use_tokenized
         super().__init__(dataset, model, train_size, test_size, inlier_label)
+
+    def _get_detector(self) -> BaseDetector:
+        if not self.use_embedding:
+            return EmbeddingBaseDetector(self.model, lambda: self.base_detector)
+        return self.base_detector()
 
     def train(self):
         self.init_dataset()
@@ -37,10 +50,18 @@ class VGAN_ODM(OutlierDetectionModel):
         self.subspaces = Tensor(unique_subspaces).to(self.device)
         self.proba = proba / proba.sum()
 
+        # If one subspace has probabilities over 0.5, it decides the inlier label
+        # To improve runtime we thus can remove the other subspaces
+        main_subspace_exits = (self.proba > 0.5).sum() > 0
+        if main_subspace_exits:
+            self.subspaces = self.subspaces[self.proba > 0.5]
+            self.proba = self.proba[self.proba > 0.5]
+            #print("Main subspace found, removing other subspaces")
+
         # Project the dataset into each of the generated subspaces
         projected_datasets = [self.project_dataset(train, subspace) for subspace in self.subspaces]
         # Fit a detector on each of the projected datasets
-        self.detectors = [self.base_detector().fit(projected_dataset.cpu().numpy()) for projected_dataset in projected_datasets]
+        self.detectors = [self._get_detector().fit(projected_dataset.cpu().numpy()) for projected_dataset in projected_datasets]
 
     def predict(self):
         test = self.x_test.to(self.device)
@@ -52,13 +73,19 @@ class VGAN_ODM(OutlierDetectionModel):
         self.predictions = predictions_aggregated.round().int().tolist()
 
     def _get_name(self):
-        return f"VGAN + {self.base_detector.__name__}"
+        return f"VGAN + {self.base_detector.__name__} + {self.space[0]}"
 
     def _get_predictions(self) -> List[int]:
         return self.predictions
 
     def get_space(self):
-        return "Tokenized"
+        return self.space
+
+    def evaluate(self, output_path: Path = None) -> pd.DataFrame:
+        output_path = output_path / self._get_name()
+        main.visualize(tokenized_data=self.x_test, tokenizer = self.model, model=self.vgan, path=str(output_path), text_visualization=not self.use_embedding())
+        self.vgan.model_snapshot(path_to_directory=output_path, )
+        return super().evaluate(output_path=output_path)
 
     def project_dataset(self, dataset: Tensor, subspace: Tensor) -> Tensor:
         """

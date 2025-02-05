@@ -14,7 +14,7 @@ from src.text.dataset.dataset import Dataset
 
 class DatasetEmbedder:
     def __init__(self, dataset: Dataset, model=HuggingModel):
-        self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun()
+        self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun(batch_first=True)
         self.ui = ConsoleUserInterface()
         self.dir_path = Path(os.getcwd()) / 'text' / 'resources' / dataset.name / "embedding"
         self.path = self.dir_path / f"{model._model_name}.csv"
@@ -56,8 +56,8 @@ class DatasetEmbedder:
             end_index = i + step_size if i + step_size < len(tokenized_dataset) else len(tokenized_dataset)
             remainder_dataset = tokenized_dataset[i:end_index]
             embedded = self.embedding_function(remainder_dataset)
-            embedded_tensor = embedded.permute(1, 0)
-            embedded_dataset = pd.DataFrame(embedded_tensor.cpu().numpy())
+            #embedded_tensor = embedded.permute(1, 0)
+            embedded_dataset = pd.DataFrame(embedded.cpu().numpy())
             embedded_dataset.to_csv(self.path, index=False, mode='a', header=False)
 
         df = pd.read_csv(self.path)

@@ -1,4 +1,5 @@
 import os
+import warnings
 from datetime import datetime
 from pathlib import Path
 
@@ -131,7 +132,10 @@ class VMMD_od(VMMD):
         Returns:
             pd.DataFrame: DataFrame containing the p.value of the test with all the different bandwidths.
         """
-        assert count <= x_data.shape[0], f"Selected 'count': {count} is greater than the number of samples {x_data.shape[0]} in the dataset"
+        #assert count <= x_data.shape[0], f"Selected 'count': {count} is greater than the number of samples {x_data.shape[0]} in the dataset"
+        if count > x_data.shape[0]:
+            warnings.warn(f"Selected 'count': {count} is greater than the number of samples {x_data.shape[0]} in the dataset. Setting count to {x_data.shape[0]}. This might lead to unexpected results.")
+            count = x_data.shape[0]
         results = []
 
         x_data = normalize(x_data, axis=0)

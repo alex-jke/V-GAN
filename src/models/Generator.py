@@ -92,8 +92,8 @@ class GeneratorUpperSoftmax(Generator_big):
         super().__init__(latent_size, img_size, upper_softmax())
 
 class GeneratorSigmoid(Generator_big):
-    def __init__(self, latenz_size, img_size):
-        super().__init__(latenz_size, img_size, nn.Sigmoid())
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, nn.Sigmoid())
 
 import torch
 import torch.nn as nn

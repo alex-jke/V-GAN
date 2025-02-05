@@ -106,7 +106,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         aggregated = embeddings.mean(dim=-1)
         return aggregated
 
-    def get_embedding_fun(self) -> Callable[[Tensor], Tensor]:
+    def get_embedding_fun(self, batch_first = False) -> Callable[[Tensor], Tensor]:
         def embedding(data: Tensor) -> Tensor:
             """
             This method takes a tensor of tokenized datapoints and returns the embeddings.
@@ -132,6 +132,8 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                         print(embeddings.shape, aggregated.shape)
                         raise
                 #aggregated = self.aggregateEmbeddings(embeddings = embeddings)
+            if batch_first:
+                return embeddings.T
             return embeddings
         return embedding
 

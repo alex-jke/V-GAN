@@ -11,10 +11,12 @@ from .dataset import Dataset
 class IMBdDataset(Dataset):
 
     def get_possible_labels(self) -> list:
-        return ["positive", "negative"]
+        #return ["positive", "negative"]
+        return [1, 0]
 
     def _import_data(self):
         data = pd.read_csv("hf://datasets/scikit-learn/imdb/IMDB Dataset.csv")
+        data[self.y_label_name] = np.where(data["sentiment"] == "positive", 1, 0)
         self.split(data)
 
     @property

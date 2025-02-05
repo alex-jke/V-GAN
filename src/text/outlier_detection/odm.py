@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from time import time
 from typing import Tuple, List, Callable
 
@@ -81,7 +82,29 @@ class OutlierDetectionModel(ABC):
     def stop_timer(self):
         self.time_elapsed = time() - self.start_time
 
-    def evaluate(self):
+    def evaluate(self, output_path: Path = None) -> pd.DataFrame:
+        """
+        Evaluate the performance of a predictive model against a labeled test dataset.
+
+        This method computes various evaluation metrics for the model including accuracy,
+        recall, precision, AUC (Area Under the Curve), and other relevant statistics such
+        as percentages of inliers and outliers as well as confusion matrix components.
+        Results and metrics are stored as DataFrames, and performance details are printed
+        to the console.
+
+        Parameters:
+            output_path (Path): The path where evaluation results can potentially
+                be saved. This is not used in this implementation. It is included
+                to allow subclasses to save extra results to a file.
+
+        Returns:
+            pd.DataFrame: A DataFrame summarizing the evaluation metrics including
+                model accuracy, precision, recall, AUC, inliers and outliers percentages,
+                confusion matrix values, and other associated data.
+
+        Raises:
+            ValueError: If the predicted and actual labels are not of the same length.
+        """
         # Get predicted and actual labels
         predicted_inlier = self._get_predictions()
         actual_inlier = [1 if x == self.inlier_label else 0 for x in self.y_test]
@@ -156,7 +179,7 @@ class OutlierDetectionModel(ABC):
     def use_embedding(self) -> None:
         """Processes and embeds training and testing data.
         This method is used when the classification model should use the embeddings."""
-        embedding_func = self.model.get_embedding_fun()
+        embedding_func = self.model.get_embedding_fun(batch_first=True)
 
         # Get tokenized data and corresponding labels
         tokenized_train, y_train = self._get_tokenized_with_labels(train=True)
@@ -183,8 +206,6 @@ class OutlierDetectionModel(ABC):
         self._x_train = torch.nn.functional.pad(_x_train, (0, pad_length - train_length), value=self.model.padding_token)
         self._x_test = torch.nn.functional.pad(_x_test, (0, pad_length - test_length), value=self.model.padding_token)
 
-
-
     def _get_tokenized_with_labels(self, train: bool) -> Tuple[Tensor, Tensor]:
         """
         Tokenizes data and returns both tokenized data and corresponding labels.
@@ -204,7 +225,7 @@ class OutlierDetectionModel(ABC):
     def _process_training_data(self, data: pd.Series, labels: pd.Series) -> Tuple[pd.Series, pd.Series]:
         """Filters training data to samples matching the inlier label used for training. Thus, the Dataset
         now only contains inliers."""
-        filtered_data = data[labels == self.inlier_label]
+        filtered_data = data[labels == self.inlier_label] # Todo: add the discarded outliers to the test set
         selected_label = pd.Series([self.inlier_label] * self.test_size)
         return filtered_data, selected_label
 
@@ -220,5 +241,5 @@ class OutlierDetectionModel(ABC):
 
     def _generate_embeddings(self, tokenized_data: Tensor, embedding_func: Callable[[Tensor], Tensor]) -> Tensor:
         """Generates embeddings and adjusts tensor dimensions."""
-        return embedding_func(tokenized_data).permute(1, 0)
+        return embedding_func(tokenized_data)
 

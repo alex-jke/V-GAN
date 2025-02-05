@@ -37,10 +37,11 @@ class DeepSeek1B(HuggingModel):
         #if cached is not None:
         #    return cached
         token_vec = tokenized.clone().detach().to(self.device)
+        attention_mask = torch.not_equal(token_vec, self.padding_token)
 
         with torch.no_grad():
             #self.ui.update("embedding...")
-            outputs = self.model.model(token_vec)
+            outputs = self.model.model(token_vec, attention_mask=attention_mask)
             #self.ui.update("done | ")
             embeddings = outputs.last_hidden_state.T
 
@@ -50,7 +51,7 @@ class DeepSeek1B(HuggingModel):
     def aggregateEmbeddings(self, embeddings: Tensor):
         return torch.mean(embeddings, dim=1)
 
-    def get_embedding_fun(self, chunk_size = 50) -> Callable[[Tensor], Tensor]:
+    def get_embedding_fun(self, chunk_size = 10, batch_first=False) -> Callable[[Tensor], Tensor]:
 
         def embedding(tensor: Tensor) -> Tensor:
             chunks = torch.split(tensor, chunk_size, dim=0)
@@ -59,6 +60,9 @@ class DeepSeek1B(HuggingModel):
                 fully_embedded = self.fully_embed_tokenized(chunk)
                 aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
                 aggregated = torch.cat((aggregated, aggregated_chunk), dim=1)
+                self.ui.update(f"Embedded {aggregated.shape[1]}/{tensor.shape[0]}")
+            if batch_first:
+                return aggregated.T
             return aggregated
         return embedding
 
