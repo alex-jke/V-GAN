@@ -27,8 +27,8 @@ def perform_experiment(dataset: Dataset, emb_model: HuggingModel):
     partial_params = {
         "dataset": dataset,
         "model": emb_model,
-        "train_size": 200, #todo: add ability to not crash when chosen too large
-        "test_size": 10,
+        "train_size": 2000, #todo: add ability to not crash when chosen too large
+        "test_size": 200,
     }
     params = {**partial_params, **{"use_embedding": True}}
     bases = [pyod_LUNAR, pyod_ECOD, pyod_LOF]
@@ -74,11 +74,7 @@ def perform_experiment(dataset: Dataset, emb_model: HuggingModel):
 if __name__ == '__main__':
     datasets = [EmotionDataset(), IMBdDataset(), AGNews()]
     models = [GPT2(), Bert(), DeepSeek1B()]
-    skip = True
     for embedding_model in models:
         for dataset in datasets:
-            if skip:
-                skip = False
-                continue
             perform_experiment(dataset=dataset, emb_model=embedding_model)
 

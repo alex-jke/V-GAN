@@ -25,14 +25,14 @@ class DatasetEmbedderTest(unittest.TestCase):
 
     def test_imdb(self):
         with torch.no_grad():
-            model = DeepSeek1B()
+            model = GPT2()
             dataset = IMBdDataset()
             tokenizer = DatasetTokenizer(model, dataset, max_samples=100)
             tokenized_data = tokenizer.get_tokenized_training_data().to(model.device)
-            embedding_fun = model.get_embedding_fun()
+            embedding_fun = model.get_embedding_fun(batch_first=True)
             embedded = embedding_fun(tokenized_data)
-            self.assertEqual(embedded.shape[1], 2000, f"Model {model.model_name} has wrong dimension: "
-                                                       f"{embedded.shape}, expected: 2000, 768")
+            self.assertEqual(embedded.shape[0], 100, f"Model {model.model_name} has wrong dimension: "
+                                                       f"{embedded.shape}, expected: 100, 768")
 
 if __name__ == '__main__':
     unittest.main()

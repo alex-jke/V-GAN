@@ -77,7 +77,7 @@ class GPT2(HuggingModel):
             #return cached
         max_length = self.model.config.n_positions
         length = min(tokenized.shape[0], max_length)
-        token_vec = tokenized.clone().detach().to(self.device)[:, :length]
+        token_vec = tokenized.clone().detach().to(self.device)[:length]
         attention_mask = torch.not_equal(token_vec, self.padding_token) * 1.0
         with torch.no_grad():
             outputs = self.model(token_vec, attention_mask=attention_mask)
