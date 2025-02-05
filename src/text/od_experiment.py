@@ -59,11 +59,14 @@ def perform_experiment(dataset: Dataset, model: HuggingModel):
             error_df = pd.concat([error_df,
                                   pd.DataFrame({"model":[ od_model.name]})
                                   ])
+        finally:
+            del od_model
     print(result_df)
     visualizer = ResultVisualizer(result_df, output_path)
     columns = result_df.columns
     column_names = [column for column in columns if column != "method"]
     [visualizer.visualize(x_column="method", y_column=column) for column in column_names]
+    output_path.mkdir(parents=True, exist_ok=True)
     result_df.to_csv(output_path / "results.csv", index=False)
     error_df.to_csv(output_path / "errors.csv", index=False)
 

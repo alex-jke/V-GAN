@@ -235,8 +235,9 @@ class OutlierDetectionModel(ABC):
         return data, filtered_labels
 
     def _filter_and_tokenize(self, data: pd.Series, size: int) -> Tensor:
-        """Filters data to specified size and tokenizes it."""
-        filtered_data = data[:size]
+        """Truncates data to specified size and tokenizes it."""
+        length = min(size, len(data))
+        filtered_data = data[:length]
         return self.model.tokenize_batch(filtered_data.tolist())
 
     def _generate_embeddings(self, tokenized_data: Tensor, embedding_func: Callable[[Tensor], Tensor]) -> Tensor:
