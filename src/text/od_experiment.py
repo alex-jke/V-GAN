@@ -42,7 +42,7 @@ class Experiment:
             "test_size": test_size,
         }
         # Parameters used for models that require embedding.
-        self.params: Dict = {**self.partial_params, "use_embedding": True}
+        self.params: Dict = {**self.partial_params, "pre_embed": True}
 
         # Build the list of outlier detection models.
         self.models = models
@@ -74,10 +74,13 @@ class Experiment:
 
         # VGAN ODM models with both use_embedding False and True.
         models.extend([
-            VGAN_ODM(**self.partial_params, base_detector=base, use_embedding=use_emb)
+            omd_model(**self.partial_params, base_detector=base, pre_embed=use_emb)
             for base in bases
             for use_emb in [False, True]
+            for omd_model in [VGAN_ODM]#, FeatureBagging] # Todo: currently causes memory problems
         ])
+
+
 
         # Trivial ODM models with different guess inlier rates.
         models.extend([
