@@ -108,6 +108,7 @@ class Experiment:
             model.predict()
             model.stop_timer()
             evaluation = model.evaluate(self.output_path)
+            print(f"{model.name} finished successfully.")
             return evaluation, None
         except Exception as e:
             if not self.skip_error:
@@ -116,6 +117,7 @@ class Experiment:
                 "model": [model.name],
                 "error": [str(e)]
             })
+            print(f"{model.name} encountered an error.")
             return pd.DataFrame(), error_record
 
     def _visualize_and_save_results(self) -> None:

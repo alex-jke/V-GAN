@@ -32,7 +32,7 @@ class ODExperimentTest(unittest.TestCase):
         test_size = 20
         vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed =False)
         vgan.vgan.lr = 0.5
-        vgan.vgan.epochs = 100
+        vgan.vgan.epochs = 400
         exp = Experiment(dataset, model, skip_error=False,
                          train_size=train_size, test_size=test_size,
                          models=[vgan])

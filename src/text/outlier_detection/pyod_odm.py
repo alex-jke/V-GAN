@@ -106,6 +106,8 @@ class EmbeddingBaseDetector(BaseDetector):
         embedded = self._embed(X)
         self._estimator.fit(embedded, y)
         self.decision_scores_ = self._estimator.decision_scores_
+        self.threshold_ = self._estimator.threshold_
+        self.labels_ = self._estimator.labels_
 
     def decision_function(self, X):
         embedded = self._embed(X)

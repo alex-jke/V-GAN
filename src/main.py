@@ -23,7 +23,7 @@ from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.synthetic_dataset import SyntheticDataset
 from text.dataset.wikipedia_slim import WikipediaPeopleDataset
-from text.dataset_converter.dataset_embedder import DatasetEmbedder
+from src.text.dataset_converter.dataset_embedder import DatasetEmbedder
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 from text.visualizer.alpha_visualizer import AlphaVisualizer
 from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer

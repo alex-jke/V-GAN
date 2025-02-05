@@ -71,10 +71,14 @@ class VGAN_ODM(OutlierDetectionModel):
         test = self.x_test.to(self.device)
         #projected_datasets = [self.project_dataset(test, subspace) for subspace in self.subspaces]
         # Predict on each of the projected test datasets
-        predictions =Tensor([detector.predict(self.project_dataset(test, subspace).cpu().numpy())
-                             for detector, subspace in zip(self.detectors, self.subspaces)])
+        predictions = []
+        for detector, subspace in zip(self.detectors, self.subspaces):
+            projected = self.project_dataset(test, subspace).cpu().numpy()
+            prediction = detector.predict(projected)
+            predictions.append(prediction)
+        predictions_tensor = Tensor(predictions).T
         # Combine the predictions of each detector weighted by the probability of the subspace
-        predictions_aggregated = (predictions.T * self.proba).sum(dim=1)
+        predictions_aggregated = (predictions_tensor * self.proba).sum(dim=1)
         self.predictions = predictions_aggregated.round().int().tolist()
         #del self.detectors
         #del self.subspaces
