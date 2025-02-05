@@ -115,9 +115,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             :return: A two-dimensional Tensor aggregated in accordance to the aggregate function.
             """
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
-            ui = ConsoleUserInterface()
+            ui = ConsoleUserInterface.get()
             with torch.no_grad():
-                #ui.display("Embedding...")
+                ui.display("Embedding...")
+
                 for (i, partial_review) in enumerate(data):
                     ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
@@ -134,6 +135,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                 #aggregated = self.aggregateEmbeddings(embeddings = embeddings)
             if batch_first:
                 return embeddings.T
+            ui.done()
             return embeddings
         return embedding
 

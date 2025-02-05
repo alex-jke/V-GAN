@@ -10,3 +10,7 @@ class UserInterface():
     @abstractmethod
     def update(self, data: str):
         pass
+
+    @abstractmethod
+    def done(self):
+        pass

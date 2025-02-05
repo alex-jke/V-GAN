@@ -14,7 +14,7 @@ class DeepSeek1B(HuggingModel):
     def __init__(self):
         super().__init__()
         self.embedded_cache: Dict[int, Tensor] = {}
-        self.ui = ConsoleUserInterface()
+        self.ui = ConsoleUserInterface.get()
 
     @property
     def _tokenizer(self) -> AutoTokenizer:
@@ -56,11 +56,13 @@ class DeepSeek1B(HuggingModel):
         def embedding(tensor: Tensor) -> Tensor:
             chunks = torch.split(tensor, chunk_size, dim=0)
             aggregated = Tensor().to(self.device)
+            self.ui.display("Embedding...")
             for chunk in chunks:
                 fully_embedded = self.fully_embed_tokenized(chunk)
                 aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
                 aggregated = torch.cat((aggregated, aggregated_chunk), dim=1)
                 self.ui.update(f"Embedded {aggregated.shape[1]}/{tensor.shape[0]}")
+            self.ui.done()
             if batch_first:
                 return aggregated.T
             return aggregated
