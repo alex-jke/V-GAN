@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Tuple, Optional, Dict
 
 import pandas as pd
 
@@ -23,61 +23,134 @@ from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.trivial_odm import TrivialODM
 from text.visualizer.result_visualizer import ResultVisualizer
 
-def perform_experiment(dataset: Dataset, emb_model: HuggingModel, skip_error=True):
-    partial_params = {
-        "dataset": dataset,
-        "model": emb_model,
-        "train_size": 2000, #todo: add ability to not crash when chosen too large
-        "test_size": 200,
-    }
-    params = {**partial_params, **{"use_embedding": True}}
-    bases = [pyod_LUNAR, pyod_ECOD, pyod_LOF]
-    models: List[OutlierDetectionModel] = ([LOF(**params), LUNAR(**params), ECOD(**params)]
-                                           #+ [FeatureBagging(**partial_params, base_detector=base, use_embedding=True)
-                                            #  for base in bases]
-                                           #+ [FeatureBagging(**partial_params, base_detector=base, use_embedding=False)
-                                            #  for base in bases] #todo: there seems to be a memory leak in the feature bagging class.
-                                           + [VGAN_ODM(**partial_params, base_detector=base, use_embedding=False) for
-                                              base in bases]
-                                           + [VGAN_ODM(**partial_params, base_detector=base, use_embedding=True) for
-                                              base in bases]
-                                           + [TrivialODM(**partial_params, guess_inlier_rate=rate) for rate in
-                                              [0.0, 0.5, 1.0]])
 
-    result_df = pd.DataFrame()
-    dataset._import_data()
-    output_path = Path(os.getcwd()) / 'results' / 'outlier_detection_noFB' / dataset.name / emb_model.model_name
-    error_df = pd.DataFrame({"model": [], "error": []})
-    for i, od_model in enumerate(models):
-        print(f"testing mode: {od_model.name}")
+class Experiment:
+    def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = 2000, test_size: int = 200,
+                 models: List[OutlierDetectionModel] = None, output_path: Path = None):
+        """
+        Initializes the experiment with a dataset, an embedding model, and error handling.
+        """
+        self.dataset = dataset
+        self.emb_model = emb_model
+        self.skip_error = skip_error
+
+        # Experiment parameters
+        self.partial_params: Dict = {
+            "dataset": self.dataset,
+            "model": self.emb_model,
+            "train_size": train_size,  # TODO: add ability to not crash when chosen too large
+            "test_size": test_size,
+        }
+        # Parameters used for models that require embedding.
+        self.params: Dict = {**self.partial_params, "use_embedding": True}
+
+        # Build the list of outlier detection models.
+        self.models = models
+        if models is None:
+            self.models: List = self._build_models()
+
+        # DataFrames to store experiment results and errors.
+        self.result_df: pd.DataFrame = pd.DataFrame()
+        self.error_df: pd.DataFrame = pd.DataFrame(columns=["model", "error"])
+
+        # Determine the output directory.
+        self.output_path = output_path
+        if output_path is None:
+            self.output_path: Path = self._get_output_path()
+
+    def _build_models(self) -> List[OutlierDetectionModel]:
+        """
+        Builds and returns a list of outlier detection model instances.
+        """
+        bases = [pyod_LUNAR, pyod_ECOD, pyod_LOF]
+        models = []
+
+        # Base models that always use embedding.
+        models.extend([
+            LOF(**self.params),
+            LUNAR(**self.params),
+            ECOD(**self.params)
+        ])
+
+        # VGAN ODM models with both use_embedding False and True.
+        models.extend([
+            VGAN_ODM(**self.partial_params, base_detector=base, use_embedding=use_emb)
+            for base in bases
+            for use_emb in [False, True]
+        ])
+
+        # Trivial ODM models with different guess inlier rates.
+        models.extend([
+            TrivialODM(**self.partial_params, guess_inlier_rate=rate)
+            for rate in [0.0, 0.5, 1.0]
+        ])
+
+        return models
+
+    def _get_output_path(self) -> Path:
+        """
+        Constructs and returns the output path for saving results.
+        """
+        return Path(os.getcwd()) / 'results' / 'outlier_detection_noFB' / self.dataset.name / self.emb_model.model_name
+
+    def _run_single_model(self, model) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
+        """
+        Runs training, prediction, and evaluation for a single model.
+        Returns a tuple (evaluation_results, error_record) where each is a DataFrame.
+        """
+        print(f"Testing model: {model.name}")
         try:
-            od_model.start_timer()
-            od_model.train()
-            od_model.predict()
-            od_model.stop_timer()
-            result_df = pd.concat([result_df, od_model.evaluate(output_path)])
-        except Exception as e: #todo: find better solution
-            if not skip_error:
+            model.start_timer()
+            model.train()
+            model.predict()
+            model.stop_timer()
+            evaluation = model.evaluate(self.output_path)
+            return evaluation, None
+        except Exception as e:
+            if not self.skip_error:
                 raise e
-            error_df = pd.concat([error_df,
-                                  pd.DataFrame({"model":[ od_model.name],
-                                                            "error": [str(e)]}) ])
-        finally:
-            #del od_model
-            continue
-    print(result_df)
-    visualizer = ResultVisualizer(result_df, output_path)
-    columns = result_df.columns
-    column_names = [column for column in columns if column != "method"]
-    [visualizer.visualize(x_column="method", y_column=column) for column in column_names]
-    output_path.mkdir(parents=True, exist_ok=True) # If all models fail above still create a df containing the errors.
-    result_df.to_csv(output_path / "results.csv", index=False)
-    error_df.to_csv(output_path / "errors.csv", index=False)
+            error_record = pd.DataFrame({
+                "model": [model.name],
+                "error": [str(e)]
+            })
+            return pd.DataFrame(), error_record
+
+    def _visualize_and_save_results(self) -> None:
+        """
+        Visualizes the results and saves both the result and error DataFrames to CSV files.
+        """
+        visualizer = ResultVisualizer(self.result_df, self.output_path)
+        for column in self.result_df.columns:
+            if column != "method":
+                visualizer.visualize(x_column="method", y_column=column)
+        self.output_path.mkdir(parents=True, exist_ok=True)
+        self.result_df.to_csv(self.output_path / "results.csv", index=False)
+        self.error_df.to_csv(self.output_path / "errors.csv", index=False)
+
+    def run(self) -> None:
+        """
+        Executes the complete experiment pipeline.
+        """
+        # Import dataset data.
+        self.dataset._import_data()  # Consider renaming to a public method if possible.
+
+        # Run each model experiment.
+        for model in self.models:
+            evaluation, error = self._run_single_model(model)
+            self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
+            if error is not None:
+                self.error_df = pd.concat([self.error_df, error], ignore_index=True)
+
+        print(self.result_df)
+        self._visualize_and_save_results()
+
 
 if __name__ == '__main__':
     datasets = [EmotionDataset(), IMBdDataset(), AGNews()]
-    models = [GPT2(), Bert(), DeepSeek1B()]
-    for dataset in datasets:
-        for embedding_model in models:
-            perform_experiment(dataset=dataset, emb_model=embedding_model)
+    embedding_models = [GPT2(), Bert(), DeepSeek1B()]
 
+    # Create and run an experiment for every combination of dataset and embedding model.
+    for dataset in datasets:
+        for emb_model in embedding_models:
+            experiment = Experiment(dataset=dataset, emb_model=emb_model)
+            experiment.run()

@@ -22,8 +22,8 @@ from vmmd import VMMD
 
 class VGAN_ODM(OutlierDetectionModel):
 
-    def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, use_embedding=False):
-        self.space = "Embedding" if use_embedding else "Tokenized"
+    def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False):
+        self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
         self.vgan = VMMD_od(epochs=2000, penalty_weight=0.5, generator=GeneratorSigmoidSTE)
         self.number_of_subspaces = 100
@@ -32,11 +32,12 @@ class VGAN_ODM(OutlierDetectionModel):
             self.base_detector = LUNAR
 
         self.detectors: List[BaseDetector] = []
-        self.init_dataset = self.use_embedding if use_embedding else self.use_tokenized
+        self.init_dataset = self.use_embedding if pre_embed else self.use_tokenized
+        self.pre_embed = pre_embed
         super().__init__(dataset, model, train_size, test_size, inlier_label)
 
     def _get_detector(self) -> BaseDetector:
-        if not self.use_embedding:
+        if not self.pre_embed:
             return EmbeddingBaseDetector(self.model, lambda: self.base_detector)
         return self.base_detector()
 
@@ -86,7 +87,7 @@ class VGAN_ODM(OutlierDetectionModel):
 
     def evaluate(self, output_path: Path = None) -> pd.DataFrame:
         output_path = output_path / self._get_name()
-        main.visualize(tokenized_data=self.x_test, tokenizer = self.model, model=self.vgan, path=str(output_path), text_visualization=not self.use_embedding())
+        main.visualize(tokenized_data=self.x_test, tokenizer = self.model, model=self.vgan, path=str(output_path), text_visualization=not self.pre_embed)
         self.vgan.model_snapshot(path_to_directory=output_path, )
         return super().evaluate(output_path=output_path)
 
