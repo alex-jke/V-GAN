@@ -1,8 +1,12 @@
+import os
 import unittest
 
+from text.Embedding.bert import Bert
+from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
+from text.dataset.imdb import IMBdDataset
 from text.od_experiment import Experiment
 from text.outlier_detection.VGAN_odm import VGAN_ODM
 
@@ -37,6 +41,17 @@ class ODExperimentTest(unittest.TestCase):
                          train_size=train_size, test_size=test_size,
                          models=[vgan])
         exp.run()
+
+    def test_all(self):
+        train_size = 10
+        test_size = 20
+        datasets = [EmotionDataset(), IMBdDataset(), AGNews()]
+        embedding_models = [GPT2(), Bert(), DeepSeek1B()]
+        for dataset in datasets:
+            for model in embedding_models:
+                exp = Experiment(dataset, model, skip_error=False,
+                                 train_size=train_size, test_size=test_size)
+                exp.run()
 
 if __name__ == '__main__':
     unittest.main()
