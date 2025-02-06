@@ -99,6 +99,7 @@ class EmbeddingBaseDetector(BaseDetector):
         # instead for each param to check if its of type BaseDetector it checks if it has the get_params method.
         # Then an error it caused was it trying to call get_params on the base_detector class, that self was not passed.
         self.embedding_fun = self.model.get_embedding_fun(batch_first=True)
+        self._classes = 2
         super().__init__()
 
     def fit(self, X: ndarray, y=None):
