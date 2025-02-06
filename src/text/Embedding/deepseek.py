@@ -26,26 +26,26 @@ class DeepSeek1B(HuggingModel):
 
     @property
     def _model(self) -> Qwen2ForCausalLM:
-        return AutoModelForCausalLM.from_pretrained(f"deepseek-ai/{self._model_name}", trust_remote_code=True).to(self.device)
+        _model = AutoModelForCausalLM.from_pretrained(
+            pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True).to(self.device)
+        return _model.half().to(self.device)
 
     def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
         pass
 
     def fully_embed_tokenized(self, tokenized: Tensor) -> Tensor:
-        #key = hash(tokenized)
-        #cached = self.embedded_cache.get(key)
-        #if cached is not None:
-        #    return cached
         token_vec = tokenized.clone().detach().int().to(self.device)
-        attention_mask = torch.not_equal(token_vec, self.padding_token)
+
+        # Remove final padding tokens, if all tensors are padded longer than the longest tensor, this is not necessary.
+        largest_non_token_index = torch.max(torch.nonzero(token_vec)).item()
+        trimmed_token_vec = token_vec[:largest_non_token_index + 1]
+        #remainder = token_vec[largest_non_token_index:]
+        attention_mask = torch.not_equal(trimmed_token_vec, self.padding_token)
 
         with torch.no_grad():
-            #self.ui.update("embedding...")
-            outputs = self.model.model(token_vec, attention_mask=attention_mask)
-            #self.ui.update("done | ")
+            outputs = self.model.model(trimmed_token_vec, attention_mask=attention_mask) # not surprisingly, this takes the majority of the time.
             embeddings = outputs.last_hidden_state.T
 
-        #self.embedded_cache[key] = embeddings
         return embeddings
 
     def aggregateEmbeddings(self, embeddings: Tensor):
@@ -56,13 +56,12 @@ class DeepSeek1B(HuggingModel):
         def embedding(tensor: Tensor) -> Tensor:
             chunks = torch.split(tensor, chunk_size, dim=0)
             aggregated = Tensor().to(self.device)
-            self.ui.display("Embedding...")
-            for chunk in chunks:
-                fully_embedded = self.fully_embed_tokenized(chunk)
-                aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
-                aggregated = torch.cat((aggregated, aggregated_chunk), dim=1)
-                self.ui.update(f"Embedded {aggregated.shape[1]}/{tensor.shape[0]}")
-            self.ui.done()
+            with torch.no_grad(), self.ui.display():
+                for chunk in chunks:
+                    fully_embedded = self.fully_embed_tokenized(chunk)
+                    aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
+                    aggregated = torch.cat((aggregated, aggregated_chunk), dim=1)
+                    self.ui.update(f"Embedded {aggregated.shape[1]}/{tensor.shape[0]}")
             if batch_first:
                 return aggregated.T
             return aggregated

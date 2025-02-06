@@ -17,6 +17,7 @@ from text.dataset.SimpleDataset import SimpleDataset
 from text.dataset.emotions import EmotionDataset
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import EmbeddingBaseDetector
+from text.visualizer.collective_visualizer import CollectiveVisualizer
 from vmmd import VMMD
 
 
@@ -44,12 +45,17 @@ class VGAN_ODM(OutlierDetectionModel):
     def train(self):
         self.init_dataset()
         train = self.x_train.to(self.device)
-        self.vgan.fit(train)
-        subspaces = self.vgan.generate_subspaces(self.number_of_subspaces)
-        unique_subspaces, proba = np.unique(
-            np.array(subspaces.to('cpu')), axis=0, return_counts=True)
-        self.subspaces = Tensor(unique_subspaces).to(self.device)
-        self.proba = proba / proba.sum()
+        with self.ui.display():
+            for epoch in self.vgan.yield_fit(train, yield_epochs=100):
+                self.ui.update(f"Fitting VGAN, current epoch {epoch}")
+
+
+        with self.ui.display("Generating subspaces"):
+            subspaces = self.vgan.generate_subspaces(self.number_of_subspaces)
+            unique_subspaces, proba = np.unique(
+                np.array(subspaces.to('cpu')), axis=0, return_counts=True)
+            self.subspaces = Tensor(unique_subspaces).to(self.device)
+            self.proba = proba / proba.sum()
 
         # If one subspace has probabilities over 0.5, it decides the inlier label
         # To improve runtime we thus can remove the other subspaces
@@ -62,24 +68,28 @@ class VGAN_ODM(OutlierDetectionModel):
         # Project the dataset into each of the generated subspaces
         #projected_datasets = [self.project_dataset(train, subspace) for subspace in self.subspaces]
         # Fit a detector on each of the projected datasets. To avoid memory issues, we fit the detectors one by one and project the dataset one by one
-        for subspace in self.subspaces:
-            detector = self._get_detector()
-            detector.fit(self.project_dataset(train, subspace).cpu().numpy())
-            self.detectors.append(detector)
+        with self.ui.display():
+            for subspace in self.subspaces:
+                self.ui.update(f"Fitting detector {len(self.detectors)} / {len(self.subspaces)}")
+                detector = self._get_detector()
+                detector.fit(self.project_dataset(train, subspace).cpu().numpy())
+                self.detectors.append(detector)
 
     def predict(self):
         test = self.x_test.to(self.device)
         #projected_datasets = [self.project_dataset(test, subspace) for subspace in self.subspaces]
         # Predict on each of the projected test datasets
         predictions = []
-        for detector, subspace in zip(self.detectors, self.subspaces):
-            projected = self.project_dataset(test, subspace).cpu().numpy()
-            prediction = detector.predict(projected)
-            predictions.append(prediction)
-        predictions_tensor = Tensor(predictions).T
-        # Combine the predictions of each detector weighted by the probability of the subspace
-        predictions_aggregated = (predictions_tensor * self.proba).sum(dim=1)
-        self.predictions = predictions_aggregated.round().int().tolist()
+        with self.ui.display():
+            for detector, subspace in zip(self.detectors, self.subspaces):
+                self.ui.update(f"Predicting with detector {len(predictions)} / {len(self.subspaces)}")
+                projected = self.project_dataset(test, subspace).cpu().numpy()
+                prediction = detector.predict(projected)
+                predictions.append(prediction)
+            predictions_tensor = Tensor(predictions).T
+            # Combine the predictions of each detector weighted by the probability of the subspace
+            predictions_aggregated = (predictions_tensor * self.proba).sum(dim=1)
+            self.predictions = predictions_aggregated.round().int().tolist()
         #del self.detectors
         #del self.subspaces
 
@@ -92,9 +102,10 @@ class VGAN_ODM(OutlierDetectionModel):
     def get_space(self):
         return self.space
 
-    def evaluate(self, output_path: Path = None) -> pd.DataFrame:
+    def evaluate(self, output_path: Path = None, print_results = False) -> pd.DataFrame:
         output_path = output_path / self._get_name()
-        main.visualize(tokenized_data=self.x_test, tokenizer = self.model, model=self.vgan, path=str(output_path), text_visualization=not self.pre_embed)
+        visualizer = CollectiveVisualizer(tokenized_data=self.x_test, tokenizer = self.model, vmmd_model=self.vgan, export_path=str(output_path), text_visualization=not self.pre_embed)
+        visualizer.visualize(samples=30, epoch=self.vgan.epochs)
         self.vgan.model_snapshot(path_to_directory=output_path, )
         return super().evaluate(output_path=output_path)
 

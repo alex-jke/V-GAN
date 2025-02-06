@@ -32,7 +32,7 @@ class OutlierDetectionModel(ABC):
             self.inlier_label = self.dataset.get_possible_labels()[0]
         self._x_test = self._y_test = self._x_train = self._y_train = None
         self.device = self.model.device
-        self.ui = ConsoleUserInterface
+        self.ui = ConsoleUserInterface.get()
 
     @abstractmethod
     def train(self):
@@ -84,7 +84,7 @@ class OutlierDetectionModel(ABC):
     def stop_timer(self):
         self.time_elapsed = time() - self.start_time
 
-    def evaluate(self, output_path: Path = None) -> pd.DataFrame:
+    def evaluate(self, output_path: Path = None, print_results = False) -> pd.DataFrame:
         """
         Evaluate the performance of a predictive model against a labeled test dataset.
 
@@ -98,6 +98,7 @@ class OutlierDetectionModel(ABC):
             output_path (Path): The path where evaluation results can potentially
                 be saved. This is not used in this implementation. It is included
                 to allow subclasses to save extra results to a file.
+            print_results (bool): Whether to print the evaluation results to the console.
 
         Returns:
             pd.DataFrame: A DataFrame summarizing the evaluation metrics including
@@ -156,26 +157,27 @@ class OutlierDetectionModel(ABC):
         })
 
         # Return evaluation metrics
-        print(f"Method: {self.name}\n"
-                f"{'='*40}\n"
-                f"  Space:              {self.get_space()}\n"
-                f"{'-'*40}\n"
-                f"  Accuracy:           {accuracy * 100:>7.2f}%\n"
-                f"  Recall:             {recall * 100:>7.2f}%\n"
-                f"  Precision:          {precision * 100:>7.2f}%\n"
-                f"  AUC:                {auc:>7.4f}\n"
-                f"{'-'*40}\n"
-                f"  Percentage Inlier:  {percentage_inlier:>7.2f}%\n"
-                f"  Percentage Outlier: {percentage_outlier:>7.2f}%\n"
-                f"{'-'*40}\n"
-                f"  True Positives:     {true_positives:>7}\n"
-                f"  False Positives:    {false_positives:>7}\n"
-                f"  False Negatives:    {false_negatives:>7}\n"
-                f"  True Negatives:     {true_negatives:>7}\n"
-                f"{'-'*40}\n"
-                f"  Total Samples:      {len(actual_inlier):>7}\n"
-                f"  Time Taken:         {self.time_elapsed:>7.2f} seconds\n"
-                f"{'='*40}")
+        if print_results:
+            print(f"Method: {self.name}\n"
+                    f"{'='*40}\n"
+                    f"  Space:              {self.get_space()}\n"
+                    f"{'-'*40}\n"
+                    f"  Accuracy:           {accuracy * 100:>7.2f}%\n"
+                    f"  Recall:             {recall * 100:>7.2f}%\n"
+                    f"  Precision:          {precision * 100:>7.2f}%\n"
+                    f"  AUC:                {auc:>7.4f}\n"
+                    f"{'-'*40}\n"
+                    f"  Percentage Inlier:  {percentage_inlier:>7.2f}%\n"
+                    f"  Percentage Outlier: {percentage_outlier:>7.2f}%\n"
+                    f"{'-'*40}\n"
+                    f"  True Positives:     {true_positives:>7}\n"
+                    f"  False Positives:    {false_positives:>7}\n"
+                    f"  False Negatives:    {false_negatives:>7}\n"
+                    f"  True Negatives:     {true_negatives:>7}\n"
+                    f"{'-'*40}\n"
+                    f"  Total Samples:      {len(actual_inlier):>7}\n"
+                    f"  Time Taken:         {self.time_elapsed:>7.2f} seconds\n"
+                    f"{'='*40}")
 
         return metrics
 

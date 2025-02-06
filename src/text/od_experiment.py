@@ -12,6 +12,7 @@ from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
+from text.UI.cli import ConsoleUserInterface
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
@@ -58,6 +59,8 @@ class Experiment:
         if output_path is None:
             self.output_path: Path = self._get_output_path()
 
+        self.ui = ConsoleUserInterface.get()
+
     def _build_models(self) -> List[OutlierDetectionModel]:
         """
         Builds and returns a list of outlier detection model instances.
@@ -101,7 +104,6 @@ class Experiment:
         Runs training, prediction, and evaluation for a single model.
         Returns a tuple (evaluation_results, error_record) where each is a DataFrame.
         """
-        print(f"Testing model: {model.name}")
         try:
             model.start_timer()
             model.train()
@@ -140,13 +142,15 @@ class Experiment:
         self.dataset._import_data()  # Consider renaming to a public method if possible.
 
         # Run each model experiment.
-        for model in self.models:
-            evaluation, error = self._run_single_model(model)
-            self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
-            if error is not None:
-                self.error_df = pd.concat([self.error_df, error], ignore_index=True)
-                continue
-            self._visualize_and_save_results()
+        with self.ui.display():
+            for model in self.models:
+                self.ui.update(f"Running model {model.name}")
+                evaluation, error = self._run_single_model(model)
+                self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
+                if error is not None:
+                    self.error_df = pd.concat([self.error_df, error], ignore_index=True)
+                    continue
+                self._visualize_and_save_results()
 
 
         print(self.result_df)
@@ -156,9 +160,14 @@ class Experiment:
 if __name__ == '__main__':
     datasets = [EmotionDataset(), IMBdDataset(), AGNews()]
     embedding_models = [GPT2(), Bert(), DeepSeek1B()]
+    ui = ConsoleUserInterface.get()
 
     # Create and run an experiment for every combination of dataset and embedding model.
-    for dataset in datasets:
-        for emb_model in embedding_models:
-            experiment = Experiment(dataset=dataset, emb_model=emb_model)
-            experiment.run()
+    with ui.display():
+        for dataset in datasets:
+            ui.update(f"dataset {dataset.name}")
+            with ui.display():
+                for emb_model in embedding_models:
+                    ui.update(f"embedding model {emb_model.model_name}")
+                    experiment = Experiment(dataset=dataset, emb_model=emb_model)
+                    experiment.run()

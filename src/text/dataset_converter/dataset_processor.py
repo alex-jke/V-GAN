@@ -1,0 +1,47 @@
+import torch
+from torch import Tensor
+
+from text.Embedding.huggingmodel import HuggingModel
+from text.dataset.dataset import Dataset
+from text.dataset_converter.dataset_embedder import DatasetEmbedder
+from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
+
+
+class DatasetProcessor:
+    """
+    Handles tokenization and optional embedding of the dataset.
+    """
+    def __init__(self, dataset: Dataset, model: HuggingModel, sequence_length: int, samples: int, use_embedding: bool):
+        self.dataset = dataset
+        self.model = model
+        # Ensure sequence_length does not exceed model maximum
+        self.sequence_length = min(sequence_length, model.max_token_length())
+        self.samples = samples
+        self.device = get_device()
+        self.use_embedding = use_embedding
+
+    def process(self) -> (Tensor, Tensor):
+        # Tokenize the data
+        tokenizer = DatasetTokenizer(tokenizer=self.model, dataset=self.dataset, max_samples=self.samples, min_samples=self.samples)
+        data = tokenizer.get_tokenized_training_data()
+
+        if not self.use_embedding:
+            # Take only the first sequence_length tokens per sample
+            first_part = data[:, :self.sequence_length].to(self.device)
+            if self.device.type == 'cuda':
+                first_part = first_part.float()
+            normalized = first_part  # tokens are not normalized
+        else:
+            # If using embeddings, embed and then normalize
+            embedder = DatasetEmbedder(dataset=self.dataset, model=self.model)
+            first_part = embedder.embed(data)
+            normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
+        return first_part, normalized
+
+def get_device() -> torch.device:
+    if torch.cuda.is_available():
+        return torch.device('cuda:0')
+    elif torch.backends.mps.is_available():
+        return torch.device('mps:0')
+    else:
+        return torch.device('cpu')

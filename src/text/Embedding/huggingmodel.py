@@ -116,8 +116,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             """
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
             ui = ConsoleUserInterface.get()
-            with torch.no_grad():
-                ui.display("Embedding...")
+            with torch.no_grad(), ui.display():
 
                 for (i, partial_review) in enumerate(data):
                     ui.update(f"Embedding {i+1}/{len(data)}")

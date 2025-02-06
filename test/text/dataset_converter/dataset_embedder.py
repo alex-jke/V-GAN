@@ -1,4 +1,5 @@
 import unittest
+from time import time
 
 import torch
 from torch import Tensor
@@ -33,6 +34,33 @@ class DatasetEmbedderTest(unittest.TestCase):
             embedded = embedding_fun(tokenized_data)
             self.assertEqual(embedded.shape[0], 100, f"Model {model.model_name} has wrong dimension: "
                                                        f"{embedded.shape}, expected: 100, 768")
+
+    def test_embedding_speed(self):
+        start_time = time()
+        model = DeepSeek1B()
+        dataset = IMBdDataset()
+        training_data, _ = dataset.get_training_data()
+        amount = 40
+        filtered_data = training_data[:amount].tolist()
+        tokenized = model.tokenize_batch(filtered_data)
+        embed_start_time = time()
+        embed = model.get_embedding_fun()(tokenized)
+        end_time = time()
+        print(f"Embedding {amount} samples took {end_time - start_time} seconds.")
+        print(f"total time per embedding: {(end_time - start_time) / amount} seconds.")
+        print(f"per embedding {(end_time - embed_start_time) / amount} seconds.")
+        # 2.024, 1.799 for standard
+        # 1.520, 1.487 for half precision
+        # 1.465, 2.180, 1,392 for half precision and postfix tokens trimmed
+        # 2.025 for compiled
+        # 2.603, 1.817 for torch.inference_mode()
+        #1.935, 1,46 trimmed, inference_mode, half
+
+        # time per embedding just embedding:
+        # 1.276 for standard
+        # 0.905 trimmed + half precision
+        # 0.930 for half precision
+        # 1.290 trimmed
 
 if __name__ == '__main__':
     unittest.main()

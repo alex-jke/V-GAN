@@ -146,14 +146,11 @@ def all_fake():
                      "lr": 0.1, "momentum": 0.9,
                      "weight_decay": 0.005, "version": version, "train": False, "yield_epochs": 10}
     vmmd = pipeline(**simple_params)
-    #average_loss = vmmd.train_history['generator_loss'].mean()
-    #p_value = vmmd.check_if_myopic(vmmd.X_data.cpu().numpy(), count=1000).iloc[0, 0]
 
 
 generator_name_map = {GeneratorSigmoid: "sigmoid", GeneratorUpperSoftmax: "upper_softmax",
                       GeneratorSigmoidSTE: "sigmoid_ste"}
 if __name__ == '__main__':
-    #generator = GeneratorSigmoid
     models = [DeepSeek1B(), GPT2(), Bert()]
     generators = [GeneratorSigmoidSTE, GeneratorUpperSoftmax, GeneratorSigmoid]
     version = '0.458'
@@ -194,16 +191,8 @@ if __name__ == '__main__':
                                  "generator": generator,
                                  "lr": lr, "momentum": momentum,
                                  "weight_decay": weight_decay, "version": version, "train": False}
-                #if not skip_first:
-                #pipeline(**emotions_params)
-                #pipeline(**ag_news_params)
-                #pipeline(**imdb_params)
-                #pipeline(**wiki_params)
+                pipeline(**emotions_params)
+                pipeline(**ag_news_params)
+                pipeline(**imdb_params)
+                pipeline(**wiki_params)
                 pipeline(**simple_params)
-                #skip_first = False
-    #all_fake()
-
-    #print(model.detokenize([151646]))
-
-    #print(subspaces)
-    # dataset = EmotionDataset()

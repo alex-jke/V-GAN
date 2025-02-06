@@ -31,7 +31,7 @@ class VMMD:
     '''
 
     def __init__(self, batch_size=500, epochs=500, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None,
-                 weight=0, generator = None):
+                 weight=0, generator = None, print_updates=None):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.batch_size = batch_size
@@ -50,7 +50,10 @@ class VMMD:
         self.weight = weight
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
-        self.print_updates = False
+
+        self.print_updates = print_updates
+        if print_updates is None:
+            self.print_updates = False
 
     def _create_plot(self) -> pyplot:
         train_history = self.train_history
@@ -190,7 +193,6 @@ class VMMD:
         kernel = RBFConstrained(embedding=embedding)
         loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
 
-        print(f"Starting training...")
         for epoch in range(epochs):
             if self.print_updates:
                 print(f'\rEpoch {epoch} of {epochs}')
@@ -250,9 +252,7 @@ class VMMD:
 
             if self.print_updates:
                 print(f"Average loss in the epoch: {generator_loss}")
-            elif epoch == 0:
 
-                print(f"loss of {generator_loss}")
             self.train_history["generator_loss"].append(generator_loss)
 
         self.generator = generator
