@@ -51,6 +51,10 @@ class ODExperimentTest(unittest.TestCase):
             for model in embedding_models:
                 exp = Experiment(dataset, model, skip_error=False,
                                  train_size=train_size, test_size=test_size)
+                for model in exp.models:
+                    if isinstance(model, VGAN_ODM):
+                        model.vgan.epochs = 500
+                        model.vgan.lr = 0.5
                 exp.run()
 
 if __name__ == '__main__':

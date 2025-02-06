@@ -145,6 +145,9 @@ class Experiment:
             self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
             if error is not None:
                 self.error_df = pd.concat([self.error_df, error], ignore_index=True)
+                continue
+            self._visualize_and_save_results()
+
 
         print(self.result_df)
         self._visualize_and_save_results()

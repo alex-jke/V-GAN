@@ -29,6 +29,7 @@ class ConsoleUserInterface(UserInterface):
         self._print()
 
     def _print(self):
+        return
         sys.stdout.write("\r")
         for data in self.data_list:
             sys.stdout.write("\t" + data)
