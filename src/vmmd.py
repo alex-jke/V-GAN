@@ -83,7 +83,8 @@ class VMMD:
                 'momentum': self.momentum, 'weight decay': self.weight_decay,
                 'batch_size': self.batch_size, 'seed': self.seed,
                 'generator optimizer': self.generator_optimizer,
-                'penalty weight': self.weight}
+                'penalty weight': self.weight,
+                'generator': self.generator.__class__.__name__}
 
     def model_snapshot(self, path_to_directory=None, run_number=0, show=False):
         ''' Creates an snapshot of the model
