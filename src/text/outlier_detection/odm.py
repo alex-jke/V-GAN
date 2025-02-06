@@ -153,7 +153,7 @@ class OutlierDetectionModel(ABC):
             "false_negatives": [false_negatives],
             "true_negatives": [true_negatives],
             "total_test_samples": [len(actual_inlier)],
-            "total_train_samples": [len(self.y_train)]
+            "total_train_samples": [len(self.x_train)]
         })
 
         # Return evaluation metrics

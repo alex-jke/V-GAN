@@ -26,7 +26,7 @@ class VGAN_ODM(OutlierDetectionModel):
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
-        self.vgan = VMMD_od(epochs=2000, penalty_weight=0.5, generator=GeneratorSigmoidSTE)
+        self.vgan = VMMD_od(epochs=3000, penalty_weight=0.5, generator=GeneratorSigmoidSTE)
         self.number_of_subspaces = 100
         self.base_detector: Type[BaseDetector] = base_detector
         if base_detector is None:
@@ -59,10 +59,10 @@ class VGAN_ODM(OutlierDetectionModel):
 
         # If one subspace has probabilities over 0.5, it decides the inlier label
         # To improve runtime we thus can remove the other subspaces
-        main_subspace_exits = (self.proba > 0.5).sum() > 0
-        if main_subspace_exits:
-            self.subspaces = self.subspaces[self.proba > 0.5]
-            self.proba = self.proba[self.proba > 0.5]
+        #main_subspace_exits = (self.proba > 0.5).sum() > 0
+        #if main_subspace_exits:
+            #self.subspaces = self.subspaces[self.proba > 0.5]
+            #self.proba = self.proba[self.proba > 0.5]
             #print("Main subspace found, removing other subspaces")
 
         # Project the dataset into each of the generated subspaces
@@ -80,16 +80,26 @@ class VGAN_ODM(OutlierDetectionModel):
         #projected_datasets = [self.project_dataset(test, subspace) for subspace in self.subspaces]
         # Predict on each of the projected test datasets
         predictions = []
+        predictions_probas = []
         with self.ui.display():
             for detector, subspace in zip(self.detectors, self.subspaces):
                 self.ui.update(f"Predicting with detector {len(predictions)} / {len(self.subspaces)}")
                 projected = self.project_dataset(test, subspace).cpu().numpy()
                 prediction = detector.predict(projected)
+                prediction_proba = detector.predict_proba(projected)[:,0]
                 predictions.append(prediction)
+                predictions_probas.append(prediction_proba)
             predictions_tensor = Tensor(predictions).T
+            predictions_probas_tensor = Tensor(predictions_probas).T
             # Combine the predictions of each detector weighted by the probability of the subspace
             predictions_aggregated = (predictions_tensor * self.proba).sum(dim=1)
-            self.predictions = predictions_aggregated.round().int().tolist()
+            predictions_probas_aggregated = (predictions_probas_tensor * self.proba).sum(dim=1)
+            max_proba = predictions_probas_aggregated.max()
+            min_proba = predictions_probas_aggregated.min()
+            normalized_predictions_probas = (predictions_probas_aggregated - min_proba) / (max_proba - min_proba)
+            predictions_rounded = normalized_predictions_probas.round().int()
+            #self.predictions = predictions_aggregated.round().int().tolist()
+            self.predictions = predictions_rounded.tolist()
         #del self.detectors
         #del self.subspaces
 

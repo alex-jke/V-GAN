@@ -80,7 +80,7 @@ class Experiment:
             omd_model(**self.partial_params, base_detector=base, pre_embed=use_emb)
             for base in bases
             for use_emb in [False, True]
-            for omd_model in [VGAN_ODM]#, FeatureBagging] # Todo: currently causes memory problems
+            for omd_model in [VGAN_ODM, FeatureBagging] # Todo: currently causes memory problems
         ])
 
 
@@ -97,7 +97,7 @@ class Experiment:
         """
         Constructs and returns the output path for saving results.
         """
-        return Path(os.getcwd()) / 'results' / 'outlier_detection_noFB' / self.dataset.name / self.emb_model.model_name
+        return Path(os.getcwd()) / 'results' / 'outlier_detection_every_model' / self.dataset.name / self.emb_model.model_name
 
     def _run_single_model(self, model) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         """
@@ -110,7 +110,7 @@ class Experiment:
             model.predict()
             model.stop_timer()
             evaluation = model.evaluate(self.output_path)
-            print(f"{model.name} finished successfully.")
+            print(f" | finished successfully.")
             return evaluation, None
         except Exception as e:
             if not self.skip_error:
@@ -158,7 +158,7 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    datasets = [EmotionDataset(), IMBdDataset(), AGNews()]
+    datasets = [EmotionDataset(), AGNews(), IMBdDataset()]
     embedding_models = [GPT2(), Bert(), DeepSeek1B()]
     ui = ConsoleUserInterface.get()
 
