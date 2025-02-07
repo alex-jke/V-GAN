@@ -2,8 +2,6 @@ from typing import Tuple, List
 
 import numpy as np
 import pandas as pd
-from sklearn.datasets import fetch_openml
-from sklearn.model_selection import train_test_split
 
 from .dataset import Dataset
 
@@ -15,8 +13,12 @@ class IMBdDataset(Dataset):
         return [1, 0]
 
     def _import_data(self):
-        data = pd.read_csv("hf://datasets/scikit-learn/imdb/IMDB Dataset.csv")
-        data[self.y_label_name] = np.where(data["sentiment"] == "positive", 1, 0)
+        if (self.dir_path / "text.csv").exists():
+            data = pd.read_csv(self.dir_path / "text.csv")
+        else:
+            data = pd.read_csv("hf://datasets/scikit-learn/imdb/IMDB Dataset.csv")
+            data[self.y_label_name] = np.where(data["sentiment"] == "positive", 1, 0)
+            data.to_csv(self.dir_path / "text.csv", index=False)
         self.split(data)
 
     @property

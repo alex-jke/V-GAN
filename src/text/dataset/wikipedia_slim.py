@@ -9,10 +9,13 @@ class WikipediaPeopleDataset(Dataset):
         return [0]
 
     def _import_data(self):
-        # Download latest version
-        path = kagglehub.dataset_download("sameersmahajan/people-wikipedia-data")
-        data = pd.read_csv(path + "/people_wiki.csv")
-        data[self.y_label_name] = 0
+        if (self.dir_path / "text.csv").exists():
+            data = pd.read_csv(self.dir_path / "text.csv")
+        else:
+            path = kagglehub.dataset_download("sameersmahajan/people-wikipedia-data")
+            data = pd.read_csv(path + "/people_wiki.csv")
+            data[self.y_label_name] = 0
+            data.to_csv(self.dir_path / "text.csv", index=False)
         self.split(data)
 
 

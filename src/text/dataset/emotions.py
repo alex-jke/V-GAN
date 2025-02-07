@@ -11,8 +11,13 @@ class EmotionDataset(Dataset):
 
     def _import_data(self):
         # Download latest version
-        path = kagglehub.dataset_download("nelgiriyewithana/emotions")
-        data = pd.read_csv(path + "/text.csv")
+        if (self.dir_path / "text.csv").exists():
+            data = pd.read_csv(self.dir_path / "text.csv")
+        else:
+            path = kagglehub.dataset_download("nelgiriyewithana/emotions")
+            data = pd.read_csv(path + "/text.csv")
+            data.to_csv(self.dir_path / "text.csv", index=False)
+
         self.split(data)
 
     @property

@@ -26,14 +26,15 @@ from text.visualizer.result_visualizer import ResultVisualizer
 
 
 class Experiment:
-    def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = 2000, test_size: int = 200,
-                 models: List[OutlierDetectionModel] = None, output_path: Path = None):
+    def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = -1, test_size: int = -1,
+                 models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None):
         """
-        Initializes the experiment with a dataset, an embedding model, and error handling.
+        Initializes the experiment
         """
         self.dataset = dataset
         self.emb_model = emb_model
         self.skip_error = skip_error
+        self.experiment_name = "experiment_od" if experiment_name is None else experiment_name
 
         # Experiment parameters
         self.partial_params: Dict = {
@@ -97,7 +98,7 @@ class Experiment:
         """
         Constructs and returns the output path for saving results.
         """
-        return Path(os.getcwd()) / 'results' / 'outlier_detection_every_model' / self.dataset.name / self.emb_model.model_name
+        return Path(os.getcwd()) / 'results' / self.experiment_name / self.dataset.name / self.emb_model.model_name
 
     def _run_single_model(self, model) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         """
@@ -161,6 +162,8 @@ if __name__ == '__main__':
     datasets = [EmotionDataset(), AGNews(), IMBdDataset()]
     embedding_models = [GPT2(), Bert(), DeepSeek1B()]
     ui = ConsoleUserInterface.get()
+    train_size = 2000
+    test_size = 200
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():
@@ -169,5 +172,5 @@ if __name__ == '__main__':
             with ui.display():
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
-                    experiment = Experiment(dataset=dataset, emb_model=emb_model)
+                    experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size)
                     experiment.run()

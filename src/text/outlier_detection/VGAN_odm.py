@@ -86,7 +86,7 @@ class VGAN_ODM(OutlierDetectionModel):
                 self.ui.update(f"Predicting with detector {len(predictions)} / {len(self.subspaces)}")
                 projected = self.project_dataset(test, subspace).cpu().numpy()
                 prediction = detector.predict(projected)
-                prediction_proba = detector.predict_proba(projected)[:,0]
+                prediction_proba = detector.predict_proba(projected)[:,1]
                 predictions.append(prediction)
                 predictions_probas.append(prediction_proba)
             predictions_tensor = Tensor(predictions).T

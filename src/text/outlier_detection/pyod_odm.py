@@ -27,7 +27,7 @@ class PyODM(OutlierDetectionModel, ABC):
 
     def predict(self):
         predictions = self.od_model.predict(self.x_test.cpu().numpy())
-        self.predicted_inlier = [1 if x == 0 else 0 for x in predictions]
+        self.predicted_inlier = predictions #[1 if x == 0 else 0 for x in predictions]
 
     def _get_predictions(self) -> List[int]:
         return self.predicted_inlier

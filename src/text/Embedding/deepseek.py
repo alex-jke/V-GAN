@@ -33,7 +33,7 @@ class DeepSeek1B(HuggingModel):
     def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
         pass
 
-    def fully_embed_tokenized(self, tokenized: Tensor) -> Tensor:
+    def fully_embed_tokenized(self, tokenized: Tensor) -> List[Tensor]:
         token_vec = tokenized.clone().detach().int().to(self.device)
 
         # Remove final padding tokens, if all tensors are padded longer than the longest tensor, this is not necessary.
@@ -44,12 +44,20 @@ class DeepSeek1B(HuggingModel):
 
         with torch.no_grad():
             outputs = self.model.model(trimmed_token_vec, attention_mask=attention_mask) # not surprisingly, this takes the majority of the time.
-            embeddings = outputs.last_hidden_state.T
+            embeddings: Tensor = outputs.last_hidden_state
+        embeddings_list = [embeddings[i] for i in range(embeddings.shape[0])]
+        attention_mask_list = [attention_mask[i] for i in range(attention_mask.shape[0])]
 
-        return embeddings
+        # Cut out the embeddings of the padding tokens, as they might interfere with the aggregation.
+        attention_mask_list = [attention_mask.unsqueeze(1).expand(embeddings.shape[1], embeddings.shape[2]) for attention_mask in attention_mask_list]
+        embeddings_list = [embeddings[attention_mask] for embeddings, attention_mask in zip(embeddings_list, attention_mask_list)]
+        embeddings_list = [embedding.view(-1, embeddings.shape[2])  for embedding in embeddings_list]
+        return embeddings_list
 
-    def aggregateEmbeddings(self, embeddings: Tensor):
-        return torch.mean(embeddings, dim=1)
+    def aggregateEmbeddings(self, embeddings: List[Tensor]):
+        aggregated = [torch.mean(emb, dim=0) for emb in embeddings]
+        stacked = torch.stack(aggregated)
+        return stacked
 
     def get_embedding_fun(self, chunk_size = 10, batch_first=False) -> Callable[[Tensor], Tensor]:
 
@@ -58,7 +66,7 @@ class DeepSeek1B(HuggingModel):
             aggregated = Tensor().to(self.device)
             with torch.no_grad(), self.ui.display():
                 for chunk in chunks:
-                    fully_embedded = self.fully_embed_tokenized(chunk)
+                    fully_embedded: List[Tensor] = self.fully_embed_tokenized(chunk)
                     aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
                     aggregated = torch.cat((aggregated, aggregated_chunk), dim=1)
                     self.ui.update(f"Embedded {aggregated.shape[1]}/{tensor.shape[0]}")

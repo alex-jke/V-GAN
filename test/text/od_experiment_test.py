@@ -1,14 +1,18 @@
 import os
 import unittest
+from typing import List
 
 from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
+from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
+from text.dataset.nlp_adbench import NLP_ADBench
 from text.od_experiment import Experiment
 from text.outlier_detection.VGAN_odm import VGAN_ODM
+from text.outlier_detection.pyod_odm import LUNAR
 
 
 class ODExperimentTest(unittest.TestCase):
@@ -52,18 +56,20 @@ class ODExperimentTest(unittest.TestCase):
         exp.run()
 
     def test_emotion_gpt2_vgan_lunar_no_pre_embedding(self):
-        dataset = EmotionDataset()
-        model = GPT2()
-        train_size: int = 100
-        test_size: int = 20
+        dataset = IMBdDataset()
+        model = DeepSeek1B()
+        train_size: int = 1000
+        test_size: int = 1000
         vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed=False)
-        vgan.vgan.lr = 0.5
+        vgan.vgan.lr = 0.05
         vgan.vgan.epochs = 200
         exp = Experiment(dataset, model, skip_error=False,
                          train_size=train_size, test_size=test_size,
                          models=[vgan])
         exp.run()
         auc = float(exp.result_df["auc"])
+        print(exp.result_df)
+        print(auc)
 
     def test_all(self):
         train_size = 10
@@ -79,6 +85,14 @@ class ODExperimentTest(unittest.TestCase):
                         model.vgan.epochs = 500
                         model.vgan.lr = 0.5
                 exp.run()
+
+    def test_full_datasets_lunar(self):
+        datasets: List[Dataset] = NLP_ADBench.get_all_datasets()
+        embedding_model = GPT2()
+        for dataset in datasets:
+            exp = Experiment(dataset, embedding_model, skip_error=False, experiment_name="lunar", models=[LUNAR(dataset, embedding_model, -1, -1)])
+            exp.run()
+
 
 if __name__ == '__main__':
     unittest.main()

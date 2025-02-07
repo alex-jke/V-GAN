@@ -110,7 +110,7 @@ class OutlierDetectionModel(ABC):
         """
         # Get predicted and actual labels
         predicted_inlier = self._get_predictions()
-        actual_inlier = [1 if x == self.inlier_label else 0 for x in self.y_test]
+        actual_inlier = [0 if x == self.inlier_label else 1 for x in self.y_test]
 
         # Calculate accuracy
         correct_predictions = [1 if x == y else 0 for x, y in zip(predicted_inlier, actual_inlier)]

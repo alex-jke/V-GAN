@@ -1,4 +1,6 @@
+import os
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Tuple, List
 
 import numpy as np
@@ -11,6 +13,8 @@ class Dataset(ABC):
     def __init__(self):
         self.imported = False
         self.x_train = self.y_train = self.x_test = self.y_test = None
+        self.resources_path = Path(os.path.dirname(__file__)) / '../resources'
+        self.dir_path = self.resources_path / self.name
 
     def get_training_data(self) -> Tuple[Series, Series]:
         if not self.imported:

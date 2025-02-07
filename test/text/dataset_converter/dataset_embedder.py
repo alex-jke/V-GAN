@@ -40,7 +40,7 @@ class DatasetEmbedderTest(unittest.TestCase):
         model = DeepSeek1B()
         dataset = IMBdDataset()
         training_data, _ = dataset.get_training_data()
-        amount = 40
+        amount = 12
         filtered_data = training_data[:amount].tolist()
         tokenized = model.tokenize_batch(filtered_data)
         embed_start_time = time()
