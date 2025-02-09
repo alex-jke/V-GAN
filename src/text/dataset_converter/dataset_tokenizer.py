@@ -13,6 +13,7 @@ from pandas import Series
 from torch import Tensor, tensor
 
 from ..Embedding.tokenizer import Tokenizer
+from ..UI import cli
 from ..UI.cli import ConsoleUserInterface
 from ..dataset.dataset import Dataset
 
@@ -36,7 +37,7 @@ class DatasetTokenizer:
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
         self.class_label = None
-        self.ui = ConsoleUserInterface.get()
+        self.ui = cli.get()
 
     def get_tokenized_training_data(self, class_labels: List[str] = None) -> (Tensor, Tensor):
         """

@@ -11,13 +11,14 @@ from src.text.Embedding.huggingmodel import HuggingModel
 from src.text.UI.cli import ConsoleUserInterface
 
 from src.text.dataset.dataset import Dataset
+from text.UI import cli
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 
 class DatasetEmbedder:
     def __init__(self, dataset: Dataset, model: HuggingModel):
         self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun(batch_first=True)
-        self.ui = ConsoleUserInterface.get()
+        self.ui = cli.get()
         self.dir_path = Path(os.path.dirname(__file__)) / '..' / 'resources' / dataset.name / "embedding" / f"{model._model_name}"
         self.dataset = dataset
         self.model = model

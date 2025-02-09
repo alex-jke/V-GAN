@@ -15,6 +15,8 @@ class WikipediaPeopleDataset(Dataset):
             path = kagglehub.dataset_download("sameersmahajan/people-wikipedia-data")
             data = pd.read_csv(path + "/people_wiki.csv")
             data[self.y_label_name] = 0
+            if not self.dir_path.exists():
+                self.dir_path.mkdir(parents=True)
             data.to_csv(self.dir_path / "text.csv", index=False)
         self.split(data)
 

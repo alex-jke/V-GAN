@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import List, Dict, Callable
 
 import numpy as np
@@ -5,30 +6,27 @@ import torch
 from torch import Tensor, LongTensor
 from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2ForCausalLM
 
+from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from .huggingmodel import HuggingModel
 
 
-class DeepSeek1B(HuggingModel):
-
-    def __init__(self):
-        super().__init__()
-        self.embedded_cache: Dict[int, Tensor] = {}
-        self.ui = ConsoleUserInterface.get()
+class DeepSeek(HuggingModel, ABC):
 
     @property
     def _tokenizer(self) -> AutoTokenizer:
         return AutoTokenizer.from_pretrained(f"deepseek-ai/{self._model_name}", trust_remote_code=True)
 
     @property
-    def _model_name(self) -> str:
-        return "DeepSeek-R1-Distill-Qwen-1.5B"
-
-    @property
     def _model(self) -> Qwen2ForCausalLM:
         _model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True).to(self.device)
         return _model.half().to(self.device)
+
+    def __init__(self):
+        super().__init__()
+        self.embedded_cache: Dict[int, Tensor] = {}
+        self.ui = cli.get()
 
     def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
         pass
@@ -68,7 +66,7 @@ class DeepSeek1B(HuggingModel):
                 for chunk in chunks:
                     fully_embedded: List[Tensor] = self.fully_embed_tokenized(chunk)
                     aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
-                    aggregated = torch.cat((aggregated, aggregated_chunk), dim=1)
+                    aggregated = torch.cat((aggregated, aggregated_chunk), dim=0)
                     self.ui.update(f"Embedded {aggregated.shape[1]}/{tensor.shape[0]}")
             if batch_first:
                 return aggregated.T
@@ -78,6 +76,18 @@ class DeepSeek1B(HuggingModel):
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
         raise NotImplemented
+
+class DeepSeek1B(DeepSeek):
+
+    @property
+    def _model_name(self) -> str:
+        return "DeepSeek-R1-Distill-Qwen-1.5B"
+
+class DeepSeek14B(DeepSeek):
+
+    @property
+    def _model_name(self) -> str:
+        return "DeepSeek-R1-Distill-Qwen-14B"
 
 
 if __name__ == '__main__':

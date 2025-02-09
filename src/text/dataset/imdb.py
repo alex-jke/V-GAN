@@ -18,6 +18,8 @@ class IMBdDataset(Dataset):
         else:
             data = pd.read_csv("hf://datasets/scikit-learn/imdb/IMDB Dataset.csv")
             data[self.y_label_name] = np.where(data["sentiment"] == "positive", 1, 0)
+            if not self.dir_path.exists():
+                self.dir_path.mkdir(parents=True)
             data.to_csv(self.dir_path / "text.csv", index=False)
         self.split(data)
 
