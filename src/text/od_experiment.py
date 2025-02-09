@@ -27,7 +27,21 @@ from text.visualizer.result_visualizer import ResultVisualizer
 
 class Experiment:
     def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = -1, test_size: int = -1,
-                 models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None, use_cached: bool = False):
+                 models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None,
+                 use_cached: bool = False, run_cachable: bool = True):
+        """
+        Initializes the experiment.
+        : param dataset: The dataset to use for the experiment.
+        : param emb_model: The embedding model to use for the experiment.
+        : param skip_error: Whether to skip errors and continue running the experiment.
+        : param train_size: The number of training samples to use for the experiment -1 means all samples will be used.
+        : param test_size: The number of testing samples to use for the experiment -1 means all samples will be used.
+        : param models: A list of OutlierDetectionModel instances to use for the experiment. If None, a default list will be used.
+        : param output_path: The path to save the results of the experiment. If None, a default path will be used.
+        : param experiment_name: The name of the experiment. If None, a default name will be used.
+        : param use_cached: Whether to use cached data for the experiment. Using caching might distort the time measurements.
+        : param run_cachable: Whether to run the cachable part of the experiment. If False, the experiment will run all models. This allows for quicker testing.
+        """
         """
         Initializes the experiment
         """
@@ -36,6 +50,7 @@ class Experiment:
         self.skip_error = skip_error
         self.experiment_name = "experiment_od" if experiment_name is None else experiment_name
         self.use_cached = use_cached
+        self.run_cachable = run_cachable
 
         # Experiment parameters
         self.partial_params: Dict = {
@@ -79,10 +94,11 @@ class Experiment:
         ])
 
         # VGAN ODM models with both use_embedding False and True.
+        use_emb_list = [True] if self.run_cachable else [False, True]
         models.extend([
             omd_model(**self.partial_params, base_detector=base, pre_embed=use_emb)
             for base in bases
-            for use_emb in [False, True]
+            for use_emb in use_emb_list
             for omd_model in [VGAN_ODM, FeatureBagging] # Todo: currently causes memory problems
         ])
 
@@ -100,7 +116,7 @@ class Experiment:
         """
         Constructs and returns the output path for saving results.
         """
-        return Path(os.getcwd()) / 'results' / self.experiment_name / self.dataset.name / self.emb_model.model_name
+        return Path(os.getcwd()) / 'results' / "outlier_detection" /self.experiment_name / self.dataset.name / self.emb_model.model_name
 
     def _run_single_model(self, model) -> Tuple[pd.DataFrame, Optional[pd.DataFrame]]:
         """
@@ -174,5 +190,6 @@ if __name__ == '__main__':
             with ui.display():
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
-                    experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size)
+                    experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
+                                            experiment_name=f"0.1_cached", run_cachable=True, use_cached=True)
                     experiment.run()

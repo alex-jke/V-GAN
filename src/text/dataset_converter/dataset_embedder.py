@@ -18,7 +18,7 @@ class DatasetEmbedder:
     def __init__(self, dataset: Dataset, model: HuggingModel):
         self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun(batch_first=True)
         self.ui = ConsoleUserInterface.get()
-        self.dir_path = Path(os.getcwd()) / 'text' / 'resources' / dataset.name / "embedding" / f"{model._model_name}"
+        self.dir_path = Path(os.path.dirname(__file__)) / '..' / 'resources' / dataset.name / "embedding" / f"{model._model_name}"
         self.dataset = dataset
         self.model = model
         self.desired_labels = None

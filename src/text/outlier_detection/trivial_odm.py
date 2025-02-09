@@ -6,9 +6,9 @@ from text.outlier_detection.odm import OutlierDetectionModel
 
 class TrivialODM(OutlierDetectionModel):
 
-    def __init__(self, dataset, model, train_size, test_size, inlier_label=None, guess_inlier_rate= 0.5):
+    def __init__(self,  guess_inlier_rate= 0.5, **kwargs):
         self.guess_rate = guess_inlier_rate
-        super().__init__(dataset, model, train_size, test_size, inlier_label)
+        super().__init__(**kwargs)
 
     def train(self):
         self.use_tokenized()

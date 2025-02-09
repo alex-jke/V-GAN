@@ -16,6 +16,8 @@ class EmotionDataset(Dataset):
         else:
             path = kagglehub.dataset_download("nelgiriyewithana/emotions")
             data = pd.read_csv(path + "/text.csv")
+            if not self.dir_path.exists():
+                self.dir_path.mkdir(parents=True)
             data.to_csv(self.dir_path / "text.csv", index=False)
 
         self.split(data)

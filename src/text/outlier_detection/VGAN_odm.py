@@ -23,7 +23,7 @@ from vmmd import VMMD
 
 class VGAN_ODM(OutlierDetectionModel):
 
-    def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False):
+    def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
         self.vgan = VMMD_od(epochs=3000, penalty_weight=0.5, generator=GeneratorSigmoidSTE)
@@ -35,7 +35,7 @@ class VGAN_ODM(OutlierDetectionModel):
         self.detectors: List[BaseDetector] = []
         self.init_dataset = self.use_embedding if pre_embed else self.use_tokenized
         self.pre_embed = pre_embed
-        super().__init__(dataset, model, train_size, test_size, inlier_label)
+        super().__init__(dataset, model, train_size, test_size, inlier_label, use_cached=use_cached)
 
     def _get_detector(self) -> BaseDetector:
         if not self.pre_embed:
@@ -116,7 +116,7 @@ class VGAN_ODM(OutlierDetectionModel):
         output_path = output_path / self._get_name()
         visualizer = CollectiveVisualizer(tokenized_data=self.x_test, tokenizer = self.model, vmmd_model=self.vgan, export_path=str(output_path), text_visualization=not self.pre_embed)
         visualizer.visualize(samples=30, epoch=self.vgan.epochs)
-        self.vgan.model_snapshot(path_to_directory=output_path, )
+        self.vgan.model_snapshot(path_to_directory=output_path)
         return super().evaluate(output_path=output_path)
 
     def project_dataset(self, dataset: Tensor, subspace: Tensor) -> Tensor:

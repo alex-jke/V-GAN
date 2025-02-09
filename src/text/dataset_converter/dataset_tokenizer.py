@@ -9,6 +9,7 @@ import pandas as pd
 import torch
 from IPython.core.guarded_eval import list_non_mutating_methods
 from numpy import ndarray
+from pandas import Series
 from torch import Tensor, tensor
 
 from ..Embedding.tokenizer import Tokenizer
@@ -27,7 +28,7 @@ class DatasetTokenizer:
         self.path = self.resource_path / dataset.name / "tokenized"
         self.base_file_name = f"{self.tokenizer_name}_{dataset.name}"
         self.max_samples = max_samples
-        self.dataset_path = None
+        self.dataset_path: Path | None = None
         #self.sequence_length = sequence_length
         #self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
         self.dataset = dataset
@@ -46,7 +47,7 @@ class DatasetTokenizer:
                                         - The labels of the dataset. The tensor is of shape (max_rows).
         """
 
-        self.dataset_path = self.path / f"{self.base_file_name}_{self.dataset_train_name}_{self.max_samples}{self.file_extension}"
+        self.dataset_path = self.path / f"{self.base_file_name}_{self.dataset_train_name}_s{self.max_samples}_l{class_labels}_{self.file_extension}"
         return self._get_tensor(self.dataset_train_name, class_labels=class_labels)
 
     def get_tokenized_testing_data(self, class_labels: List[str] = None) -> (Tensor, Tensor):
@@ -57,7 +58,7 @@ class DatasetTokenizer:
                                         - The labels of the dataset. The tensor is of shape (max_rows).
 
         """
-        self.dataset_path = self.path / f"{self.base_file_name}_{self.dataset_test_name}_{self.max_samples}{self.file_extension}"
+        self.dataset_path = self.path / f"{self.base_file_name}_{self.dataset_test_name}__s{self.max_samples}_l{class_labels}_{self.file_extension}"
         return self._get_tensor(self.dataset_test_name, class_labels=class_labels)
 
     def _get_tensor(self, dataset_name, class_labels: List[str] | None) -> (Tensor, Tensor):
@@ -68,6 +69,7 @@ class DatasetTokenizer:
         :return: A pair of:     - The tokenized data as a tensor. The tensor is of shape (max_rows, max_sample_length).
                                         - The labels of the dataset. The tensor is of shape (max_rows).
         """
+        class_labels: list = self.dataset.get_possible_labels() if class_labels is None else class_labels
         dataset = self._get_dataset(dataset_name, class_labels)
         max_rows = self.max_samples if self.max_samples > 0 else len(dataset)
         max_rows = min(max_rows, len(dataset))
@@ -108,12 +110,12 @@ class DatasetTokenizer:
         trimmed = tensor[:, :max_sequence_length]
         return trimmed
 
-    def _get_dataset(self, dataset_name: str, class_labels: List[str] | None) -> pd.DataFrame:
+    def _get_dataset(self, dataset_name: str, class_labels: list) -> pd.DataFrame:
         if not os.path.exists(self.dataset_path):
-            self._create_tokenized_dataset(dataset_name)
+            self._create_tokenized_dataset(dataset_name, class_labels)
         df = pd.read_csv(self.dataset_path)
-        if class_labels is None:
-            return df.iloc[:self.max_samples] if self.max_samples > 0 else df
+        #if df[self.dataset.y_label_name].isin(class_labels).sum() < self.max_samples:
+        #    self._create_tokenized_dataset()
         y_label = self.dataset.y_label_name
         filtered_df = df[df[y_label].isin(class_labels)].reset_index(drop=True)
         filtered_df = filtered_df.iloc[:self.max_samples] if self.max_samples > 0 else filtered_df
@@ -123,8 +125,8 @@ class DatasetTokenizer:
         return filtered_df
 
 
-    def _tokenize(self, x: ndarray, dataset_type: str) -> pd.DataFrame:
-        length = len(x) if self.max_samples < 0 else self.max_samples
+    def _tokenize(self, x: Series, y: Series, dataset_type: str, class_labels: list) -> pd.DataFrame:
+        #length = len(x) if self.max_samples < 0 else self.max_samples
         counter = Counter()
         path = self.path / f"{self.base_file_name}_temp_{dataset_type}.csv"
 
@@ -132,7 +134,7 @@ class DatasetTokenizer:
         # length = len(x)
         def tokenize(x):
             # if counter.counter % one_percent == 0:
-            self.ui.update(f"\r{counter.counter / length * 100}% tokenized ({counter.counter} / {length})")
+            self.ui.update(f"\r{counter.counter} tokenized")
             counter.increase_counter()
             tokenized = self.tokenizer.tokenize(x)
             # print(tokenized)
@@ -141,6 +143,7 @@ class DatasetTokenizer:
         # Save the tokenized data to a csv file at path every 100 samples to avoid data loss on crash. If the file
         # already exists, for the given amount of samples, the data is loaded from the file.
         start_row = 0
+        amount_inliers = 0
         tokenized_x = pd.DataFrame()
         if os.path.exists(path):
             tokenized_df = pd.read_csv(path)
@@ -148,13 +151,16 @@ class DatasetTokenizer:
             start_row = len(tokenized_x)
             counter = Counter(start_row)
 
-        for i in range(start_row, length, 100):
-            if i + 100 < length:
-                newly_tokenized = pd.Series(x[i:i + 100]).apply(tokenize)
-            else:
-                newly_tokenized = pd.Series(x[i:length]).apply(tokenize)
+            amount_inliers = tokenized_df[self.dataset.y_label_name].isin(class_labels).sum()
 
-            tokenized_df = pd.DataFrame({self.dataset.x_label_name: newly_tokenized})
+        length = len(x)
+        for i in range(start_row, length, 100):
+            end_index = i + 100 if i + 100 < length else length
+            newly_tokenized = pd.Series(x[i:end_index]).apply(tokenize)
+            new_labels = y[i:end_index]
+            tokenized_df = pd.DataFrame({self.dataset.x_label_name: newly_tokenized, self.dataset.y_label_name: new_labels})
+
+            amount_inliers += tokenized_df[self.dataset.y_label_name].isin(class_labels).sum()
 
             if i == 0:
                 if not os.path.exists(path):
@@ -162,12 +168,14 @@ class DatasetTokenizer:
                 tokenized_df.to_csv(path, index=False)
             else:
                 tokenized_df.to_csv(path, mode='a', header=False, index=False)
+            if amount_inliers >= self.max_samples:
+                break
 
         fully_tokenized = pd.read_csv(path)
         #return pd.DataFrame({self.dataset.x_label_name: fully_tokenized})
         return fully_tokenized
 
-    def _create_tokenized_dataset(self, dataset_name: str):
+    def _create_tokenized_dataset(self, dataset_name: str, class_labels: list):
         if dataset_name == self.dataset_train_name:
             x, y = self.dataset.get_training_data()
         elif dataset_name == self.dataset_test_name:
@@ -176,7 +184,7 @@ class DatasetTokenizer:
             raise ValueError(f"Unknown dataset name: {dataset_name}")
 
         with self.ui.display():
-            tokenized_x = self._tokenize(x, dataset_name)
+            tokenized_x = self._tokenize(x, y, dataset_name, class_labels)
 
         # As a series of length 1 is passed to the apply function, the tokenized data for that row is the first element
         # Furthermore, the tokenized data is a string of the form "[1, 2, 3, 4, 5]" which is split by the comma

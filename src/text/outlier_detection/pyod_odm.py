@@ -64,7 +64,7 @@ class ECOD(PyODM):
 
 class FeatureBagging(PyODM):
 
-    def __init__(self, dataset: Dataset, model: HuggingModel, base_detector:  Type[BaseDetector], train_size: int, test_size: int, pre_embed = True):
+    def __init__(self, dataset: Dataset, model: HuggingModel, base_detector:  Type[BaseDetector], train_size: int, test_size: int, pre_embed = True, use_cached = False):
         """
         :param dataset: The dataset to use.
         :param model: The model to use.
@@ -83,7 +83,7 @@ class FeatureBagging(PyODM):
             self.base_estimator = EmbeddingBaseDetector(model, lambda: base_detector)
 
         self.__model = pyod_FeatureBagging(base_estimator=self.base_estimator)
-        super().__init__(dataset, model, train_size, test_size, pre_embed)
+        super().__init__(dataset, model, train_size, test_size, pre_embed, use_cached=use_cached)
 
     def _get_model(self):
         return self.__model
