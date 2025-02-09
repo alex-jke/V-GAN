@@ -65,15 +65,15 @@ class DatasetEmbedder:
         else:
             os.makedirs(self.dir_path, exist_ok=True)
 
-        if start_index >= len(tokenized_dataset):
+        if start_index > len(tokenized_dataset):
             return dataset
 
-        loaded_labels = self.labels.reset_index(drop=True)[:start_index]
-        mask = loaded_labels.isin(self.desired_labels) if self.desired_labels is not None else loaded_labels.apply(lambda row: True)
-        amount_inliers = len(loaded_labels[mask])
+        #loaded_labels = self.labels.reset_index(drop=True)[:start_index]
+        #mask = loaded_labels.isin(self.desired_labels) if self.desired_labels is not None else loaded_labels.apply(lambda row: True)
+        #amount_inliers = len(loaded_labels[mask])
 
-        if amount_inliers >= samples:
-            return dataset
+        #if amount_inliers >= samples:
+            #return dataset
 
         step_size = 100
         with self.ui.display():
@@ -85,12 +85,12 @@ class DatasetEmbedder:
                 #embedded_tensor = embedded.permute(1, 0)
                 embedded_dataset = pd.DataFrame(embedded.cpu().numpy())
                 embedded_dataset.to_csv(path, index=False, mode='a', header=False)
-                loaded_labels = self.labels.reset_index(drop=True)[:end_index]
-                mask = loaded_labels.isin(self.desired_labels) if self.desired_labels is not None else loaded_labels.apply(lambda row: True)
-                amount_inliers = len(loaded_labels[mask])
-                if amount_inliers >= samples:
-                    break
+                #loaded_labels = self.labels.reset_index(drop=True)[:end_index]
+                #mask = loaded_labels.isin(self.desired_labels) if self.desired_labels is not None else loaded_labels.apply(lambda row: True)
+                #amount_inliers = len(loaded_labels[mask])
+                #if amount_inliers >= samples:
+                    #break
 
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, header=None)
         return df
 

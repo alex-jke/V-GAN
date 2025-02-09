@@ -7,7 +7,9 @@ from torch import Tensor
 from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
+from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
+from text.dataset_converter.dataset_embedder import DatasetEmbedder
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 
@@ -61,6 +63,37 @@ class DatasetEmbedderTest(unittest.TestCase):
         # 0.905 trimmed + half precision
         # 0.930 for half precision
         # 1.290 trimmed
+
+    def test_embeddings_equal(self):
+        """
+        Tests if the embeddings are equal for the same input. This is important for caching.
+        """
+        model = GPT2()
+        text = "Hello world"
+        tokenized = model.tokenize(text)
+        tokenized_tensor = Tensor(tokenized).unsqueeze(0).int()
+        embedding_fun = model.get_embedding_fun()
+        embedded = embedding_fun(tokenized_tensor)
+        embedded2 = embedding_fun(tokenized_tensor)
+        self.assertTrue(torch.allclose(embedded, embedded2, atol=1e-8), "Embeddings are not equal")
+
+    def test_cache_equal(self):
+        """
+        Tests if the embeddings are equal for the same input for non cached and cached embeddings. This is important for caching.
+        """
+        model = GPT2()
+        dataset = EmotionDataset()
+        amount = 2
+        samples: str = dataset.get_training_data()[0].iloc[:amount].tolist()
+        tokenized = model.tokenize_batch(samples)
+        tokenized_tensor = Tensor(tokenized).int()
+        embedding_fun = model.get_embedding_fun(batch_first=True)
+        embedded = embedding_fun(tokenized_tensor)
+
+        embedded_cached, _ = DatasetEmbedder(dataset=dataset, model= model).embed(train=True, samples= amount)
+
+        self.assertEqual(embedded.shape, embedded_cached.shape, "Shapes are not equal")
+        self.assertTrue(torch.allclose(embedded, embedded_cached, atol=1e-8), "Cached and uncached embeddings are not equal")
 
 if __name__ == '__main__':
     unittest.main()
