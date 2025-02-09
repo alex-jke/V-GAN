@@ -8,6 +8,7 @@ from torch import Tensor
 
 from .embedding import Embedding
 from .tokenizer import Tokenizer
+from ..UI import cli
 from ..UI.cli import ConsoleUserInterface
 
 
@@ -38,7 +39,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         self.model = self._model.to(self.device)
         self.model_name = self._model_name
         self.padding_token = self._padding_token
-        self.ui = ConsoleUserInterface.get()
+        self.ui = cli.get()
 
     def tokenize(self, data: str) -> List[int]:
         tokenized = self.tokenizer(data, return_tensors='pt')
@@ -121,7 +122,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             :return: A two-dimensional Tensor aggregated in accordance to the aggregate function.
             """
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
-            ui = ConsoleUserInterface.get()
+            ui = cli.get()
             with torch.no_grad(), ui.display():
 
                 for (i, partial_review) in enumerate(data):

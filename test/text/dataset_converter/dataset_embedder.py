@@ -46,7 +46,7 @@ class DatasetEmbedderTest(unittest.TestCase):
         filtered_data = training_data[:amount].tolist()
         tokenized = model.tokenize_batch(filtered_data)
         embed_start_time = time()
-        embed = model.get_embedding_fun()(tokenized)
+        embed = model.get_embedding_fun(batch_first=True)(tokenized)
         end_time = time()
         print(f"Embedding {amount} samples took {end_time - start_time} seconds.")
         print(f"total time per embedding: {(end_time - start_time) / amount} seconds.")
@@ -94,6 +94,14 @@ class DatasetEmbedderTest(unittest.TestCase):
 
         self.assertEqual(embedded.shape, embedded_cached.shape, "Shapes are not equal")
         self.assertTrue(torch.allclose(embedded, embedded_cached, atol=1e-8), "Cached and uncached embeddings are not equal")
+
+    def test_ui_equal(self):
+        model = GPT2()
+        dataset = EmotionDataset()
+        amount = 20000
+        embedder = DatasetEmbedder(dataset=dataset, model=model)
+        embedded, labels = embedder.embed(train=True, samples=amount)
+        self.assertEqual(embedder.ui, embedder.model.ui, "UIs are not equal")
 
 if __name__ == '__main__':
     unittest.main()

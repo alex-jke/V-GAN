@@ -4,7 +4,6 @@ from typing import Optional
 
 from text.UI.user_interface import UserInterface
 
-
 class ConsoleUserInterface(UserInterface):
     """
     Manages a console-based user interface to display, update, and manage data entries in a list.
@@ -13,13 +12,13 @@ class ConsoleUserInterface(UserInterface):
     It supports automatic cleanup using a context manager, allowing the last displayed data to be removed when the context
     is exited.
     """
-    _instance: Optional['ConsoleUserInterface'] = None
 
-    @staticmethod
-    def get() -> 'ConsoleUserInterface':
-        if ConsoleUserInterface._instance is None:
-            ConsoleUserInterface._instance = ConsoleUserInterface()
-        return ConsoleUserInterface._instance
+    #@staticmethod
+    #def get() -> 'ConsoleUserInterface':
+        #if ConsoleUserInterface._instance is None:
+            #ConsoleUserInterface._instance = ConsoleUserInterface()
+        #return ConsoleUserInterface._instance
+        #return instance
 
     class DisplayContextManager:
         def __init__(self, ui: 'ConsoleUserInterface'):
@@ -71,7 +70,7 @@ class ConsoleUserInterface(UserInterface):
 
 # Example usage:
 if __name__ == "__main__":
-    ui = ConsoleUserInterface.get()
+    ui = ConsoleUserInterface()
     with ui.display():
         for progress in range(10):
             with ui.display():
@@ -81,3 +80,7 @@ if __name__ == "__main__":
             ui.update(f"Task progress: {progress}%")
             time.sleep(0.1)
         # After exiting contexts, all tasks are cleaned up
+
+instance = ConsoleUserInterface()
+def get():
+    return instance
