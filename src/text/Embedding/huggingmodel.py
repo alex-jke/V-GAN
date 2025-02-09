@@ -38,6 +38,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         self.model = self._model.to(self.device)
         self.model_name = self._model_name
         self.padding_token = self._padding_token
+        self.ui = ConsoleUserInterface.get()
 
     def tokenize(self, data: str) -> List[int]:
         tokenized = self.tokenizer(data, return_tensors='pt')
@@ -47,11 +48,16 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         return first_elem
 
     def tokenize_batch(self, data: List[str]) -> Tensor:
-        tokenized_list = [Tensor(self.tokenize(d)) for d in data]
-        max_length = max([len(t) for t in tokenized_list])
+        with self.ui.display():
+            tokenized_list = []
+            for i, d in enumerate(data):
+                self.ui.update(f"Tokenizing {i+1}/{len(data)}")
+                tokenized_list.append(Tensor(self.tokenize(d)))
+            #tokenized_list = [Tensor(self.tokenize(d)) for d in data]
+        max_length = max([t.shape[0] for t in tokenized_list])
         padded_token_list = [torch.nn.functional.pad(t, (0, max_length - len(t)), value=self.padding_token) for t in tokenized_list]
-        tensor = torch.stack(padded_token_list)
-        return tensor.int()
+        tensor = torch.stack(padded_token_list).int().to(self.device)
+        return tensor
 
     def detokenize(self, words: List[int]) -> str:
         return self.tokenizer.decode(words)

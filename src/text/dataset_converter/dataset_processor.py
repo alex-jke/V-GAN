@@ -22,8 +22,9 @@ class DatasetProcessor:
 
     def process(self) -> (Tensor, Tensor):
         # Tokenize the data
-        tokenizer = DatasetTokenizer(tokenizer=self.model, dataset=self.dataset, max_samples=self.samples, min_samples=self.samples)
-        data = tokenizer.get_tokenized_training_data()
+        tokenizer = DatasetTokenizer(tokenizer=self.model, dataset=self.dataset, max_samples=self.samples)
+        # Todo: Currently all labels are returned. This could be changed to filter for specific labels.
+        data, _ = tokenizer.get_tokenized_training_data()
 
         if not self.use_embedding:
             # Take only the first sequence_length tokens per sample
@@ -34,7 +35,7 @@ class DatasetProcessor:
         else:
             # If using embeddings, embed and then normalize
             embedder = DatasetEmbedder(dataset=self.dataset, model=self.model)
-            first_part = embedder.embed(data)
+            first_part, _ = embedder.embed(train=True, samples=self.samples)
             normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
         return first_part, normalized
 

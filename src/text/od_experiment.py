@@ -27,7 +27,7 @@ from text.visualizer.result_visualizer import ResultVisualizer
 
 class Experiment:
     def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = -1, test_size: int = -1,
-                 models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None):
+                 models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None, use_cached: bool = False):
         """
         Initializes the experiment
         """
@@ -35,6 +35,7 @@ class Experiment:
         self.emb_model = emb_model
         self.skip_error = skip_error
         self.experiment_name = "experiment_od" if experiment_name is None else experiment_name
+        self.use_cached = use_cached
 
         # Experiment parameters
         self.partial_params: Dict = {
@@ -42,6 +43,7 @@ class Experiment:
             "model": self.emb_model,
             "train_size": train_size,  # TODO: add ability to not crash when chosen too large
             "test_size": test_size,
+            "use_cached": use_cached
         }
         # Parameters used for models that require embedding.
         self.params: Dict = {**self.partial_params, "pre_embed": True}

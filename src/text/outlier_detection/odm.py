@@ -5,6 +5,7 @@ from typing import Tuple, List, Callable
 
 import pandas as pd
 import torch.nn.functional
+from pandas import Series
 from torch import Tensor
 
 from text.Embedding.huggingmodel import HuggingModel
@@ -16,18 +17,23 @@ from sklearn.metrics import roc_auc_score
 from typing import List, Tuple
 from abc import ABC, abstractmethod
 
+from text.dataset_converter.dataset_embedder import DatasetEmbedder
+from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
+
 not_initizalied_error_msg = "The train data has not been set. Have you called use_embedding or use_tokenized?"
 
 class OutlierDetectionModel(ABC):
     """
     Abstract class for outlier detection models. Specifically for one-class classification.
     """
-    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, inlier_label: int | None = None):
+    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, inlier_label: int | None = None, use_cached: bool = False):
         self.dataset = dataset
         self.model = model
         self.train_size = train_size
         self.test_size = test_size
+        self.use_cached = use_cached
         self.name = self._get_name()
+        self.inlier_label = inlier_label
         if inlier_label is None:
             self.inlier_label = self.dataset.get_possible_labels()[0]
         self._x_test = self._y_test = self._x_train = self._y_train = None
@@ -184,7 +190,11 @@ class OutlierDetectionModel(ABC):
     def use_embedding(self) -> None:
         """Processes and embeds training and testing data.
         This method is used when the classification model should use the embeddings."""
+
         embedding_func = self.model.get_embedding_fun(batch_first=True)
+        if self.use_cached:
+            self.use_embedding_cached()
+            return
 
         # Get tokenized data and corresponding labels
         tokenized_train, y_train = self._get_tokenized_with_labels(train=True)
@@ -218,6 +228,9 @@ class OutlierDetectionModel(ABC):
         Tokenizes data and returns both tokenized data and corresponding labels.
         Handles both training and test cases.
         """
+        if self.use_cached:
+            return self._get_tokenized_with_labels_cached(train)
+
         if train:
             data, labels = self.dataset.get_training_data()
             filtered_data, filtered_labels = self._process_training_data(data, labels)
@@ -233,7 +246,7 @@ class OutlierDetectionModel(ABC):
         """Filters training data to samples matching the inlier label used for training. Thus, the Dataset
         now only contains inliers."""
         filtered_data = data[labels == self.inlier_label] # Todo: add the discarded outliers to the test set
-        selected_label = pd.Series([self.inlier_label] * self.test_size)
+        selected_label = pd.Series([self.inlier_label] * self.train_size)
         return filtered_data, selected_label
 
     def _process_testing_data(self, data: pd.Series, labels: pd.Series) -> Tuple[pd.Series, pd.Series]:
@@ -246,5 +259,34 @@ class OutlierDetectionModel(ABC):
         length = min(size, len(data))
         filtered_data = data[:length]
         return self.model.tokenize_batch(filtered_data.tolist())
+
+    def _get_tokenized_with_labels_cached(self, train: bool) -> Tuple[Tensor, Tensor]:
+        dataset_tokenizer = DatasetTokenizer(self.model, self.dataset, max_samples=self.train_size if train else self.test_size)
+        if train:
+            tokenized, labels = dataset_tokenizer.get_tokenized_training_data(class_labels=[self.inlier_label])
+            length = min(self.train_size, len(tokenized))
+            return tokenized[:length], Tensor([self.inlier_label] * length).int().to(self.model.device)
+        else:
+            tokenized, labels = dataset_tokenizer.get_tokenized_testing_data()
+            length = min(self.test_size, len(tokenized))
+            return tokenized[:length], labels[:length]
+
+    def use_embedding_cached(self):
+
+        dataset_embedder = DatasetEmbedder(self.dataset, self.model)
+
+        self._x_train, self._y_train = dataset_embedder.embed(train=True, samples=self.train_size, labels=[self.inlier_label])
+        #mask = _y_train == self.inlier_label
+        #_x_train_trimmed = _x_train[mask]
+        #length = min(self.train_size, len(_x_train_trimmed))
+        #self._x_train = _x_train_trimmed[:length]
+        #self._y_train = _y_train[mask][:length]
+
+        self. _x_test,self. _y_test = dataset_embedder.embed(train=False, samples=self.test_size)
+        #length = min(self.test_size, len(_x_test))
+        #self._x_test = _x_test[:length]
+        #self._y_test = _y_test[:length]
+
+
 
 

@@ -15,10 +15,10 @@ from text.outlier_detection.odm import OutlierDetectionModel
 
 
 class PyODM(OutlierDetectionModel, ABC):
-    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, pre_embed = True):
+    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, pre_embed = True, use_cached = False):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.initializing_fun = self.use_embedding if pre_embed else self.use_tokenized
-        super().__init__(dataset, model, train_size, test_size)
+        super().__init__(dataset=dataset, model=model, train_size=train_size, test_size=test_size, use_cached=use_cached)
         self.od_model = self._get_model()
 
     def train(self):
