@@ -91,6 +91,7 @@ class GeneratorUpperSoftmax(Generator_big):
     def __init__(self, latent_size, img_size):
         super().__init__(latent_size, img_size, upper_softmax())
 
+
 class GeneratorSigmoid(Generator_big):
     def __init__(self, latent_size, img_size):
         super().__init__(latent_size, img_size, nn.Sigmoid())
@@ -146,4 +147,24 @@ class GeneratorSigmoidSTE(GeneratorSigmoid):
     def forward(self, input):
         x = super().forward(input)
         return self.binarize(x)
+
+
+class GeneratorSpectralNorm(GeneratorSigmoidSTE):
+
+    def get_layer(self, layer_num: int, last=False):
+        input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+        output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+
+        layer = nn.Sequential(
+            nn.utils.spectral_norm(
+                nn.Linear(input_size, output_size)
+            ),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(output_size)
+        )
+        last_layer = nn.Sequential(
+            nn.Linear(input_size, self.img_size),
+            self.final_activation_function
+        )
+        return last_layer if last else layer
 

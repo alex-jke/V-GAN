@@ -103,7 +103,7 @@ class MMDLossConstrained(nn.Module):
         self.subspace_penalty = subspace_amount_penalty
         self.middle_penalty = middle_penalty
         if self.middle_penalty is None:
-            self.middle_penalty = weight
+            self.middle_penalty = 0.0
 
     def get_loss(self, X, Y, U, apply_penalty = True):
         #K = self.kernel(torch.vstack([X, Y]))

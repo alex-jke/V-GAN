@@ -12,11 +12,13 @@ from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
+from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
+from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset.wikipedia_slim import WikipediaPeopleDataset
 from text.outlier_detection.VGAN_odm import VGAN_ODM
 from text.outlier_detection.odm import OutlierDetectionModel
@@ -177,11 +179,11 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    datasets = [EmotionDataset(), AGNews(), IMBdDataset()]
+    datasets = [EmotionDataset(), AGNews(), IMBdDataset()] + NLP_ADBench.get_all_datasets()
     embedding_models = [GPT2(), Bert(), DeepSeek1B()]
-    ui = ConsoleUserInterface.get()
-    train_size = 2000
-    test_size = 200
+    ui = cli.get()
+    train_size = 200_000
+    test_size = 10_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():

@@ -9,7 +9,7 @@ from pyod.models.lunar import LUNAR
 from torch import Tensor
 
 import main
-from models.Generator import GeneratorSigmoidSTE
+from models.Generator import GeneratorSigmoidSTE, GeneratorUpperSoftmax
 from modules.od_module import VMMD_od
 
 from text.Embedding.gpt2 import GPT2
@@ -26,8 +26,9 @@ class VGAN_ODM(OutlierDetectionModel):
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
-        self.vgan = VMMD_od(epochs=3000, penalty_weight=0.5, generator=GeneratorSigmoidSTE)
-        self.number_of_subspaces = 100
+        epochs = 4000 if pre_embed else 2000
+        self.vgan = VMMD_od(epochs=epochs, penalty_weight=0.5, generator=GeneratorUpperSoftmax)
+        self.number_of_subspaces = 50
         self.base_detector: Type[BaseDetector] = base_detector
         if base_detector is None:
             self.base_detector = LUNAR
@@ -45,9 +46,11 @@ class VGAN_ODM(OutlierDetectionModel):
     def train(self):
         self.init_dataset()
         train = self.x_train.to(self.device)
-        with self.ui.display():
-            for epoch in self.vgan.yield_fit(train, yield_epochs=100):
-                self.ui.update(f"Fitting VGAN, current epoch {epoch}")
+        #with self.ui.display():
+        for epoch in self.vgan.yield_fit(train, yield_epochs=200):
+            #self.ui.update(f"Fitting VGAN, current epoch {epoch}")
+            if epoch != 0:
+                print(f"({epoch}, {self.vgan.train_history[self.vgan.generator_loss_key][-1]})")
 
 
         with self.ui.display("Generating subspaces"):

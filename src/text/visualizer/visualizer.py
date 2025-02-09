@@ -27,8 +27,8 @@ class Visualizer(ABC):
 
         self.output_dir = Path(path) / "visualizations"
 
-    def get_subspaces(self, samples: int = 1):
-        return self.model.generate_subspaces(samples)
+    def get_subspaces(self, samples: int = 1, round=True):
+        return self.model.generate_subspaces(samples, round=round)
 
     @abstractmethod
     def visualize(self, samples: int = 1, epoch: int = 0):

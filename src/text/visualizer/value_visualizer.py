@@ -15,7 +15,7 @@ class ValueVisualizer(Visualizer):
 
         if samples > 0:
             # Plot sample amount of subspaces
-            subspaces = self.get_subspaces(samples)
+            subspaces = self.get_subspaces(samples, round=False)
 
             for i in range(samples):
                 ax.plot(subspaces[i].cpu().detach().numpy(), label=f"Sample {i}")

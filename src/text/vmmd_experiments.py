@@ -7,7 +7,8 @@ import torch
 from torch import Tensor
 
 # === Imports from your modules ===
-from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE
+from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE, \
+    GeneratorSpectralNorm
 from modules.od_module import VMMD_od
 from text.Embedding.bert import Bert
 from text.Embedding.gpt2 import GPT2
@@ -42,12 +43,7 @@ def get_device() -> torch.device:
 
 DEVICE = get_device()
 
-# === Mapping for generator names ===
-GENERATOR_NAME_MAP = {
-    GeneratorSigmoid: "sigmoid",
-    GeneratorUpperSoftmax: "upper_softmax",
-    GeneratorSigmoidSTE: "sigmoid_ste"
-}
+
 
 # === Experiment class ===
 class Experiment:
@@ -85,7 +81,7 @@ class Experiment:
             'experiments',
             f"{self.version}",
             embedding_str,
-            GENERATOR_NAME_MAP[self.generator_class],
+            self.generator_class.__name__,
             self.model._model_name,
             f"{self.dataset.name}_sl{self.sequence_length}_vmmd_{self.model.model_name}_e{self.epochs}_pw{self.penalty_weight}_s{self.samples}"
         )
@@ -273,7 +269,11 @@ def run_everything():
                     )
                     experiment.run()
 
-# === Main entry point for multiple experiments ===
+# === Main entry point experiments ===
 if __name__ == '__main__':
-    experiment = Experiment(EmotionDataset(), GPT2(), version="test", train=True, momentum=0.9, lr = 0.007*3, weight_decay=0.005)
-    experiment.run()
+    #generators = [GeneratorUpperSoftmax, GeneratorSigmoidSTE, GeneratorSigmoid, GeneratorSpectralNorm]
+    generators = [GeneratorSpectralNorm]
+    for generator in generators:
+        experiment = Experiment(EmotionDataset(), GPT2(), version="0.459_adam", generator_class=generator, epochs=200, use_embedding=True,
+                                samples=200_000, lr=1e-5, yield_epochs=20)
+        experiment.run()

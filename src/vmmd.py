@@ -34,6 +34,7 @@ class VMMD:
                  weight=0, generator = None, print_updates=None):
         self.storage = locals()
         self.train_history = defaultdict(list)
+        self.generator_loss_key = "generator_loss"
         self.batch_size = batch_size
         self.epochs = epochs
         self.lr = lr
@@ -58,7 +59,7 @@ class VMMD:
     def _create_plot(self) -> pyplot:
         train_history = self.train_history
         plt.style.use('ggplot')
-        generator_y = train_history['generator_loss']
+        generator_y = train_history[self.generator_loss_key]
         x = np.linspace(1, len(generator_y), len(generator_y))
         fig, ax = plt.subplots()
         ax.plot(x, generator_y, color="cornflowerblue",
@@ -103,7 +104,7 @@ class VMMD:
         if operator.not_((path_to_directory/"train_history").exists()):
             os.mkdir(path_to_directory / "train_history")
 
-        pd.DataFrame(self.train_history["generator_loss"]).to_csv(
+        pd.DataFrame(self.train_history[self.generator_loss_key]).to_csv(
             path_to_directory/'train_history'/f'generator_loss_{run_number}.csv', header=False, index=False)
         if os.path.isfile(path_to_directory/'params.csv') != True:
             pd.DataFrame(self.get_params(), [0]).to_csv(
@@ -187,8 +188,8 @@ class VMMD:
         device = self.device
         generator = self.get_the_networks(
             ndims, latent_size, device=device)
-        optimizer = torch.optim.Adadelta(
-            generator.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        #optimizer = torch.optim.Adadelta(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay, betas=(0.5,0.9))
         self.generator_optimizer = optimizer.__class__.__name__
         # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
         kernel = RBFConstrained(embedding=embedding)
@@ -254,7 +255,7 @@ class VMMD:
             if self.print_updates:
                 print(f"Average loss in the epoch: {generator_loss}")
 
-            self.train_history["generator_loss"].append(generator_loss)
+            self.train_history[self.generator_loss_key].append(generator_loss)
 
         self.generator = generator
 
@@ -270,7 +271,7 @@ class VMMD:
             self.model_snapshot(path_to_directory, run_number, show=True)
 
 
-    def generate_subspaces(self, nsubs):
+    def generate_subspaces(self, nsubs, round = True):
         # Need to load in cpu as mps Tensor module doesn't properly fix the seed
         noise_tensor = torch.Tensor(nsubs, self.__latent_size).to('cpu')
         if not self.seed == None:
@@ -278,7 +279,8 @@ class VMMD:
         noise_tensor.normal_()
         u = self.generator(noise_tensor.to(self.device))
         #u = torch.greater_equal(u, 1/u.shape[1])
-        u = torch.greater_equal(u, 0.5) * 1
+        if round:
+            u = torch.greater_equal(u, 0.5) * 1
         u = u.detach()
 
         return u
@@ -296,11 +298,13 @@ def model_eval(model, X_data) -> pd.DataFrame:
               torch.mps.Tensor(X_sample).to(model.device) + \
               torch.mean(X_sample, dim=0) * (1-u)
     # round each value in u to one decimal
+    X2_data = torch.Tensor(pd.DataFrame(
+        X_data).sample(sample_amount).to_numpy()).to(device)
 
-    X_data = X_data.to(device)
+    #X_data = X_data.to(device)
     uX_data = uX_data.to(device)
     mmd = tts.MMDStatistic(sample_amount, sample_amount)
-    mmd_val, distances = mmd(uX_data, X_data, alphas=[0.01], ret_matrix=True)
+    mmd_val, distances = mmd(uX_data, X2_data, alphas=[0.01], ret_matrix=True)
     mmd_prop = tts.MMDStatistic(sample_amount, sample_amount)
     mmd_prop_val, distances_prop = mmd_prop(
         X_sample, uX_data, alphas=[1 / model.bandwidth], ret_matrix=True)

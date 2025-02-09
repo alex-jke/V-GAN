@@ -15,7 +15,7 @@ class SubspaceVisualizer(Visualizer):
         unique_subspaces.to_csv(output_dir / f"subspaces_{epoch}.csv", index=False)
 
     def get_unique_subspaces(self):
-        u = self.get_subspaces(1000)
+        u = self.get_subspaces(1000, round=True)
         unique_subspaces, proba = np.unique(
             np.array(u.to('cpu')), axis=0, return_counts=True)
         proba = proba / np.array(u.to('cpu')).shape[0]
