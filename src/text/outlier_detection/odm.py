@@ -9,6 +9,7 @@ from pandas import Series
 from torch import Tensor
 
 from text.Embedding.huggingmodel import HuggingModel
+from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.dataset import Dataset
 
@@ -38,7 +39,7 @@ class OutlierDetectionModel(ABC):
             self.inlier_label = self.dataset.get_possible_labels()[0]
         self._x_test = self._y_test = self._x_train = self._y_train = None
         self.device = self.model.device
-        self.ui = ConsoleUserInterface.get()
+        self.ui = cli.get()
 
     @abstractmethod
     def train(self):
@@ -133,15 +134,20 @@ class OutlierDetectionModel(ABC):
         precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
 
         # Calculate AUC
-        auc = roc_auc_score(actual_inlier, predicted_inlier)
+        common_len = min(len(predicted_inlier), len(actual_inlier))
+        if common_len < len(predicted_inlier) or common_len < len(actual_inlier):
+            print(f"Warning: Predicted ({len(predicted_inlier)}) and actual labels ({len(actual_inlier)}) have different lengths. Trimming to common length: {common_len}.")
+        predicted_inlier_trimmed = predicted_inlier[:common_len]
+        actual_inlier_trimmed = actual_inlier[:common_len]
+        auc = roc_auc_score(actual_inlier_trimmed, predicted_inlier_trimmed)
 
         # Calculate percentage of inliers and outliers
         percentage_inlier = sum(actual_inlier) / len(actual_inlier) * 100
         percentage_outlier = 100 - percentage_inlier
 
         self.results = pd.DataFrame({
-            "actual": actual_inlier,
-            "predicted": predicted_inlier
+            "actual": actual_inlier_trimmed,
+            "predicted": predicted_inlier_trimmed
         })
 
         metrics = pd.DataFrame({

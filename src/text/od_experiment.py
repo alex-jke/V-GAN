@@ -79,7 +79,7 @@ class Experiment:
         if output_path is None:
             self.output_path: Path = self._get_output_path()
 
-        self.ui = ConsoleUserInterface.get()
+        self.ui = cli.get()
 
     def _build_models(self) -> List[OutlierDetectionModel]:
         """
@@ -179,11 +179,11 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    datasets = [EmotionDataset(), AGNews(), IMBdDataset()] + NLP_ADBench.get_all_datasets()
+    datasets = [AGNews(), IMBdDataset(), EmotionDataset()] + NLP_ADBench.get_all_datasets()
     embedding_models = [GPT2(), Bert(), DeepSeek1B()]
     ui = cli.get()
-    train_size = 200_000
-    test_size = 10_000
+    train_size = -1
+    test_size = -1
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():
@@ -193,5 +193,5 @@ if __name__ == '__main__':
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.1_cached", run_cachable=True, use_cached=True)
+                                            experiment_name=f"0.1_cached", run_cachable=True, use_cached=True, skip_error=False)
                     experiment.run()
