@@ -180,11 +180,11 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    datasets = [ AGNews(), IMBdDataset(), EmotionDataset()] + NLP_ADBench.get_all_datasets()
-    embedding_models = [DeepSeek1B(), GPT2(), Bert()]#, DeepSeek14B()] #Deepseek14B currently does not work as there is not enough storage space
+    datasets = [AGNews(), IMBdDataset(), EmotionDataset()] + NLP_ADBench.get_all_datasets()
+    embedding_models = [GPT2(), Bert(), DeepSeek1B()]
     ui = cli.get()
-    train_size = 100_000
-    test_size = 10_000
+    train_size = -1
+    test_size = -1
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():

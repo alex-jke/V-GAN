@@ -115,8 +115,10 @@ class DatasetTokenizer:
         if not os.path.exists(self.dataset_path):
             self._create_tokenized_dataset(dataset_name, class_labels)
         df = pd.read_csv(self.dataset_path)
-        #if df[self.dataset.y_label_name].isin(class_labels).sum() < self.max_samples:
-        #    self._create_tokenized_dataset()
+        samples = self.max_samples if self.max_samples > 0 else len(self.dataset.x_train)
+        if df[self.dataset.y_label_name].isin(class_labels).sum() < samples:
+            self._create_tokenized_dataset(dataset_name, class_labels)
+        df = pd.read_csv(self.dataset_path)
         y_label = self.dataset.y_label_name
         filtered_df = df[df[y_label].isin(class_labels)].reset_index(drop=True)
         filtered_df = filtered_df.iloc[:self.max_samples] if self.max_samples > 0 else filtered_df
@@ -130,6 +132,7 @@ class DatasetTokenizer:
         #length = len(x) if self.max_samples < 0 else self.max_samples
         counter = Counter()
         path = self.path / f"{self.base_file_name}_temp_{dataset_type}.csv"
+        max_samples = self.max_samples if self.max_samples > 0 else len(x)
 
         # x = x[:int(length / 50000)]
         # length = len(x)
@@ -169,7 +172,7 @@ class DatasetTokenizer:
                 tokenized_df.to_csv(path, index=False)
             else:
                 tokenized_df.to_csv(path, mode='a', header=False, index=False)
-            if amount_inliers >= self.max_samples:
+            if amount_inliers >= max_samples:
                 break
 
         fully_tokenized = pd.read_csv(path)
