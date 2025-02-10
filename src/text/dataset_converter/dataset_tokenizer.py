@@ -1,4 +1,5 @@
 import ast
+import json
 import os
 import sys
 from itertools import takewhile
@@ -74,19 +75,23 @@ class DatasetTokenizer:
         dataset = self._get_dataset(dataset_name, class_labels)
         max_rows = self.max_samples if self.max_samples > 0 else len(dataset)
         max_rows = min(max_rows, len(dataset))
-        #data: List[List[List[int]]] = [ast.literal_eval(dataset[self.dataset.x_label_name][i]) for i in range(max_rows)]
+        #data = dataset[self.dataset.x_label_name].apply(lambda x: ast.literal_eval(x)).tolist()
+        #data = [ast.literal_eval(x) for x in dataset[self.dataset.x_label_name]]
+        #data = [json.loads(x) for x in dataset[self.dataset.x_label_name]]
         data = []
-        #for i in range(max_rows):
-            #token_list_str = dataset[self.dataset.x_label_name][i]
-            #token_list = ast.literal_eval(token_list_str)
-            #data.append(token_list)
-        #data: List[List[int]] = [ast.literal_eval(dataset[self.dataset.x_label_name][i]) for i in range(max_rows)]
-        data = dataset[self.dataset.x_label_name].apply(lambda x: ast.literal_eval(x)).tolist()
-        #max_lists = max([len(list_of_lists) for list_of_lists in data])
+        with self.ui.display():
+            for x in dataset[self.dataset.x_label_name]:
+                self.ui.update(f"reading tokenized dataset {len(data)} / {max_rows}")
+                try:
+                    json_list = json.loads(x)
+                    data.append(json_list)
+                except json.JSONDecodeError:
+                    print(f"Warning: Skipping invalid JSON in row: {x}")  # Debugging
+                    #json_list = []
+
         max_length = max([len(token_list) for token_list in data])
 
         for i in range(len(data)):
-            #data[i] = data[i] + [[self.tokenizer.padding_token] * self.sequence_length] * (max_lists - len(data[i]))
             data[i] = data[i] + [self.padding_token] * (max_length - len(data[i]))
 
         data_tensor = torch.tensor(data, dtype=torch.int).to(self.device)
@@ -95,19 +100,35 @@ class DatasetTokenizer:
 
         return trimmed_tensor, torch.tensor(dataset[self.dataset.y_label_name][:max_rows].tolist()).to(self.device)
 
-    def _trim_tensor(self, tensor: Tensor) -> Tensor:
-        """
-        Finds the longest sequence of non-padding tokens and trims the tensor to that length.
-        """
-        max_sequence_length = 0
-        for i in range(tensor.shape[0]):
-            entry = tensor[i]
-            is_padding = lambda x: x == self.tokenizer._padding_token
-            cache_padding = [x for x in takewhile(is_padding, reversed(entry.tolist()))]
-            non_padding_length = len(entry) - len(cache_padding)
-            max_sequence_length = max(max_sequence_length, non_padding_length)
 
-        #print(f"trimming tensor from {tensor.shape[1]} to {max_sequence_length}")
+    def _trim_tensor(self, tensor: torch.Tensor) -> torch.Tensor:
+        """
+        Finds the longest sequence of non-padding tokens across rows and
+        trims the tensor to that length.
+        """
+        padding_token = self.tokenizer._padding_token
+        # Create a boolean mask: True where token is not padding.
+        mask = tensor != padding_token
+        # Flip the mask along the sequence dimension (assumed dim=1).
+        mask_rev = torch.flip(mask, dims=[1])
+
+        # For each row, check if there is any non-padding token.
+        non_padding_exists = mask_rev.any(dim=1)
+        L = tensor.size(1)
+        # For each row, find the index of the first non-padding token in the reversed row.
+        # (Note: If all tokens are padding, argmax returns 0; we fix that below.)
+        first_non_padding = mask_rev.float().argmax(dim=1)
+        # For rows that are all padding, set the index to L (so that effective length becomes 0).
+        first_non_padding = torch.where(
+            non_padding_exists,
+            first_non_padding,
+            torch.full_like(first_non_padding, L)
+        )
+        # Effective length per row is: total length - number of trailing padding tokens.
+        effective_lengths = L - first_non_padding
+        # Determine the maximum effective (non-padding) length.
+        max_sequence_length = effective_lengths.max().item()
+
         trimmed = tensor[:, :max_sequence_length]
         return trimmed
 
@@ -158,22 +179,24 @@ class DatasetTokenizer:
             amount_inliers = tokenized_df[self.dataset.y_label_name].isin(class_labels).sum()
 
         length = len(x)
-        for i in range(start_row, length, 100):
-            end_index = i + 100 if i + 100 < length else length
-            newly_tokenized = pd.Series(x[i:end_index]).apply(tokenize)
-            new_labels = y[i:end_index]
-            tokenized_df = pd.DataFrame({self.dataset.x_label_name: newly_tokenized, self.dataset.y_label_name: new_labels})
+        with self.ui.display():
+            for i in range(start_row, length, 100):
+                self.ui.update(f"tokenizing {i} / {length}")
+                end_index = i + 100 if i + 100 < length else length
+                newly_tokenized = pd.Series(x[i:end_index]).apply(tokenize)
+                new_labels = y[i:end_index]
+                tokenized_df = pd.DataFrame({self.dataset.x_label_name: newly_tokenized, self.dataset.y_label_name: new_labels})
 
-            amount_inliers += tokenized_df[self.dataset.y_label_name].isin(class_labels).sum()
+                amount_inliers += tokenized_df[self.dataset.y_label_name].isin(class_labels).sum()
 
-            if i == 0:
-                if not os.path.exists(path):
-                    os.makedirs(self.path, exist_ok=True)
-                tokenized_df.to_csv(path, index=False)
-            else:
-                tokenized_df.to_csv(path, mode='a', header=False, index=False)
-            if amount_inliers >= max_samples:
-                break
+                if i == 0:
+                    if not os.path.exists(path):
+                        os.makedirs(self.path, exist_ok=True)
+                    tokenized_df.to_csv(path, index=False)
+                else:
+                    tokenized_df.to_csv(path, mode='a', header=False, index=False)
+                if amount_inliers >= max_samples:
+                    break
 
         fully_tokenized = pd.read_csv(path)
         #return pd.DataFrame({self.dataset.x_label_name: fully_tokenized})
@@ -195,7 +218,6 @@ class DatasetTokenizer:
         max_token_length = tokenized_x.apply(lambda token_list: len(token_list.iloc[0].split(",")), axis=1).max()
 
         def vec_transform(x):
-
             tokens_amount = len(x.iloc[0].split(","))
             transformed = x.iloc[0][:-1] + ", " + str([self.padding_token] * (max_token_length - tokens_amount))[1:]
             return transformed

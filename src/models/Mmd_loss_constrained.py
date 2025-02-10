@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 
 import torch
@@ -53,8 +54,13 @@ class RBF(nn.Module):
 
         squared_distances = distances ** 2
 
+        if torch.isnan(squared_distances).any():
+            print("L2 distances are nan.")
+
         result = self._compute_rbf_kernel(squared_distances)
 
+        if torch.isnan(result).any():
+            print("result are nan.")
         return result
 
     def _compute_rbf_kernel(self, L2_distances):
@@ -84,6 +90,9 @@ class RBF(nn.Module):
 
         # Sum over the embeddings dimension
         result_reduced = result.mean(dim=0) # check if this still is a norm. Try to turn it into a norm.
+
+        if torch.isnan(result_reduced).any():
+            print("kernel produced nan value")
 
         # Result should be of shape (2*batch_size, 2*batch_size)
         return result_reduced
@@ -115,6 +124,11 @@ class MMDLossConstrained(nn.Module):
         XY = K[:X_size, X_size:].mean()
         YY = K[X_size:, X_size:].mean()
 
+        if torch.isnan(XX).any() or torch.isnan(XY).any() or torch.isnan(YY).any():
+            XX = torch.where(torch.isnan(XX), torch.zeros_like(XX), XX)
+            XY = torch.where(torch.isnan(XY), torch.zeros_like(XY), XY)
+            YY = torch.where(torch.isnan(YY), torch.zeros_like(YY), YY)
+
         # ones = torch.ones(U.shape[1]).to(self.device)
         # topk = torch.topk(U, 10, 0).values.float().mean(dim=0)
         avg = U.float().mean(dim=0).sum() / U.shape[1]
@@ -129,10 +143,13 @@ class MMDLossConstrained(nn.Module):
         middle_penalty *= self.middle_penalty
 
         mmd_loss = XX - 2 * XY + YY
-        return mmd_loss + penalty + middle_penalty
+        if math.isnan(mmd_loss):
+            print("mmd is nan.")
+        return mmd_loss + penalty + middle_penalty, mmd_loss
 
     def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):
-        return self.get_loss(X, Y, U, apply_penalty)
+        full_loss, self.mmd_loss = self.get_loss(X, Y, U, apply_penalty)
+        return full_loss
 
 if __name__ == "__main__":
     # Two identical Gaussians should have MMD ≈ 0

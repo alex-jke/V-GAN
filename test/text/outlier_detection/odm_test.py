@@ -6,7 +6,7 @@ import pandas as pd
 import torch
 from torch import Tensor
 
-from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B
+from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.emotions import EmotionDataset
 from text.outlier_detection.pyod_odm import LUNAR
@@ -60,11 +60,11 @@ class OutlierDetectionMethodTest(unittest.TestCase):
 
         self.assertTrue(torch.allclose(cached_x_train, uncached_x_train, atol=1e-8), "Cached and uncached x_train are not equal")
 
-    def test_deepseek14b(self):
-        model = DeepSeek14B()
+    def test_deepseek7b(self):
+        model = DeepSeek7B()
         sample = "This is an example."
         tokenized = model.tokenize_batch([sample])
         embedded = model.fully_embed_tokenized(tokenized)[0]
-        df = pd.DataFrame(embedded.cpu().numpy())
-        print(df)
+        #df = pd.DataFrame(embedded.cpu().numpy())
+        print(embedded)
 

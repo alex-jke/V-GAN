@@ -1,4 +1,5 @@
 import os
+import traceback
 from pathlib import Path
 from typing import List, Tuple, Optional, Dict
 
@@ -9,7 +10,7 @@ from pyod.models.ecod import ECOD as pyod_ECOD
 from pyod.models.lof import LOF as pyod_LOF
 
 from text.Embedding.bert import Bert
-from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B
+from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
 from text.UI import cli
@@ -139,7 +140,7 @@ class Experiment:
             error_record = pd.DataFrame({
                 "model": [model.name],
                 "error": [str(e)],
-                "traceback": [e.with_traceback()]
+                "traceback": [str(traceback.format_exc())]
             })
             print(f"{model.name} encountered an error.")
             return pd.DataFrame(), error_record
@@ -181,7 +182,7 @@ class Experiment:
 
 if __name__ == '__main__':
     datasets = [AGNews(), IMBdDataset(), EmotionDataset()] + NLP_ADBench.get_all_datasets()
-    embedding_models = [GPT2(), Bert(), DeepSeek1B()]
+    embedding_models = [DeepSeek7B()]#[GPT2(), Bert(), DeepSeek1B()]
     ui = cli.get()
     train_size = -1
     test_size = -1
@@ -194,5 +195,5 @@ if __name__ == '__main__':
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.21_adam+large", run_cachable=True, use_cached=True)
+                                            experiment_name=f"0.212_adam+large", run_cachable=True, use_cached=False)
                     experiment.run()

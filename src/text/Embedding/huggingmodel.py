@@ -123,10 +123,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             """
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
             ui = cli.get()
-            with torch.no_grad(), ui.display():
+            with torch.no_grad():#, ui.display():
 
                 for (i, partial_review) in enumerate(data):
-                    ui.update(f"Embedding {i+1}/{len(data)}")
+                    #ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
                     embedded: Tensor = self.fully_embed_tokenized(partial_review.int()) #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension

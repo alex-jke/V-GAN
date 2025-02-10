@@ -1,4 +1,5 @@
 from abc import ABC
+from random import random
 from typing import List, Dict, Callable
 
 import numpy as np
@@ -20,8 +21,11 @@ class DeepSeek(HuggingModel, ABC):
     @property
     def _model(self) -> Qwen2ForCausalLM:
         _model = AutoModelForCausalLM.from_pretrained(
-            pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True).to(self.device)
-        return _model.half().to(self.device)
+            pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True,
+            torch_dtype=torch.bfloat16
+        ).to(self.device)
+        #return _model.half().to(self.device)
+        return _model
 
     def __init__(self):
         super().__init__()
@@ -42,7 +46,7 @@ class DeepSeek(HuggingModel, ABC):
 
         with torch.no_grad():
             outputs = self.model.model(trimmed_token_vec, attention_mask=attention_mask) # not surprisingly, this takes the majority of the time.
-            embeddings: Tensor = outputs.last_hidden_state
+            embeddings: Tensor = outputs.last_hidden_state.to(dtype=torch.float32)
         embeddings_list = [embeddings[i] for i in range(embeddings.shape[0])]
         attention_mask_list = [attention_mask[i] for i in range(attention_mask.shape[0])]
 
@@ -60,19 +64,19 @@ class DeepSeek(HuggingModel, ABC):
     def get_embedding_fun(self, chunk_size = 10, batch_first=False) -> Callable[[Tensor], Tensor]:
 
         def embedding(tensor: Tensor) -> Tensor:
+            #projected = self.project(tensor)
             chunks = torch.split(tensor, chunk_size, dim=0)
             aggregated = Tensor().to(self.device)
-            with torch.no_grad(), self.ui.display():
+            with torch.no_grad():#, self.ui.display():
                 for chunk in chunks:
                     fully_embedded: List[Tensor] = self.fully_embed_tokenized(chunk)
                     aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
                     aggregated = torch.cat((aggregated, aggregated_chunk), dim=0)
-                    self.ui.update(f"Embedded {aggregated.shape[1]}/{tensor.shape[0]}")
+                    #self.ui.update(f"Embedded {aggregated.shape[0]}/{tensor.shape[0]}")
             if batch_first:
-                return aggregated.T
-            return aggregated
+                return aggregated.T.to()
+            return aggregated.to()
         return embedding
-
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
         raise NotImplemented
@@ -87,8 +91,12 @@ class DeepSeek14B(DeepSeek):
 
     @property
     def _model_name(self) -> str:
-        return "DeepSeek-R1-Distill-Qwen-14B"
+        return #"DeepSeek-R1-Distill-Qwen-14B"
 
+class DeepSeek7B(DeepSeek1B):
+    @property
+    def _model_name(self) -> str:
+        return "DeepSeek-R1-Distill-Qwen-7B"
 
 if __name__ == '__main__':
     model = DeepSeek1B()

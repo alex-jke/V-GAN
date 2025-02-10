@@ -35,6 +35,7 @@ class VMMD:
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.generator_loss_key = "generator_loss"
+        self.mmd_loss_key = "mmd_loss"
         self.batch_size = batch_size
         self.epochs = epochs
         self.lr = lr
@@ -60,10 +61,13 @@ class VMMD:
         train_history = self.train_history
         plt.style.use('ggplot')
         generator_y = train_history[self.generator_loss_key]
+        mmd_y = train_history[self.mmd_loss_key]
         x = np.linspace(1, len(generator_y), len(generator_y))
         fig, ax = plt.subplots()
         ax.plot(x, generator_y, color="cornflowerblue",
                 label="Generator loss", linewidth=2)
+        ax.plot(x, mmd_y, color="r",
+                label="MMD loss", linewidth=2)
 
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
@@ -104,7 +108,8 @@ class VMMD:
         if operator.not_((path_to_directory/"train_history").exists()):
             os.mkdir(path_to_directory / "train_history")
 
-        pd.DataFrame(self.train_history[self.generator_loss_key]).to_csv(
+        pd.DataFrame({self.generator_loss_key: self.train_history[self.generator_loss_key],
+                      self.mmd_loss_key: self.train_history[self.mmd_loss_key]}).to_csv(
             path_to_directory/'train_history'/f'generator_loss_{run_number}.csv', header=False, index=False)
         if os.path.isfile(path_to_directory/'params.csv') != True:
             pd.DataFrame(self.get_params(), [0]).to_csv(
@@ -199,6 +204,7 @@ class VMMD:
             if self.print_updates:
                 print(f'\rEpoch {epoch} of {epochs}')
             generator_loss = 0
+            mmd_loss = 0
 
             # DATA LOADER#
             if cuda:
@@ -241,10 +247,13 @@ class VMMD:
                 #masked_batch = masked * batch
                 masked_batch = fake_subspaces * batch
                 batch_loss = loss_function(masked_batch, batch, fake_subspaces)
+                batch_mmd_loss = loss_function.mmd_loss
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
                 optimizer.step()
                 generator_loss += float(batch_loss.to(
+                    'cpu').detach().numpy())/batch_number
+                mmd_loss += float(batch_mmd_loss.to(
                     'cpu').detach().numpy())/batch_number
                 #print("finished batch")
 
@@ -253,9 +262,10 @@ class VMMD:
                 yield epoch
 
             if self.print_updates:
-                print(f"Average loss in the epoch: {generator_loss}")
+                print(f"Average loss in the epoch: {generator_loss}, mmd loss: {mmd_loss}")
 
             self.train_history[self.generator_loss_key].append(generator_loss)
+            self.train_history[self.mmd_loss_key].append(mmd_loss)
 
         self.generator = generator
 

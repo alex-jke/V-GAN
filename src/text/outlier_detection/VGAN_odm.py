@@ -15,6 +15,7 @@ from modules.od_module import VMMD_od
 
 from text.Embedding.gpt2 import GPT2
 from text.dataset.SimpleDataset import SimpleDataset
+from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import EmbeddingBaseDetector
@@ -27,8 +28,7 @@ class VGAN_ODM(OutlierDetectionModel):
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
-        epochs = 200
-        self.vgan = VMMD_od(epochs=epochs, penalty_weight=0.5, generator=GeneratorSpectralNorm,
+        self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSpectralNorm,
                             lr=1e-5)
         self.number_of_subspaces = 50
         self.base_detector: Type[BaseDetector] = base_detector
@@ -48,6 +48,12 @@ class VGAN_ODM(OutlierDetectionModel):
     def train(self):
         self.init_dataset()
         train = self.x_train.to(self.device)
+
+
+        epochs = int(10 ** 6.9 / len(train) + 200)
+        self.vgan.epochs = epochs
+        print(f"training vmmd for {epochs} epochs.")
+
         #with self.ui.display():
         for epoch in self.vgan.yield_fit(train, yield_epochs=200):
             #self.ui.update(f"Fitting VGAN, current epoch {epoch}")
@@ -141,6 +147,7 @@ class VGAN_ODM(OutlierDetectionModel):
         #If no feature is selected, select at least one at random.
         #TODO: Does this make sense?
         if not subspace_mask.any():
+            print("Warning: Projection to zero space.")
             random_index = int(random() * len(subspace_mask))
             subspace_mask[random_index] = True
         trimmed = projected[:, subspace_mask]
@@ -148,7 +155,7 @@ class VGAN_ODM(OutlierDetectionModel):
 
 if __name__ == '__main__':
     #vmmd = VGAN_ODM(SimpleDataset(["This is an example"], 300), GPT2(), 200, 100)
-    vmmd = VGAN_ODM(EmotionDataset(), GPT2(), 200, 100)
+    vmmd = VGAN_ODM(AGNews(), GPT2(), -1, -1)
     vmmd.train()
     vmmd.predict()
     vmmd.evaluate()

@@ -55,9 +55,15 @@ class L2Norm(VectorNorm):
         Computes the L2 norm of the input vectors. The distance matrix is a square matrix where the element
         (i, j) is the L2 norm between the ith and jth Vector. That is ||X[i] - X[j]||.
         """
-        if X.dtype == torch.long:
-            X = X.float()
-        return torch.cdist(X, X)
+        #if X.dtype == torch.long:
+        X = X.float()
+
+        dists = torch.cdist(X, X) #todo cdist is computing nan values
+        nans = torch.isnan(dists)
+        if nans.any():
+            #print(f"torch.cdist computed {nans.sum()} nan values of {nans.shape[0]*nans.shape[1]}, replacing with 0", end=" ")
+            dists = torch.where(torch.isnan(X), torch.zeros_like(X), X)
+        return dists
 
 
 class FrobeniusNorm(MatrixNorm):
