@@ -9,6 +9,7 @@ from pandas import Series
 from torch import Tensor
 
 from text.Embedding.huggingmodel import HuggingModel
+from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.dataset import Dataset
 
@@ -38,7 +39,7 @@ class OutlierDetectionModel(ABC):
             self.inlier_label = self.dataset.get_possible_labels()[0]
         self._x_test = self._y_test = self._x_train = self._y_train = None
         self.device = self.model.device
-        self.ui = ConsoleUserInterface.get()
+        self.ui = cli.get()
 
     @abstractmethod
     def train(self):

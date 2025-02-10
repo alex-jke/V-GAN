@@ -29,7 +29,7 @@ class DeepSeek(HuggingModel, ABC):
         self.ui = cli.get()
 
     def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
-        pass
+        raise NotImplementedError
 
     def fully_embed_tokenized(self, tokenized: Tensor) -> List[Tensor]:
         token_vec = tokenized.clone().detach().int().to(self.device)

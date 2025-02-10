@@ -9,7 +9,7 @@ from pyod.models.lunar import LUNAR
 from torch import Tensor
 
 import main
-from models.Generator import GeneratorSigmoidSTE, GeneratorUpperSoftmax
+from models.Generator import GeneratorSigmoidSTE, GeneratorUpperSoftmax, GeneratorSpectralNorm
 from modules.od_module import VMMD_od
 
 from text.Embedding.gpt2 import GPT2
@@ -26,8 +26,9 @@ class VGAN_ODM(OutlierDetectionModel):
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
-        epochs = 4000 if pre_embed else 2000
-        self.vgan = VMMD_od(epochs=epochs, penalty_weight=0.5, generator=GeneratorUpperSoftmax)
+        epochs = 200
+        self.vgan = VMMD_od(epochs=epochs, penalty_weight=0.5, generator=GeneratorSpectralNorm,
+                            lr=1e-5)
         self.number_of_subspaces = 50
         self.base_detector: Type[BaseDetector] = base_detector
         if base_detector is None:
@@ -133,7 +134,10 @@ class VGAN_ODM(OutlierDetectionModel):
         # expand subspace to match dataset shape
         subspace_expanded = subspace.expand(dataset.shape[0], -1)
         projected = dataset * subspace_expanded
-        return projected
+        # Only pass the features that were selected, instead of leaving them empty
+        subspace_mask = subspace != 0
+        trimmed = projected[:, subspace_mask]
+        return trimmed
 
 if __name__ == '__main__':
     #vmmd = VGAN_ODM(SimpleDataset(["This is an example"], 300), GPT2(), 200, 100)

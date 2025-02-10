@@ -21,6 +21,11 @@ class ODExperimentTest(unittest.TestCase):
         exp = Experiment(AGNews(), GPT2(), skip_error=False)
         exp.run()
 
+    def test_emotion_gpt2(self):
+        experiment = Experiment(dataset=EmotionDataset(), emb_model=GPT2(), train_size=-1, test_size=-1,
+                                experiment_name=f"0.2_adam+large", run_cachable=True, use_cached=True, skip_error=False)
+        experiment.run()
+
     def test_emotions_gpt2_vgan_lunar_embedding(self):
         dataset = EmotionDataset()
         model = GPT2()

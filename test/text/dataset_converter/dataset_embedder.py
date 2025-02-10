@@ -9,7 +9,7 @@ from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
-from text.dataset_converter.dataset_embedder import DatasetEmbedder
+from src.text.dataset_converter.dataset_embedder import DatasetEmbedder
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 

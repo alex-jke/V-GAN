@@ -9,7 +9,7 @@ from pyod.models.ecod import ECOD as pyod_ECOD
 from pyod.models.lof import LOF as pyod_LOF
 
 from text.Embedding.bert import Bert
-from text.Embedding.deepseek import DeepSeek1B
+from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
 from text.UI import cli
@@ -79,7 +79,7 @@ class Experiment:
         if output_path is None:
             self.output_path: Path = self._get_output_path()
 
-        self.ui = ConsoleUserInterface.get()
+        self.ui = cli.get()
 
     def _build_models(self) -> List[OutlierDetectionModel]:
         """
@@ -138,7 +138,8 @@ class Experiment:
                 raise e
             error_record = pd.DataFrame({
                 "model": [model.name],
-                "error": [str(e)]
+                "error": [str(e)],
+                "traceback": [e.with_traceback()]
             })
             print(f"{model.name} encountered an error.")
             return pd.DataFrame(), error_record
@@ -179,10 +180,10 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    datasets = [EmotionDataset(), AGNews(), IMBdDataset()] + NLP_ADBench.get_all_datasets()
-    embedding_models = [GPT2(), Bert(), DeepSeek1B()]
+    datasets = [ AGNews(), IMBdDataset(), EmotionDataset()] + NLP_ADBench.get_all_datasets()
+    embedding_models = [DeepSeek1B(), GPT2(), Bert()]#, DeepSeek14B()] #Deepseek14B currently does not work as there is not enough storage space
     ui = cli.get()
-    train_size = 200_000
+    train_size = 100_000
     test_size = 10_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
@@ -193,5 +194,5 @@ if __name__ == '__main__':
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.1_cached", run_cachable=True, use_cached=True)
+                                            experiment_name=f"0.21_adam+large", run_cachable=True, use_cached=True)
                     experiment.run()
