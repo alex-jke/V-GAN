@@ -1,4 +1,5 @@
 from pathlib import Path
+from random import random
 from typing import Tuple, List, Type
 
 import numpy as np
@@ -136,6 +137,12 @@ class VGAN_ODM(OutlierDetectionModel):
         projected = dataset * subspace_expanded
         # Only pass the features that were selected, instead of leaving them empty
         subspace_mask = subspace != 0
+
+        #If no feature is selected, select at least one at random.
+        #TODO: Does this make sense?
+        if not subspace_mask.any():
+            random_index = int(random() * len(subspace_mask))
+            subspace_mask[random_index] = True
         trimmed = projected[:, subspace_mask]
         return trimmed
 
