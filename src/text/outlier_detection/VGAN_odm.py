@@ -28,7 +28,7 @@ class VGAN_ODM(OutlierDetectionModel):
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
-        self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSpectralNorm,
+        self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSigmoidSTE,
                             lr=1e-5)
         self.number_of_subspaces = 50
         self.base_detector: Type[BaseDetector] = base_detector
@@ -50,7 +50,7 @@ class VGAN_ODM(OutlierDetectionModel):
         train = self.x_train.to(self.device)
 
 
-        epochs = int(10 ** 6.9 / len(train) + 200)
+        epochs = int(10 ** 6.7 / len(train) + 200)
         self.vgan.epochs = epochs
         print(f"training vmmd for {epochs} epochs.")
 
