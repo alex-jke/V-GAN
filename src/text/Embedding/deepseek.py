@@ -22,7 +22,7 @@ class DeepSeek(HuggingModel, ABC):
     def _model(self) -> Qwen2ForCausalLM:
         _model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True,
-            torch_dtype=torch.bfloat16
+            #torch_dtype=torch.bfloat16
         ).to(self.device)
         #return _model.half().to(self.device)
         return _model

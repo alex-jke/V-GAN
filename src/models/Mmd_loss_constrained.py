@@ -26,11 +26,8 @@ class RBF(nn.Module):
         self.matrix_norm = matrix_norm
 
     def get_bandwidth(self, L2_distances):
-        if self.bandwidth is None:
-            n_samples = L2_distances.shape[0]
-            self.bandwidth = L2_distances.data.sum() / (n_samples ** 2 - n_samples)
-            return L2_distances.data.sum() / (n_samples ** 2 - n_samples)
-
+        n_samples = L2_distances.shape[0]
+        self.bandwidth = L2_distances.data.sum() / (n_samples ** 2 - n_samples)
         return self.bandwidth
 
     def forward(self, X: torch.Tensor, Y: torch.Tensor):

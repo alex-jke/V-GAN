@@ -32,10 +32,15 @@ class NLP_ADBench(Dataset):
             train_dataset = pd.read_csv(dataset_path / "train.csv")
             test_dataset = pd.read_csv(dataset_path / "test.csv")
 
-        train_dataset = train_dataset[train_dataset["original_task"] == self._get_row()]
-        test_dataset = test_dataset[test_dataset["original_task"] == self._get_row()]
+        task_label = self._get_row()
+        task_column = train_dataset["original_task"]
+        train_dataset_filtered = train_dataset[task_column == task_label]
+        test_dataset_filtered = test_dataset[task_column == task_label]
 
-        self.x_train, self.x_test, self.y_train, self.y_test = train_dataset[self.x_label_name], test_dataset[self.x_label_name], train_dataset[self.y_label_name], test_dataset[self.y_label_name]
+        self.x_train = train_dataset_filtered[self.x_label_name]
+        self.y_train = train_dataset_filtered[self.y_label_name]
+        self.x_test = test_dataset_filtered[self.x_label_name]
+        self.y_test = test_dataset_filtered[self.y_label_name]
         self.imported = True
 
     @property
@@ -53,7 +58,7 @@ class NLP_ADBench(Dataset):
     def _get_row(self):
         name_to_row_map = {
             "agnews": "AG News Classification",
-            "N24News": "N24 News: A Dataset for Multimodal News Classification",
+            "N24News": "N24News: A New Dataset for Multimodal News Classification",
             "bbc": "BBC news category classification",
             "email_spam": "To check if an email is a spam",
             "emotion": "Emotion is a dataset of English Twitter messages with six basic emotions: anger, fear, joy, love, sadness, and surprise.",
@@ -61,7 +66,8 @@ class NLP_ADBench(Dataset):
             "sms_spam": "SMS spam classification",
             "yelp_review_polarity": "Yelp reviews dataset consists of reviews from Yelp"
         }
-        return name_to_row_map[self.dataset_name]
+        key = self.dataset_name
+        return name_to_row_map[key]
 
     def _assert_is_valid_name(self, name: str):
        if name not in self.possible_datasets():

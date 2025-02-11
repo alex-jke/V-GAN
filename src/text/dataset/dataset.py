@@ -19,11 +19,13 @@ class Dataset(ABC):
     def get_training_data(self) -> Tuple[Series, Series]:
         if not self.imported:
             self._import_data()
+            self.imported = True
         return self.x_train, self.y_train
 
     def get_testing_data(self) -> Tuple[Series, Series]:
         if not self.imported:
             self._import_data()
+            self.imported = True
         return self.x_test, self.y_test
 
     def get_one_class_testing_data(self, class_label: str) -> np.ndarray:
@@ -31,6 +33,7 @@ class Dataset(ABC):
             raise ValueError(f"Class label {class_label} is not a possible label.")
         if not self.imported:
             self._import_data()
+            self.imported = True
         return self.x_test[self.y_test == class_label]
 
     def split(self, data):
