@@ -26,7 +26,8 @@ class PyODM(OutlierDetectionModel, ABC):
         self.od_model.fit(self.x_train.cpu().numpy(), None)
 
     def predict(self):
-        decision_function = self.od_model.decision_function(self.x_test.cpu().numpy())
+        test = self.x_test
+        decision_function = self.od_model.decision_function(test.cpu().numpy())
         #predictions = self.od_model.predict_proba(self.x_test.cpu().numpy())[:,1]
         self.decision_function = decision_function #[1 if x == 0 else 0 for x in predictions]
 

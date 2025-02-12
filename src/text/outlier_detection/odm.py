@@ -150,7 +150,7 @@ class OutlierDetectionModel(ABC):
             "predicted": predicted_inlier_trimmed
         })
 
-        metrics = pd.DataFrame({
+        self.metrics = pd.DataFrame({
             "method": [self.name],
             "space": [self.get_space()],
             "accuracy": [accuracy],
@@ -191,7 +191,7 @@ class OutlierDetectionModel(ABC):
                     f"  Time Taken:         {self.time_elapsed:>7.2f} seconds\n"
                     f"{'='*40}")
 
-        return metrics
+        return self.metrics
 
     def use_embedding(self) -> None:
         """Processes and embeds training and testing data.

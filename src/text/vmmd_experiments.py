@@ -282,7 +282,6 @@ def run_everything():
 def run_all_datasets():
     datasets = [AGNews(), EmotionDataset(), IMBdDataset(), WikipediaPeopleDataset()] + NLP_ADBench.get_all_datasets()
     models = [GPT2(), Bert(), DeepSeek1B()]
-    skip_first = 5
     for pre_embed in [False, True]:
         for model in models:
             for dataset in datasets:
@@ -294,8 +293,8 @@ def run_all_datasets():
                 epochs = epochs if pre_embed else epochs * 2
                 yield_epochs = epochs // 20
                 experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=pre_embed,
-                                        samples=200_000, version="0.463_adam+SigSTEMBD+grad_clip", yield_epochs=yield_epochs,
-                                        penalty_weight=0.1, generator_class=GeneratorSigmoidSTEMBD, gradient_clipping = True)
+                                        samples=200_000, version="0.463_adam+full_length+grad_clip", yield_epochs=yield_epochs,
+                                        penalty_weight=0.1, generator_class=GeneratorSigmoidSTE, gradient_clipping = True)
                 experiment.run()
 
 # === Main entry point experiments ===

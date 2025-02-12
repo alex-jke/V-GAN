@@ -147,7 +147,7 @@ class MiniBatchDiscrimination(nn.Module):
         """
         Computes for each sample an additional feature vector that measures similarity to other samples in the mini-batch.
         :param x: Tensor of shape (batch_size, in_features).
-        :return: Tensor of shape (batch_size, out_features).
+        :return: Tensor of shape (batch_size, in_features + out_features).
         """
         # x: (batch_size, in_features)
         batch_size = x.size(0)

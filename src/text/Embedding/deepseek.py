@@ -72,8 +72,8 @@ class DeepSeek(HuggingModel, ABC):
                     aggregated = torch.cat((aggregated, aggregated_chunk), dim=0)
                     self.ui.update(f"Embedded {aggregated.shape[0]}/{tensor.shape[0]}")
             if batch_first:
-                return aggregated.T.to()
-            return aggregated.to()
+                return aggregated
+            return aggregated.T
         return embedding
 
 
