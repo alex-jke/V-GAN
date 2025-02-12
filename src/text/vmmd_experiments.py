@@ -9,7 +9,7 @@ from torch import Tensor
 
 # === Imports from your modules ===
 from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE, \
-    GeneratorSpectralNorm
+    GeneratorSpectralNorm, GeneratorSigmoidSTEMBD
 from modules.od_module import VMMD_od
 from text.Embedding.bert import Bert
 from text.Embedding.gpt2 import GPT2
@@ -53,13 +53,13 @@ class Experiment:
     Encapsulates one experiment (data processing, model training/evaluation, visualization).
     """
     def __init__(self,
-                 dataset: Dataset, model: HuggingModel, generator_class = GeneratorSigmoidSTE, sequence_length: int = 50, epochs: int = 2000,
+                 dataset: Dataset, model: HuggingModel, generator_class = GeneratorSigmoidSTE, sequence_length: int = None, epochs: int = 2000,
                  batch_size: int = 500, samples: int = 2000, penalty_weight: float = 0.5, lr: float = 0.007, momentum: float = 0.99, weight_decay: float = 0.04,
                  version: str ="0.0", yield_epochs: int = 200, train: bool = False, pre_embed: bool = False, use_embedding: bool = False):
         self.dataset = dataset
         self.model = model
         self.generator_class = generator_class
-        self.sequence_length = sequence_length
+        self.sequence_length: int | None= sequence_length
         self.epochs = epochs
         self.batch_size = batch_size
         self.samples = samples
@@ -80,6 +80,7 @@ class Experiment:
 
     def _build_export_path(self) -> str:
         embedding_str = "embedding" if self.pre_embed else "token"
+        sl_str = self.sequence_length if self.sequence_length is not None else "(longest)"
         base_dir = os.path.join(
             os.getcwd(),
             'experiments',
@@ -87,7 +88,7 @@ class Experiment:
             embedding_str,
             self.generator_class.__name__,
             self.model._model_name,
-            f"{self.dataset.name}_sl{self.sequence_length}_vmmd_{self.model.model_name}_e{self.epochs}_pw{self.penalty_weight}_s{self.samples}"
+            f"{self.dataset.name}_sl{sl_str}_vmmd_{self.model.model_name}_e{self.epochs}_pw{self.penalty_weight}_s{self.samples}"
         )
         if self.train:
             base_dir += "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -102,6 +103,9 @@ class Experiment:
             pre_embed=self.pre_embed
         )
         self.tokenized_data, self.normalized_data = processor.process()
+        self.sequence_length = self.tokenized_data.shape[1]
+        self.export_path = self._build_export_path()
+
 
     def visualize(self, epoch: int):
         visualizer = CollectiveVisualizer(tokenized_data=self.tokenized_data,
@@ -277,21 +281,20 @@ def run_all_datasets():
     datasets = [AGNews(), EmotionDataset(), IMBdDataset(), WikipediaPeopleDataset()] + NLP_ADBench.get_all_datasets()
     models = [GPT2(), Bert(), DeepSeek1B()]
     skip_first = 5
-    for model in models:
-        for dataset in datasets:
-            if skip_first > 0:
-                skip_first -= 1
-                continue
-            pre_embed = False
-            train_length = len(dataset.get_training_data()[1])
-            epochs = int(10 ** 6.7 / train_length + 400)
-            lr = 1e-4
-            epochs = epochs if pre_embed else epochs * 2
-            yield_epochs = epochs // 20
-            experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=False,
-                                    samples=200_000, version="0.462_adam", yield_epochs=yield_epochs,
-                                    penalty_weight=0.1)
-            experiment.run()
+    for pre_embed in [False, True]:
+        for model in models:
+            for dataset in datasets:
+                filtered_data_len = (dataset.get_training_data()[1] == dataset.get_possible_labels()[0]) * 1
+                train_length = filtered_data_len.sum()
+                #train_length = len(dataset.get_training_data()[1])
+                epochs = int(10 ** 6.7 / train_length + 400)
+                lr = 1e-5
+                epochs = epochs if pre_embed else epochs * 2
+                yield_epochs = epochs // 20
+                experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=pre_embed,
+                                        samples=200_000, version="0.463_adam+SigSTEMBD+grad_clip", yield_epochs=yield_epochs,
+                                        penalty_weight=0.1, generator_class=GeneratorSigmoidSTEMBD)
+                experiment.run()
 
 # === Main entry point experiments ===
 if __name__ == '__main__':

@@ -11,11 +11,11 @@ class DatasetProcessor:
     """
     Handles tokenization and optional embedding of the dataset.
     """
-    def __init__(self, dataset: Dataset, model: HuggingModel, sequence_length: int, samples: int, pre_embed: bool):
+    def __init__(self, dataset: Dataset, model: HuggingModel, sequence_length: int | None, samples: int, pre_embed: bool):
         self.dataset = dataset
         self.model = model
         # Ensure sequence_length does not exceed model maximum
-        self.sequence_length = min(sequence_length, model.max_token_length())
+        self.sequence_length: int | None = sequence_length
         self.samples = samples
         self.device = get_device()
         self.pre_embed = pre_embed
@@ -29,7 +29,11 @@ class DatasetProcessor:
         if not self.pre_embed:
             data, _ = tokenizer.get_tokenized_training_data(labels)
             # Take only the first sequence_length tokens per sample
-            first_part = data[:, :self.sequence_length].to(self.device)
+
+            if self.sequence_length is not None:
+                first_part = data[:, :self.sequence_length].to(self.device)
+            else:
+                first_part = data.to(self.device)
             if self.device.type == 'cuda':
                 first_part = first_part.float()
             normalized = first_part  # tokens are not normalized

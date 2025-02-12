@@ -184,7 +184,7 @@ class Experiment:
 
 if __name__ == '__main__':
     datasets = [
-                   #AGNews(),
+                   AGNews(),
                    IMBdDataset(),
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
@@ -201,5 +201,5 @@ if __name__ == '__main__':
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.216_adam+large+STE", use_cached=True)
+                                            experiment_name=f"0.217_adam+large+STE", use_cached=True)
                     experiment.run()

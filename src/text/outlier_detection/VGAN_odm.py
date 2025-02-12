@@ -125,7 +125,7 @@ class VGAN_ODM(EnsembleODM):
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.vgan.subspaces,
                  n_jobs=-1, bps_flag=False, approx_flag_global=False)
 
-        self.ensemble_model.fit(train)
+        self.ensemble_model.fit(train.cpu())
 
     def predict(self):
         if self.ensemble_model is None:

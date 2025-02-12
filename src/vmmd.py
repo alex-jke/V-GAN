@@ -31,7 +31,7 @@ class VMMD:
     '''
 
     def __init__(self, batch_size=500, epochs=500, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None,
-                 weight=0, generator = None, print_updates=None):
+                 weight=0, generator = None, print_updates=None, apply_gradient_clipping=False):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.generator_loss_key = "generator_loss"
@@ -56,6 +56,7 @@ class VMMD:
         self.print_updates = print_updates
         if print_updates is None:
             self.print_updates = False
+        self.apply_gradient_clipping = apply_gradient_clipping
 
     def _create_plot(self) -> pyplot:
         train_history = self.train_history
@@ -89,7 +90,8 @@ class VMMD:
                 'batch_size': self.batch_size, 'seed': self.seed,
                 'generator optimizer': self.generator_optimizer,
                 'penalty weight': self.weight,
-                'generator': self.generator.__class__.__name__}
+                'generator': self.generator.__class__.__name__,
+                'gradient_clipping': self.apply_gradient_clipping}
 
     def model_snapshot(self, path_to_directory=None, run_number=0, show=False):
         ''' Creates an snapshot of the model
@@ -240,17 +242,18 @@ class VMMD:
                 # OPTIMIZATION STEP#
                 optimizer.zero_grad()
                 fake_subspaces = generator(noise_tensor)
-                # batch_loss = loss_function(batch, fake_subspaces*batch + (fake_subspaces == 1e-08)*torch.mean(batch,dim=0), alphas=[0.1]) #Upper_lower_softmax
-                # batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch,1/batch.shape[1])*torch.mean(batch,dim=0), alphas=[0.1]) #Upper softmax
-                #batch_loss = loss_function(batch, fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0), fake_subspaces)  # Constrained MMD Loss
-                # todo: normalize the batch before passing it.
-                #masked_batch = masked * batch
                 masked_batch = fake_subspaces * batch
                 batch_loss = loss_function(masked_batch, batch, fake_subspaces)
                 batch_mmd_loss = loss_function.mmd_loss
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
+
+                # Apply gradient clipping (e.g., max norm of 1.0)
+                if self.apply_gradient_clipping:
+                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+
                 optimizer.step()
+
                 generator_loss += float(batch_loss.to(
                     'cpu').detach().numpy())/batch_number
                 mmd_loss += float(batch_mmd_loss.to(
