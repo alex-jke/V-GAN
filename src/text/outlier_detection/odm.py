@@ -135,7 +135,7 @@ class OutlierDetectionModel(ABC):
 
         # Calculate AUC
         common_len = min(len(predicted_inlier), len(actual_inlier))
-        if common_len < len(predicted_inlier) or common_len < len(actual_inlier):
+        if common_len < len(predicted_inlier) or common_len < len(actual_inlier): #todo: check if this is causing problems
             print(f"Warning: Predicted ({len(predicted_inlier)}) and actual labels ({len(actual_inlier)}) have different lengths. Trimming to common length: {common_len}.")
         predicted_inlier_trimmed = predicted_inlier[:common_len]
         actual_inlier_trimmed = actual_inlier[:common_len]

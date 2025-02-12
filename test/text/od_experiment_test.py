@@ -21,6 +21,11 @@ class ODExperimentTest(unittest.TestCase):
         exp = Experiment(AGNews(), GPT2(), skip_error=False)
         exp.run()
 
+    def test_ag_deepseek_vgan(self):
+        model = VGAN_ODM(AGNews(), DeepSeek1B(), -1, -1, use_cached=True, pre_embed=True)
+        exp = Experiment(AGNews(), DeepSeek1B(), skip_error=False, models=[model])
+        exp.run()
+
     def test_emotion_gpt2(self):
         experiment = Experiment(dataset=EmotionDataset(), emb_model=GPT2(), train_size=-1, test_size=-1,
                                 experiment_name=f"0.2_adam+large", run_cachable=True, use_cached=True, skip_error=False)

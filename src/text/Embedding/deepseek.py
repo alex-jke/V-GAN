@@ -1,5 +1,4 @@
 from abc import ABC
-from random import random
 from typing import List, Dict, Callable
 
 import numpy as np
@@ -64,19 +63,19 @@ class DeepSeek(HuggingModel, ABC):
     def get_embedding_fun(self, chunk_size = 10, batch_first=False) -> Callable[[Tensor], Tensor]:
 
         def embedding(tensor: Tensor) -> Tensor:
-            #projected = self.project(tensor)
             chunks = torch.split(tensor, chunk_size, dim=0)
             aggregated = Tensor().to(self.device)
-            with torch.no_grad():#, self.ui.display():
+            with torch.no_grad(), self.ui.display():
                 for chunk in chunks:
                     fully_embedded: List[Tensor] = self.fully_embed_tokenized(chunk)
                     aggregated_chunk = self.aggregateEmbeddings(fully_embedded)
                     aggregated = torch.cat((aggregated, aggregated_chunk), dim=0)
-                    #self.ui.update(f"Embedded {aggregated.shape[0]}/{tensor.shape[0]}")
+                    self.ui.update(f"Embedded {aggregated.shape[0]}/{tensor.shape[0]}")
             if batch_first:
                 return aggregated.T.to()
             return aggregated.to()
         return embedding
+
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
         raise NotImplemented

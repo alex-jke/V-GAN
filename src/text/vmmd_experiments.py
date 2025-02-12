@@ -282,8 +282,8 @@ def run_all_datasets():
             epochs = int(10 ** 6.7 / train_length + 400)
             lr = 1e-5
             yield_epochs = epochs // 20
-            experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=True,
-                                    samples=200_000, version="0.461_adam", yield_epochs=yield_epochs,
+            experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=False,
+                                    samples=200_000, version="0.461_adam_token", yield_epochs=yield_epochs,
                                     penalty_weight=0.1)
             experiment.run()
 
