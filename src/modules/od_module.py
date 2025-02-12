@@ -94,8 +94,10 @@ class VGAN_od(VGAN):
 
 class VMMD_od(VMMD):
     def __init__(self, batch_size=500, epochs=2000, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04,
-                 path_to_directory=None, penalty_weight=0.0, generator=None, print_updates=None):
-        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory, weight = penalty_weight, generator=generator, print_updates=print_updates)
+                 path_to_directory=None, penalty_weight=0.0, generator=None, print_updates=None, gradient_clipping = False):
+        super().__init__(batch_size, epochs, lr, momentum, seed, weight_decay, path_to_directory,
+                         weight = penalty_weight, generator=generator, print_updates=print_updates,
+                         gradient_clipping= gradient_clipping)
         self.x_data = None
         self.recommended_bandwidth_name = "recommended bandwidth"
 

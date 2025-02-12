@@ -31,7 +31,7 @@ class VMMD:
     '''
 
     def __init__(self, batch_size=500, epochs=500, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None,
-                 weight=0, generator = None, print_updates=None, apply_gradient_clipping=False):
+                 weight=0, generator = None, print_updates=None, gradient_clipping=False):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.generator_loss_key = "generator_loss"
@@ -56,7 +56,7 @@ class VMMD:
         self.print_updates = print_updates
         if print_updates is None:
             self.print_updates = False
-        self.apply_gradient_clipping = apply_gradient_clipping
+        self.apply_gradient_clipping = gradient_clipping
 
     def _create_plot(self) -> pyplot:
         train_history = self.train_history

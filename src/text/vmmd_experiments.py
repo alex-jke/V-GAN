@@ -55,7 +55,8 @@ class Experiment:
     def __init__(self,
                  dataset: Dataset, model: HuggingModel, generator_class = GeneratorSigmoidSTE, sequence_length: int = None, epochs: int = 2000,
                  batch_size: int = 500, samples: int = 2000, penalty_weight: float = 0.5, lr: float = 0.007, momentum: float = 0.99, weight_decay: float = 0.04,
-                 version: str ="0.0", yield_epochs: int = 200, train: bool = False, pre_embed: bool = False, use_embedding: bool = False):
+                 version: str ="0.0", yield_epochs: int = 200, train: bool = False, pre_embed: bool = False, use_embedding: bool = False,
+                 gradient_clipping = False):
         self.dataset = dataset
         self.model = model
         self.generator_class = generator_class
@@ -72,6 +73,7 @@ class Experiment:
         self.train = train
         self.pre_embed = pre_embed
         self.device = DEVICE
+        self.gradient_clipping = gradient_clipping
         if use_embedding and pre_embed:
             raise ValueError("Cannot pre-embed and use embedding")
         self.embedding_fun = model.get_embedding_fun(batch_first=True) if use_embedding else lambda x: x
@@ -121,7 +123,7 @@ class Experiment:
         # Create VMMD model instance
         self.vmmd = VMMD_od(path_to_directory=self.export_path, epochs=self.epochs,  batch_size=self.batch_size,  lr=self.lr,
             momentum=self.momentum, weight_decay=self.weight_decay,  seed=None, penalty_weight=self.penalty_weight,
-            generator=self.generator_class, print_updates=True
+            generator=self.generator_class, print_updates=True, gradient_clipping= self.gradient_clipping
         )
 
         evals = []
@@ -293,7 +295,7 @@ def run_all_datasets():
                 yield_epochs = epochs // 20
                 experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=pre_embed,
                                         samples=200_000, version="0.463_adam+SigSTEMBD+grad_clip", yield_epochs=yield_epochs,
-                                        penalty_weight=0.1, generator_class=GeneratorSigmoidSTEMBD)
+                                        penalty_weight=0.1, generator_class=GeneratorSigmoidSTEMBD, gradient_clipping = True)
                 experiment.run()
 
 # === Main entry point experiments ===

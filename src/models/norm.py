@@ -62,7 +62,8 @@ class L2Norm(VectorNorm):
         nans = torch.isnan(dists)
         if nans.any():
             #print(f"torch.cdist computed {nans.sum()} nan values of {nans.shape[0]*nans.shape[1]}, replacing with 0", end=" ")
-            dists = torch.where(torch.isnan(X), torch.zeros_like(X), X)
+            #dists = torch.where(torch.isnan(X), torch.zeros_like(X), X)
+            raise RuntimeError(f"Nans in L2 norm: {dists[nans]}")
         return dists
 
 
