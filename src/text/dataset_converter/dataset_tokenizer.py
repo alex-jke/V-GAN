@@ -136,7 +136,7 @@ class DatasetTokenizer:
         if not os.path.exists(self.dataset_path):
             self._create_tokenized_dataset(dataset_name, class_labels)
         df = pd.read_csv(self.dataset_path)
-        samples = self.max_samples if self.max_samples > 0 else len(self.dataset.x_train)
+        samples = self.max_samples if self.max_samples > 0 else len(self.dataset.get_testing_data()[0])
         if df[self.dataset.y_label_name].isin(class_labels).sum() < samples:
             self._create_tokenized_dataset(dataset_name, class_labels)
         df = pd.read_csv(self.dataset_path)

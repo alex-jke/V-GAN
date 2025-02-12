@@ -44,12 +44,13 @@ class OutlierDetectionMethodTest(unittest.TestCase):
 
     def test_cache_embedding(self):
         first_time = time()
-        lunar = LUNAR(EmotionDataset(), GPT2(), 400, 200, pre_embed=True, use_cached=True)
+        lunar = LUNAR(EmotionDataset(), GPT2(), 20_000, 2000, pre_embed=True, use_cached=True)
         lunar.train()
         lunar.predict()
+        lunar.evaluate()
         print("First time:", time() - first_time)
         second_time = time()
-        lunar2 = LUNAR(EmotionDataset(), GPT2(), 400, 200, pre_embed=True, use_cached=False)
+        lunar2 = LUNAR(EmotionDataset(), GPT2(), 1000, 200, pre_embed=True, use_cached=False)
         lunar2.train()
         lunar2.predict()
         print("Second time:", time() - second_time)
