@@ -71,8 +71,9 @@ class OutlierDetectionMethodTest(unittest.TestCase):
 
     def test_auc(self):
         dataset = EmotionDataset()
-        model = DeepSeek1B()
-        lunar = LUNAR(dataset = dataset, model = model, train_size = 10_000, test_size = 1000, pre_embed = True, use_cached = False)
+        model = DeepSeek7B()
+        lunar = LUNAR(dataset = dataset, model = model, train_size = 1_000, test_size = 1000, pre_embed = True,
+                      use_cached = False)
         lunar.start_timer()
         lunar.train()
         lunar.predict()

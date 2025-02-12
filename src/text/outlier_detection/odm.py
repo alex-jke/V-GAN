@@ -4,6 +4,7 @@ from time import time
 from typing import Tuple, List, Callable
 
 import pandas as pd
+import numpy as np
 import torch.nn.functional
 from pandas import Series
 from torch import Tensor
@@ -15,6 +16,7 @@ from text.dataset.dataset import Dataset
 
 
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import average_precision_score, f1_score
 from typing import List, Tuple
 from abc import ABC, abstractmethod
 
@@ -116,80 +118,44 @@ class OutlierDetectionModel(ABC):
             ValueError: If the predicted and actual labels are not of the same length.
         """
         # Get predicted and actual labels
-        predicted_inlier = self._get_predictions()
-        actual_inlier = [0 if x == self.inlier_label else 1 for x in self.y_test]
-
-        # Calculate accuracy
-        correct_predictions = [1 if x == y else 0 for x, y in zip(predicted_inlier, actual_inlier)]
-        accuracy = sum(correct_predictions) / len(correct_predictions)
-
-        # Calculate true positives, false positives, and false negatives
-        true_positives = sum([1 if x == 1 and y == 1 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
-        false_positives = sum([1 if x == 1 and y == 0 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
-        false_negatives = sum([1 if x == 0 and y == 1 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
-        true_negatives = sum([1 if x == 0 and y == 0 else 0 for x, y in zip(predicted_inlier, actual_inlier)])
-
-        # Calculate recall and precision
-        recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
-        precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
+        decision_function_scores = self._get_predictions()
+        y_test = [0 if x == self.inlier_label else 1 for x in self.y_test]
 
         # Calculate AUC
-        common_len = min(len(predicted_inlier), len(actual_inlier))
-        if common_len < len(predicted_inlier) or common_len < len(actual_inlier): #todo: check if this is causing problems
-            print(f"Warning: Predicted ({len(predicted_inlier)}) and actual labels ({len(actual_inlier)}) have different lengths. Trimming to common length: {common_len}.")
-        predicted_inlier_trimmed = predicted_inlier[:common_len]
-        actual_inlier_trimmed = actual_inlier[:common_len]
-        auc = roc_auc_score(actual_inlier_trimmed, predicted_inlier_trimmed)
+        common_len = min(len(decision_function_scores), len(y_test))
+        if common_len < len(decision_function_scores) or common_len < len(y_test): #todo: check if this is causing problems
+            print(f"Warning: Predicted ({len(decision_function_scores)}) and actual labels ({len(y_test)}) have different lengths. Trimming to common length: {common_len}.")
+            decision_function_scores = decision_function_scores[:common_len]
+            y_test = y_test[:common_len]
+        auc = roc_auc_score(y_test, decision_function_scores)
+        prauc = average_precision_score(y_test, decision_function_scores)
+        f1 = f1_score(y_test, (decision_function_scores > np.quantile(decision_function_scores, .80)) * 1)
+
 
         # Calculate percentage of inliers and outliers
-        percentage_inlier = sum(actual_inlier) / len(actual_inlier) * 100
+        percentage_inlier = sum(y_test) / len(y_test) * 100
         percentage_outlier = 100 - percentage_inlier
 
         self.results = pd.DataFrame({
-            "actual": actual_inlier_trimmed,
-            "predicted": predicted_inlier_trimmed
+            "actual": y_test,
+            "predicted": decision_function_scores,
         })
 
         self.metrics = pd.DataFrame({
             "method": [self.name],
             "space": [self.get_space()],
-            "accuracy": [accuracy],
-            "recall": [recall],
-            "precision": [precision],
+            #"accuracy": [accuracy],
+            #"recall": [recall],
+            #"precision": [precision],
             "auc": [auc],
+            "prauc": [prauc],
+            "f1": [f1],
             "time_taken": [self.time_elapsed],
             "percentage_inlier": [percentage_inlier],
             "percentage_outlier": [percentage_outlier],
-            "true_positives": [true_positives],
-            "false_positives": [false_positives],
-            "false_negatives": [false_negatives],
-            "true_negatives": [true_negatives],
-            "total_test_samples": [len(actual_inlier)],
+            "total_test_samples": [len(y_test)],
             "total_train_samples": [len(self.x_train)]
         })
-
-        # Return evaluation metrics
-        if print_results:
-            print(f"Method: {self.name}\n"
-                    f"{'='*40}\n"
-                    f"  Space:              {self.get_space()}\n"
-                    f"{'-'*40}\n"
-                    f"  Accuracy:           {accuracy * 100:>7.2f}%\n"
-                    f"  Recall:             {recall * 100:>7.2f}%\n"
-                    f"  Precision:          {precision * 100:>7.2f}%\n"
-                    f"  AUC:                {auc:>7.4f}\n"
-                    f"{'-'*40}\n"
-                    f"  Percentage Inlier:  {percentage_inlier:>7.2f}%\n"
-                    f"  Percentage Outlier: {percentage_outlier:>7.2f}%\n"
-                    f"{'-'*40}\n"
-                    f"  True Positives:     {true_positives:>7}\n"
-                    f"  False Positives:    {false_positives:>7}\n"
-                    f"  False Negatives:    {false_negatives:>7}\n"
-                    f"  True Negatives:     {true_negatives:>7}\n"
-                    f"{'-'*40}\n"
-                    f"  Total Samples:      {len(actual_inlier):>7}\n"
-                    f"  Time Taken:         {self.time_elapsed:>7.2f} seconds\n"
-                    f"{'='*40}")
 
         return self.metrics
 

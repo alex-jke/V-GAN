@@ -82,7 +82,7 @@ class FeatureBagging(PyODM):
         self.base_estimator: BaseDetector = base_detector()
 
         if not pre_embed:
-            self.base_estimator = EmbeddingBaseDetector(model, lambda: base_detector)
+            self.base_estimator = EmbeddingBaseDetector(model.get_embedding_fun(batch_first=True), lambda: base_detector)
 
         self.__model = pyod_FeatureBagging(base_estimator=self.base_estimator)
         super().__init__(dataset, model, train_size, test_size, pre_embed, use_cached=use_cached)
@@ -95,12 +95,13 @@ class FeatureBagging(PyODM):
 
 class EmbeddingBaseDetector(BaseDetector):
 
-    def __init__(self, model: HuggingModel, base_detector: Callable[[],Type[BaseDetector]]):
-        self.model = model
+    def __init__(self, embedding_fun: Callable[[Tensor], Tensor], base_detector: Callable[[],Type[BaseDetector]]):
+        # self.model = model #saving the model will cause CUDA out of memory as model is large
         self.base_detector: Callable[[], Type[BaseDetector]] = base_detector # This is required because, when the base detectors are duplicated in the feature bagging,
         # instead for each param to check if its of type BaseDetector it checks if it has the get_params method.
         # Then an error it caused was it trying to call get_params on the base_detector class, that self was not passed.
-        self.embedding_fun = self.model.get_embedding_fun(batch_first=True)
+        #self.embedding_fun = self.model.get_embedding_fun(batch_first=True)
+        self.embedding_fun = embedding_fun
         self._classes = 2
         super().__init__()
 

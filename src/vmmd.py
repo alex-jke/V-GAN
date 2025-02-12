@@ -31,7 +31,7 @@ class VMMD:
     '''
 
     def __init__(self, batch_size=500, epochs=500, lr=0.007, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None,
-                 weight=0, generator = None, print_updates=None, gradient_clipping=False):
+                 weight=0, generator = None, print_updates=None, gradient_clipping=True):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.generator_loss_key = "generator_loss"

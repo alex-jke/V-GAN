@@ -45,7 +45,7 @@ class VGAN_ODM(EnsembleODM):
 
     def _get_detector(self) -> BaseDetector:
         if not self.pre_embed:
-            return EmbeddingBaseDetector(self.model, lambda: self.base_detector)
+            return EmbeddingBaseDetector(self.model.get_embedding_fun(batch_first=True), lambda: self.base_detector)
         return self.base_detector()
 
     def train_old(self):
@@ -110,9 +110,10 @@ class VGAN_ODM(EnsembleODM):
     def train(self):
         self.init_dataset()
         train = self.x_train.to(self.device)
-        if self.pre_embed:
-            epochs = int(10 ** 6.7 / len(train) + 200)
-            self.vgan.epochs = epochs
+
+        epochs = int(10 ** 6.7 / len(train) + 400)
+        self.vgan.epochs = epochs
+        epochs = epochs if self.pre_embed else epochs * 2
         print(f"training vmmd for {self.vgan.epochs} epochs.")
 
         #with self.ui.display():
@@ -123,16 +124,18 @@ class VGAN_ODM(EnsembleODM):
 
         self.vgan.approx_subspace_dist(add_leftover_features=False)
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.vgan.subspaces,
-                 n_jobs=-1, bps_flag=False, approx_flag_global=False)
+                 n_jobs=5, bps_flag=False, approx_flag_global=False, verbose=True)
 
-        self.ensemble_model.fit(train.cpu())
+        #Address:
+
+        self.ensemble_model.fit(self.x_train.cpu())
 
     def predict(self):
         if self.ensemble_model is None:
             raise RuntimeError(f"Ensemble model not initialized. Please call train() first.")
         test = self.x_test.to(self.device)
         decision_function_scores_ens = self.ensemble_model.decision_function(
-            test)
+            test.cpu())
         self.predictions = self.aggregator_funct(
             decision_function_scores_ens, weights=self.vgan.proba, type="avg")
 

@@ -68,16 +68,14 @@ class ODExperimentTest(unittest.TestCase):
         exp.run()
 
     def test_emotion_gpt2_vgan_lunar_no_pre_embedding(self):
-        dataset = IMBdDataset()
+        dataset = AGNews()
         model = DeepSeek1B()
-        train_size: int = 1000
+        train_size: int = 10000
         test_size: int = 1000
-        vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed=False)
-        vgan.vgan.lr = 0.05
-        vgan.vgan.epochs = 200
+        vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed=True)
         exp = Experiment(dataset, model, skip_error=False,
                          train_size=train_size, test_size=test_size,
-                         models=[vgan])
+                         models=[vgan], use_cached=True)
         exp.run()
         auc = float(exp.result_df["auc"])
         print(exp.result_df)

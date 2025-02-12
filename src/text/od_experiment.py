@@ -31,7 +31,7 @@ from text.visualizer.result_visualizer import ResultVisualizer
 class Experiment:
     def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = -1, test_size: int = -1,
                  models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None,
-                 use_cached: bool = False, run_cachable: bool = True):
+                 use_cached: bool = False, run_cachable: bool = False):
         """
         Initializes the experiment.
         : param dataset: The dataset to use for the experiment.
@@ -87,7 +87,7 @@ class Experiment:
         Builds and returns a list of outlier detection model instances.
         """
         bases = [
-            #pyod_LUNAR,
+            pyod_LUNAR,
             pyod_ECOD, pyod_LOF]
         models = []
 
@@ -104,7 +104,7 @@ class Experiment:
             omd_model(**self.partial_params, base_detector=base, pre_embed=use_emb)
             for base in bases
             for use_emb in use_emb_list
-            for omd_model in [VGAN_ODM]#, FeatureBagging] # Todo: currently causes memory problems
+            for omd_model in [VGAN_ODM, FeatureBagging] # Todo: currently causes memory problems
         ])
 
 
@@ -134,7 +134,7 @@ class Experiment:
             model.predict()
             model.stop_timer()
             evaluation = model.evaluate(self.output_path)
-            print(f" | finished successfully.")
+            print(f" | finished successfully (auc: {evaluation['auc']}).")
             return evaluation, None
         except Exception as e:
             if not self.skip_error:
@@ -188,10 +188,10 @@ if __name__ == '__main__':
                    IMBdDataset(),
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
-    embedding_models = [GPT2(), Bert()]#, DeepSeek1B()]
+    embedding_models = [DeepSeek1B(), GPT2(), Bert(), DeepSeek7B()]
     ui = cli.get()
-    train_size = 20_000
-    test_size = 20_000
+    train_size = 2_000
+    test_size = 1_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():
@@ -201,5 +201,5 @@ if __name__ == '__main__':
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.217_adam+large+STE", use_cached=True)
+                                            experiment_name=f"0.221small_adam+STE", use_cached=True)
                     experiment.run()
