@@ -275,15 +275,21 @@ def run_everything():
 
 def run_all_datasets():
     datasets = [AGNews(), EmotionDataset(), IMBdDataset(), WikipediaPeopleDataset()] + NLP_ADBench.get_all_datasets()
-    models = [DeepSeek7B()]#[GPT2(), Bert(), DeepSeek1B()]
+    models = [GPT2(), Bert(), DeepSeek1B()]
+    skip_first = 5
     for model in models:
         for dataset in datasets:
+            if skip_first > 0:
+                skip_first -= 1
+                continue
+            pre_embed = False
             train_length = len(dataset.get_training_data()[1])
             epochs = int(10 ** 6.7 / train_length + 400)
-            lr = 1e-5
+            lr = 1e-4
+            epochs = epochs if pre_embed else epochs * 2
             yield_epochs = epochs // 20
             experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=False,
-                                    samples=200_000, version="0.461_adam_token", yield_epochs=yield_epochs,
+                                    samples=200_000, version="0.462_adam", yield_epochs=yield_epochs,
                                     penalty_weight=0.1)
             experiment.run()
 

@@ -26,11 +26,12 @@ class PyODM(OutlierDetectionModel, ABC):
         self.od_model.fit(self.x_train.cpu().numpy(), None)
 
     def predict(self):
-        predictions = self.od_model.predict(self.x_test.cpu().numpy())
-        self.predicted_inlier = predictions #[1 if x == 0 else 0 for x in predictions]
+        decision_function = self.od_model.decision_function(self.x_test.cpu().numpy())
+        #predictions = self.od_model.predict_proba(self.x_test.cpu().numpy())[:,1]
+        self.decision_function = decision_function #[1 if x == 0 else 0 for x in predictions]
 
     def _get_predictions(self) -> List[int]:
-        return self.predicted_inlier
+        return self.decision_function
 
     def get_space(self):
         return self.space

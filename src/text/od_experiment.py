@@ -86,7 +86,9 @@ class Experiment:
         """
         Builds and returns a list of outlier detection model instances.
         """
-        bases = [pyod_LUNAR, pyod_ECOD, pyod_LOF]
+        bases = [
+            #pyod_LUNAR,
+            pyod_ECOD, pyod_LOF]
         models = []
 
         # Base models that always use embedding.
@@ -102,7 +104,7 @@ class Experiment:
             omd_model(**self.partial_params, base_detector=base, pre_embed=use_emb)
             for base in bases
             for use_emb in use_emb_list
-            for omd_model in [VGAN_ODM, FeatureBagging] # Todo: currently causes memory problems
+            for omd_model in [VGAN_ODM]#, FeatureBagging] # Todo: currently causes memory problems
         ])
 
 
@@ -181,11 +183,15 @@ class Experiment:
 
 
 if __name__ == '__main__':
-    datasets = [AGNews(), IMBdDataset(), EmotionDataset()] + NLP_ADBench.get_all_datasets()
-    embedding_models = [DeepSeek7B()]#[GPT2(), Bert(), DeepSeek1B()]
+    datasets = [
+                   #AGNews(),
+                   IMBdDataset(),
+                   EmotionDataset(),
+                   ] + NLP_ADBench.get_all_datasets()
+    embedding_models = [GPT2(), Bert()]#, DeepSeek1B()]
     ui = cli.get()
-    train_size = -1
-    test_size = -1
+    train_size = 20_000
+    test_size = 20_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():
@@ -195,5 +201,5 @@ if __name__ == '__main__':
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.212_adam+large", run_cachable=True, use_cached=False)
+                                            experiment_name=f"0.216_adam+large+STE", use_cached=True)
                     experiment.run()

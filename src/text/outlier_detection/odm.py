@@ -54,7 +54,7 @@ class OutlierDetectionModel(ABC):
         pass
 
     @abstractmethod
-    def _get_predictions(self) -> List[int]:
+    def _get_predictions(self) -> List[float]:
         pass
 
     @abstractmethod
@@ -213,8 +213,10 @@ class OutlierDetectionModel(ABC):
         # Generate embeddings and reshape
         #self._x_train = self._generate_embeddings(tokenized_train, embedding_func)
         #self._x_test = self._generate_embeddings(tokenized_test, embedding_func)
-        self._x_train = embedding_func(tokenized_train)
-        self._x_test = embedding_func(tokenized_test)
+        _x_train = embedding_func(tokenized_train)
+        _x_test = embedding_func(tokenized_test)
+        self._x_train = torch.nn.functional.normalize(_x_train, p=2, dim=1)
+        self._x_test = torch.nn.functional.normalize(_x_test, p=2, dim=1)
 
     def use_tokenized(self) -> None:
         """Sets the train and test data for the classification model to use the tokenized data."""
