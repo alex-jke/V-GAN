@@ -61,7 +61,7 @@ class DatasetEmbedder:
         dataset = pd.DataFrame()
         start_index = 0
         if path.exists():
-            dataset = pd.read_csv(path)
+            dataset = pd.read_csv(path, header=None)
             start_index = len(dataset)
         else:
             os.makedirs(self.dir_path, exist_ok=True)
