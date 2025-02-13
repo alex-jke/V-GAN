@@ -65,7 +65,7 @@ class VGAN_ODM(EnsembleODM):
 
         self.vgan.approx_subspace_dist(add_leftover_features=False, subspace_count=50)
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.vgan.subspaces,
-                 n_jobs=5, bps_flag=False, approx_flag_global=False, verbose=True)
+                 n_jobs=-1, bps_flag=False, approx_flag_global=False, verbose=True)
 
         self.ensemble_model.fit(self.x_train.cpu())
 

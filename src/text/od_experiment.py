@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Tuple, Optional, Dict
 
 import pandas as pd
+import torch
 
 from pyod.models.lunar import LUNAR as pyod_LUNAR
 from pyod.models.ecod import ECOD as pyod_ECOD
@@ -135,7 +136,7 @@ class Experiment:
             model.predict()
             model.stop_timer()
             evaluation = model.evaluate(self.output_path)
-            print(f" | finished successfully (auc: {evaluation['auc']}).")
+            print(f" | finished successfully (auc: {float(evaluation['auc']):>1.3f}).")
             return evaluation, None
         except Exception as e:
             if not self.skip_error:
@@ -204,13 +205,13 @@ class Experiment:
 
 if __name__ == '__main__':
     datasets = [
-                   AGNews(),
+                   #AGNews(),
                    IMBdDataset(),
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
-    embedding_models = [DeepSeek1B(), GPT2(), Bert(), DeepSeek7B()]
+    embedding_models = [DeepSeek1B, GPT2, Bert, DeepSeek7B]
     ui = cli.get()
-    train_size = 20_000
+    train_size = 100_000
     test_size = 10_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
@@ -218,8 +219,17 @@ if __name__ == '__main__':
         for dataset in datasets:
             ui.update(f"dataset {dataset.name}")
             with ui.display():
-                for emb_model in embedding_models:
+                for emb_model_cls in embedding_models:
+                    emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.222adam+STE", use_cached=True)
+                                            experiment_name=f"0.23_adam+STE", use_cached=True)
                     experiment.run()
+                    del emb_model
+                    del experiment
+
+                    if torch.cuda.is_available():
+                        memory_used_before = torch.cuda.memory_allocated()
+                        torch.cuda.empty_cache()
+                        memory_used_after = torch.cuda.memory_allocated()
+                        print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")
