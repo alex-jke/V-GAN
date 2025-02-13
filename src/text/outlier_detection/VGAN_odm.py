@@ -48,72 +48,13 @@ class VGAN_ODM(EnsembleODM):
             return EmbeddingBaseDetector(self.model.get_embedding_fun(batch_first=True), lambda: self.base_detector)
         return self.base_detector()
 
-    def train_old(self):
-        self.init_dataset()
-        train = self.x_train.to(self.device)
-
-        if self.pre_embed:
-            epochs = int(10 ** 6.7 / len(train) + 200)
-            self.vgan.epochs = epochs
-        print(f"training vmmd for {self.vgan.epochs} epochs.")
-
-        #with self.ui.display():
-        for epoch in self.vgan.yield_fit(train, yield_epochs=200):
-            #self.ui.update(f"Fitting VGAN, current epoch {epoch}")
-            if epoch != 0:
-                print(f"({epoch}, {self.vgan.train_history[self.vgan.generator_loss_key][-1]})")
-
-
-        with self.ui.display("Generating subspaces"):
-            subspaces = self.vgan.generate_subspaces(self.number_of_subspaces)
-            unique_subspaces, proba = np.unique(
-                np.array(subspaces.to('cpu')), axis=0, return_counts=True)
-            self.subspaces = Tensor(unique_subspaces).to(self.device)
-            self.proba = proba / proba.sum()
-        with self.ui.display():
-            for subspace in self.subspaces:
-                self.ui.update(f"Fitting detector {len(self.detectors)} / {len(self.subspaces)}")
-                detector = self._get_detector()
-                detector.fit(self.project_dataset(train, subspace).cpu().numpy())
-                self.detectors.append(detector)
-
-    def predict_old(self):
-        test = self.x_test.to(self.device)
-        #projected_datasets = [self.project_dataset(test, subspace) for subspace in self.subspaces]
-        # Predict on each of the projected test datasets
-        predictions = []
-        predictions_probas = []
-        with self.ui.display():
-            for detector, subspace in zip(self.detectors, self.subspaces):
-                self.ui.update(f"Predicting with detector {len(predictions)} / {len(self.subspaces)}")
-                projected = self.project_dataset(test, subspace).cpu().numpy()
-                prediction = detector.predict(projected)
-                #prediction_proba = detector.predict_proba(projected)[:,1]
-                prediction_proba = detector.decision_function(projected)
-                predictions.append(prediction)
-                predictions_probas.append(prediction_proba)
-            predictions_tensor = Tensor(predictions).T
-            predictions_probas_tensor = Tensor(predictions_probas).T
-            # Combine the predictions of each detector weighted by the probability of the subspace
-            predictions_aggregated = (predictions_tensor * self.proba).sum(dim=1)
-            predictions_probas_aggregated = (predictions_probas_tensor * self.proba).sum(dim=1)
-            max_proba = predictions_probas_aggregated.max()
-            min_proba = predictions_probas_aggregated.min()
-            #normalized_predictions_probas = (predictions_probas_aggregated - min_proba) / (max_proba - min_proba)
-            #predictions_rounded = normalized_predictions_probas.round().int()
-            #self.predictions = predictions_aggregated.round().int().tolist()
-            #self.predictions = predictions_rounded.tolist()
-            self.predictions = predictions_probas_aggregated.tolist()
-        #del self.detectors
-        #del self.subspaces
-
     def train(self):
         self.init_dataset()
         train = self.x_train.to(self.device)
 
         epochs = int(10 ** 6.7 / len(train) + 400)
-        self.vgan.epochs = epochs
         epochs = epochs if self.pre_embed else epochs * 2
+        self.vgan.epochs = epochs
         print(f"training vmmd for {self.vgan.epochs} epochs.")
 
         #with self.ui.display():
@@ -122,11 +63,9 @@ class VGAN_ODM(EnsembleODM):
             if epoch != 0:
                 print(f"({epoch}, {self.vgan.train_history[self.vgan.generator_loss_key][-1]})")
 
-        self.vgan.approx_subspace_dist(add_leftover_features=False)
+        self.vgan.approx_subspace_dist(add_leftover_features=False, subspace_count=50)
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.vgan.subspaces,
                  n_jobs=5, bps_flag=False, approx_flag_global=False, verbose=True)
-
-        #Address:
 
         self.ensemble_model.fit(self.x_train.cpu())
 
@@ -154,29 +93,6 @@ class VGAN_ODM(EnsembleODM):
         visualizer.visualize(samples=30, epoch=self.vgan.epochs)
         self.vgan.model_snapshot(path_to_directory=output_path)
         return super().evaluate(output_path=output_path)
-
-    def project_dataset(self, dataset: Tensor, subspace: Tensor) -> Tensor:
-        """
-        :param dataset: Dataset to project. A tensor of shape (n_samples, n_features)
-        :param subspace: Subspace to project on. A tensor of shape (n_features)
-
-        :return: Projected dataset. A tensor of shape (n_samples, n_features)
-        """
-        #alt_approach = dataset @ subspace
-        # expand subspace to match dataset shape
-        subspace_expanded = subspace.expand(dataset.shape[0], -1)
-        projected = dataset * subspace_expanded
-        # Only pass the features that were selected, instead of leaving them empty
-        subspace_mask = subspace != 0
-
-        #If no feature is selected, select at least one at random.
-        #TODO: Does this make sense?
-        if not subspace_mask.any():
-            print("Warning: Projection to zero space.")
-            random_index = int(random() * len(subspace_mask))
-            subspace_mask[random_index] = True
-        trimmed = projected[:, subspace_mask]
-        return trimmed
 
 if __name__ == '__main__':
     #vmmd = VGAN_ODM(SimpleDataset(["This is an example"], 300), GPT2(), 200, 100)

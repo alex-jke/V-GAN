@@ -81,6 +81,7 @@ class Experiment:
             self.output_path: Path = self._get_output_path()
 
         self.ui = cli.get()
+        self.result_csv_name = "results.csv"
 
     def _build_models(self) -> List[OutlierDetectionModel]:
         """
@@ -156,8 +157,24 @@ class Experiment:
             if column != "method":
                 visualizer.visualize(x_column="method", y_column=column)
         self.output_path.mkdir(parents=True, exist_ok=True)
-        self.result_df.to_csv(self.output_path / "results.csv", index=False)
+        self.result_df.to_csv(self.output_path / self.result_csv_name, index=False)
         self.error_df.to_csv(self.output_path / "errors.csv", index=False)
+
+    def _filter_for_not_run(self):
+        result_path = self.output_path / self.result_csv_name
+        if not result_path.exists():
+            return
+        result_df = pd.read_csv(result_path)
+        not_run = []
+        for model in self.models:
+            run = result_df[model.method_column].tolist()
+            if model.name not in run:
+                not_run.append(model)
+        #print(f"Not run: {len(not_run)} models")
+        not_run_names = [model.name for model in not_run]
+        self.models = not_run
+        self.result_df = result_df
+
 
     def run(self) -> None:
         """
@@ -165,6 +182,8 @@ class Experiment:
         """
         # Import dataset data.
         self.dataset._import_data()  # Consider renaming to a public method if possible.
+
+        self._filter_for_not_run()
 
         # Run each model experiment.
         with self.ui.display():
@@ -176,9 +195,10 @@ class Experiment:
                     self.error_df = pd.concat([self.error_df, error], ignore_index=True)
                     continue
                 self._visualize_and_save_results()
+                del model
 
 
-        print(self.result_df)
+        #print(self.result_df)
         self._visualize_and_save_results()
 
 
@@ -190,8 +210,8 @@ if __name__ == '__main__':
                    ] + NLP_ADBench.get_all_datasets()
     embedding_models = [DeepSeek1B(), GPT2(), Bert(), DeepSeek7B()]
     ui = cli.get()
-    train_size = 2_000
-    test_size = 1_000
+    train_size = 20_000
+    test_size = 10_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():
@@ -201,5 +221,5 @@ if __name__ == '__main__':
                 for emb_model in embedding_models:
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.221small_adam+STE", use_cached=True)
+                                            experiment_name=f"0.222adam+STE", use_cached=True)
                     experiment.run()

@@ -42,6 +42,7 @@ class OutlierDetectionModel(ABC):
         self._x_test = self._y_test = self._x_train = self._y_train = None
         self.device = self.model.device
         self.ui = cli.get()
+        self.method_column = "method"
 
     @abstractmethod
     def train(self):
@@ -142,7 +143,7 @@ class OutlierDetectionModel(ABC):
         })
 
         self.metrics = pd.DataFrame({
-            "method": [self.name],
+            self.method_column: [self.name],
             "space": [self.get_space()],
             #"accuracy": [accuracy],
             #"recall": [recall],
@@ -194,8 +195,8 @@ class OutlierDetectionModel(ABC):
 
         pad_length = max(train_length, test_length)
 
-        self._x_train = torch.nn.functional.pad(_x_train, (0, pad_length - train_length), value=self.model.padding_token)
-        self._x_test = torch.nn.functional.pad(_x_test, (0, pad_length - test_length), value=self.model.padding_token)
+        self._x_train = torch.nn.functional.pad(_x_train, (0, pad_length - train_length), value=self.model.padding_token).int()
+        self._x_test = torch.nn.functional.pad(_x_test, (0, pad_length - test_length), value=self.model.padding_token).int()
 
     def _get_tokenized_with_labels(self, train: bool) -> Tuple[Tensor, Tensor]:
         """
