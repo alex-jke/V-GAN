@@ -22,7 +22,8 @@ class ODExperimentTest(unittest.TestCase):
         exp.run()
 
     def test_ag_deepseek_vgan(self):
-        model = VGAN_ODM(AGNews(), DeepSeek1B(), -1, -1, use_cached=True, pre_embed=True)
+        model = VGAN_ODM(AGNews(), DeepSeek1B(), 100, 200, use_cached=True, pre_embed=True)
+        model.vgan.epochs = 200
         exp = Experiment(AGNews(), DeepSeek1B(), skip_error=False, models=[model])
         exp.run()
 

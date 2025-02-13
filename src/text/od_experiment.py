@@ -83,8 +83,16 @@ class Experiment:
             self.output_path: Path = self._get_output_path()
 
         self.ui = cli.get()
-        self.result_csv_name = "results.csv"
-        self.comon_metrics_name = "comon_metrics.csv"
+
+    @classmethod
+    @property
+    def result_csv_name(cls) -> str:
+        return "results.csv"
+
+    @classmethod
+    @property
+    def comon_metrics_name(cls) -> str:
+        return "comon_metrics.csv"
 
     def _build_models(self) -> List[OutlierDetectionModel]:
         """
