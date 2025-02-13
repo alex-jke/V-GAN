@@ -208,7 +208,7 @@ class Experiment:
 
 if __name__ == '__main__':
     datasets = [
-                   #AGNews(),
+                   AGNews(),
                    IMBdDataset(),
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
