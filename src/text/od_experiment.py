@@ -74,6 +74,7 @@ class Experiment:
 
         # DataFrames to store experiment results and errors.
         self.result_df: pd.DataFrame = pd.DataFrame()
+        self.comon_metrics: pd.DataFrame = pd.DataFrame()
         self.error_df: pd.DataFrame = pd.DataFrame(columns=["model", "error"])
 
         # Determine the output directory.
@@ -83,6 +84,7 @@ class Experiment:
 
         self.ui = cli.get()
         self.result_csv_name = "results.csv"
+        self.comon_metrics_name = "comon_metrics.csv"
 
     def _build_models(self) -> List[OutlierDetectionModel]:
         """
@@ -135,7 +137,7 @@ class Experiment:
             model.train()
             model.predict()
             model.stop_timer()
-            evaluation = model.evaluate(self.output_path)
+            evaluation, self.comon_metrics = model.evaluate(self.output_path)
             print(f" | finished successfully (auc: {float(evaluation['auc']):>1.3f}).")
             return evaluation, None
         except Exception as e:
@@ -160,6 +162,7 @@ class Experiment:
         self.output_path.mkdir(parents=True, exist_ok=True)
         self.result_df.to_csv(self.output_path / self.result_csv_name, index=False)
         self.error_df.to_csv(self.output_path / "errors.csv", index=False)
+        self.comon_metrics.to_csv(self.output_path / self.comon_metrics_name, index=False)
 
     def _filter_for_not_run(self):
         result_path = self.output_path / self.result_csv_name

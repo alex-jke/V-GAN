@@ -19,11 +19,18 @@ class DeepSeek(HuggingModel, ABC):
 
     @property
     def _model(self) -> Qwen2ForCausalLM:
-        _model = AutoModelForCausalLM.from_pretrained(
-            pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True,
-            torch_dtype=torch.bfloat16
-        ).to(self.device)
-        #return _model.half().to(self.device)
+        if torch.backends.mps.is_available():
+            _model = AutoModelForCausalLM.from_pretrained(
+                pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True,
+                torch_dtype=torch.float16 # MPS currently does not support bfloat16
+            ).to(self.device)
+
+        else:
+            _model = AutoModelForCausalLM.from_pretrained(
+                pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True,
+                torch_dtype=torch.bfloat16
+            ).to(self.device)
+
         return _model
 
     def __init__(self):

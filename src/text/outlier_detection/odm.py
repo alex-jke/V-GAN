@@ -94,29 +94,29 @@ class OutlierDetectionModel(ABC):
     def stop_timer(self):
         self.time_elapsed = time() - self.start_time
 
-    def evaluate(self, output_path: Path = None, print_results = False) -> pd.DataFrame:
+    def evaluate(self, output_path: Path = None )-> (pd.DataFrame, pd.DataFrame):
         """
         Evaluate the performance of a predictive model against a labeled test dataset.
 
-        This method computes various evaluation metrics for the model including accuracy,
-        recall, precision, AUC (Area Under the Curve), and other relevant statistics such
+        This method computes various evaluation metrics for the model including
+         ROC AUC (Area Under the Curve), PRAUC, F1 and other relevant statistics such
         as percentages of inliers and outliers as well as confusion matrix components.
-        Results and metrics are stored as DataFrames, and performance details are printed
+        Results and metrics are stored as DataFrames, and performance details can be printed
         to the console.
 
         Parameters:
             output_path (Path): The path where evaluation results can potentially
                 be saved. This is not used in this implementation. It is included
                 to allow subclasses to save extra results to a file.
-            print_results (bool): Whether to print the evaluation results to the console.
 
         Returns:
-            pd.DataFrame: A DataFrame summarizing the evaluation metrics including
-                model accuracy, precision, recall, AUC, inliers and outliers percentages,
-                confusion matrix values, and other associated data.
-
-        Raises:
-            ValueError: If the predicted and actual labels are not of the same length.
+            A pair of:
+                pd.DataFrame: A DataFrame summarizing the evaluation metrics including
+                    model accuracy, precision, recall, AUC, inliers and outliers percentages,
+                    confusion matrix values, and other associated data.
+                pd.DataFrame: A DataFrame containing common parameters used in the evaluation
+                    such as the dataset name, model name, inlier label, and other relevant
+                    information.
         """
         # Get predicted and actual labels
         decision_function_scores = self._get_predictions()
@@ -145,20 +145,24 @@ class OutlierDetectionModel(ABC):
         self.metrics = pd.DataFrame({
             self.method_column: [self.name],
             "space": [self.get_space()],
-            #"accuracy": [accuracy],
-            #"recall": [recall],
-            #"precision": [precision],
             "auc": [auc],
             "prauc": [prauc],
             "f1": [f1],
             "time_taken": [self.time_elapsed],
-            "percentage_inlier": [percentage_inlier],
-            "percentage_outlier": [percentage_outlier],
-            "total_test_samples": [len(y_test)],
-            "total_train_samples": [len(self.x_train)]
         })
 
-        return self.metrics
+        self.common_parameters = pd.DataFrame({
+             "percentage_inlier": [percentage_inlier],
+             "percentage_outlier": [percentage_outlier],
+            "total_test_samples": [len(y_test)],
+            "total_train_samples": [len(self.x_train)],
+            "inlier_label": [self.inlier_label],
+            "outlier_labels": str([label for label in self.dataset.get_possible_labels() if label != self.inlier_label]),
+            "model": [self.model.model_name],
+            "dataset": [self.dataset.name],
+        })
+
+        return self.metrics, self.common_parameters
 
     def use_embedding(self) -> None:
         """Processes and embeds training and testing data.

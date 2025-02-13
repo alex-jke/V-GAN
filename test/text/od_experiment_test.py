@@ -12,7 +12,7 @@ from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench
 from text.od_experiment import Experiment
 from text.outlier_detection.VGAN_odm import VGAN_ODM
-from text.outlier_detection.pyod_odm import LUNAR
+from text.outlier_detection.pyod_odm import LUNAR, LOF, ECOD
 
 
 class ODExperimentTest(unittest.TestCase):
@@ -105,6 +105,15 @@ class ODExperimentTest(unittest.TestCase):
             exp = Experiment(dataset, embedding_model, skip_error=False, experiment_name="lunar", models=[LUNAR(dataset, embedding_model, -1, -1)]
                              ,use_cached=True)
             exp.run()
+
+    def test_tiny(self):
+        dataset = AGNews()
+        model = DeepSeek1B()
+        train_size = 50
+        test_size = 100
+        models = [LUNAR(dataset, model, train_size, test_size, use_cached=True), LOF(dataset, model, train_size, test_size, use_cached=True), ECOD(dataset, model, train_size, test_size, use_cached=True)]
+        exp = Experiment(dataset, model, skip_error=False, train_size=train_size, test_size=test_size, models=models, experiment_name="tiny")
+        exp.run()
 
 
 if __name__ == '__main__':

@@ -78,7 +78,7 @@ class OutlierDetectionMethodTest(unittest.TestCase):
         lunar.train()
         lunar.predict()
         lunar.stop_timer()
-        lunar.evaluate(print_results=True)
+        lunar.evaluate()
         print(f"auc: {lunar.metrics['auc']}")
 
 

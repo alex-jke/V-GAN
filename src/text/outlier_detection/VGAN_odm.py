@@ -87,7 +87,7 @@ class VGAN_ODM(EnsembleODM):
     def get_space(self):
         return self.space
 
-    def evaluate(self, output_path: Path = None, print_results = False) -> pd.DataFrame:
+    def evaluate(self, output_path: Path = None, print_results = False) ->( pd.DataFrame, pd.DataFrame):
         output_path = output_path / self._get_name()
         visualizer = CollectiveVisualizer(tokenized_data=self.x_test, tokenizer = self.model, vmmd_model=self.vgan, export_path=str(output_path), text_visualization=not self.pre_embed)
         visualizer.visualize(samples=30, epoch=self.vgan.epochs)
