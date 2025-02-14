@@ -22,7 +22,7 @@ class VGAN:
     V-MMD, a Subspace-Generative Moment Matching Network.
 
     Class for the method VMMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no
-    kernel learning is performed. The default values for the kernel are 
+    kernel learning is performed. The default values for the kernel are
     '''
 
     def __init__(self, batch_size=500, temperature=1, epochs=30, lr_G=0.007, lr_D=0.007, iternum_d=1, iternum_g=5, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None):
@@ -90,8 +90,8 @@ class VGAN:
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         ax.legend(loc="upper right")
-        plt.savefig(path_to_directory / "train_history.pdf",
-                    format="pdf", dpi=1200)
+        plt.savefig(path_to_directory / "train_history.png",
+                    format="png", dpi=1200)
 
         if show == True:
             print("The show option has been depricated due to lack of utility")
@@ -103,7 +103,7 @@ class VGAN:
                 'generator optimizer': self.generator_optimizer}
 
     def model_snapshot(self, path_to_directory=None, run_number=0, show=False):
-        ''' Creates an snapshot of the model 
+        ''' Creates an snapshot of the model
 
         Saves important information regarding the training of the model
         Args:
@@ -145,7 +145,8 @@ class VGAN:
             device = self.device
         self.generator = Generator_big(
             img_size=ndims, latent_size=max(int(ndims/16), 1)).to(device)
-        self.generator.load_state_dict(torch.load(path_to_generator, map_location=device))
+        self.generator.load_state_dict(torch.load(
+            path_to_generator, map_location=device))
         self.generator.eval()  # This only works for dropout layers
         self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space'
         self.__latent_size = max(int(ndims/16), 1)
@@ -207,7 +208,7 @@ class VGAN:
         # DATA LOADER#
         if cuda:
             data_loader = DataLoader(
-                X, batch_size=self.batch_size, drop_last=True, pin_memory=cuda, shuffle=True)
+                X, batch_size=self.batch_size, drop_last=True, pin_memory=False, shuffle=True)
         else:  # Uses CUDA if Available, other wise MPS or nothing
             data_loader = DataLoader(
                 X, batch_size=self.batch_size, drop_last=True, pin_memory=mps, shuffle=True)
@@ -263,7 +264,7 @@ class VGAN:
 
                     # OPTIMIZATION STEP DETECTOR
                     det_optimizer.zero_grad()
-                    batch_loss_D = minusone.to('mps')*(loss_function(batch_enc, projected_batch_enc, fake_subspaces) - .1 *
+                    batch_loss_D = minusone.to(self.device)*(loss_function(batch_enc, projected_batch_enc, fake_subspaces) - .1 *
                                                        L2_distance_batch - .1*L2_distance_projected_batch)  # Constrained MMD Loss
                     self.bandwidth = loss_function.bandwidth
                     batch_loss_D.backward()
@@ -321,8 +322,8 @@ class VGAN:
             path_to_directory = Path(self.path_to_directory)
             if operator.not_(path_to_directory.exists()):
                 os.mkdir(path_to_directory)
-                if operator.not_(Path(path_to_directory/'models').exists()):
-                    os.mkdir(path_to_directory / 'models')
+            if operator.not_(Path(path_to_directory/'models').exists()):
+                os.mkdir(path_to_directory / 'models')
             run_number = int(len(os.listdir(path_to_directory/'models'))/2)
             torch.save(generator.state_dict(),
                        path_to_directory/'models'/f'generator_{run_number}.pt')
@@ -333,13 +334,14 @@ class VGAN:
         self.generator = generator
         self.detector = detector
 
-    def generate_subspaces(self, nsubs):
+    def generate_subspaces(self, nsubs, round: bool = True):
         noise_tensor = torch.Tensor(nsubs, self.__latent_size).to('cpu')
         if not self.seed == None:
             torch.manual_seed(self.seed)
         noise_tensor.normal_()
         u = self.generator(noise_tensor.to(self.device))
-        u = torch.greater_equal(u, 1/u.shape[1])
+        if round:
+            u = torch.greater_equal(u, 1/u.shape[1])
         return u
 
 

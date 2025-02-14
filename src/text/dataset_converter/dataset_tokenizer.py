@@ -219,7 +219,10 @@ class DatasetTokenizer:
 
         def vec_transform(x):
             tokens_amount = len(x.iloc[0].split(","))
-            transformed = x.iloc[0][:-1] + ", " + str([self.padding_token] * (max_token_length - tokens_amount))[1:]
+            if tokens_amount > max_token_length:
+                transformed = x.iloc[0][:-1] + ", " + str([self.padding_token] * (max_token_length - tokens_amount))[1:]
+            else:
+                transformed = x.iloc[0]
             return transformed
 
 

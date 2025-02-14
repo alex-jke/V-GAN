@@ -13,6 +13,7 @@ class ResultVisualizer():
     def visualize(self, x_column: str, y_column: str):
         x_values = self.result[x_column]
         y_values = self.result[y_column]
+        x_values, y_values = zip(*sorted(zip(x_values, y_values)))
         plt.figure(figsize=(12, 8))  # Set the figure size
         plt.bar(x_values, y_values)
         plt.xlabel(x_column)

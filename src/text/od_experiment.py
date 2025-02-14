@@ -238,7 +238,7 @@ if __name__ == '__main__':
     # Thus, eventually, the program will crash.
     # The Experiment class checks, which models and datasets have been run. This approach guarantees, that
     # every model and dataset can run at some point.
-    #random.shuffle(embedding_models)
+    random.shuffle(embedding_models)
     #random.shuffle(datasets)
 
     ui = cli.get()
