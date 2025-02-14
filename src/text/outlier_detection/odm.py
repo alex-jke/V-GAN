@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import torch.nn.functional
 from pandas import Series
+from sklearn.preprocessing import StandardScaler
 from torch import Tensor
 
 from text.Embedding.huggingmodel import HuggingModel
@@ -168,7 +169,6 @@ class OutlierDetectionModel(ABC):
         """Processes and embeds training and testing data.
         This method is used when the classification model should use the embeddings."""
 
-        embedding_func = self.model.get_embedding_fun(batch_first=True)
         if self.use_cached:
             self.use_embedding_cached()
             return
@@ -181,13 +181,17 @@ class OutlierDetectionModel(ABC):
         self._y_train = y_train
         self._y_test = y_test
 
-        # Generate embeddings and reshape
-        #self._x_train = self._generate_embeddings(tokenized_train, embedding_func)
-        #self._x_test = self._generate_embeddings(tokenized_test, embedding_func)
-        _x_train = embedding_func(tokenized_train)
-        _x_test = embedding_func(tokenized_test)
-        self._x_train = torch.nn.functional.normalize(_x_train, p=2, dim=1)
-        self._x_test = torch.nn.functional.normalize(_x_test, p=2, dim=1)
+        self._x_train = self.__prepare_embedding(tokenized_train)
+        self._x_test = self.__prepare_embedding(tokenized_test)
+
+    def __prepare_embedding(self, tokenized: Tensor) -> Tensor:
+        embedding_func = self.model.get_embedding_fun(batch_first=True)
+        embedded = embedding_func(tokenized)
+        means = embedded.mean(1, keepdim=True)
+        stds = embedded.std(1, keepdim=True)
+        standardized = (embedded - means) / stds
+        normalized = torch.nn.functional.normalize(standardized, p=2, dim=1)
+        return normalized
 
     def use_tokenized(self) -> None:
         """Sets the train and test data for the classification model to use the tokenized data."""

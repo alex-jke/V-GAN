@@ -4,8 +4,6 @@ from typing import List, Tuple
 
 import pandas as pd
 
-from text.od_experiment import Experiment
-
 
 class ResultAggregator():
     """
@@ -15,10 +13,10 @@ class ResultAggregator():
     It then stores the aggregated results in a csv file in the results folder, under the name "aggregated_results.csv".
     """
 
-    def __init__(self):
+    def __init__(self, common_metrics_name: str, result_name: str):
         self.results_path = Path(os.path.dirname(__file__)) / "results"
-        self.common_metrics_name = Experiment.comon_metrics_name
-        self.results_name = Experiment.result_csv_name
+        self.common_metrics_name = common_metrics_name
+        self.results_name = result_name
         self.exist_criteria_file = self.common_metrics_name
         self.results: List[pd.DataFrame] = []
 
@@ -40,7 +38,8 @@ class ResultAggregator():
           - one with the common metrics (self.common_metrics_name)
           - one with the experiment results (self.results_name)
         """
-        for folder in self.results_path.glob('**/*'):
+        folders = self.results_path.glob('**/*')
+        for folder in folders:
             if folder.is_dir() and self.is_experiment_result_dir(folder):
                 try:
                     common_metrics_file = folder / self.common_metrics_name
@@ -80,10 +79,10 @@ class ResultAggregator():
         # For each metric, find the row for each method that has the maximum value.
         for metric in ['auc', 'prauc', 'f1']:
             # idxmax returns the index of the max value for each group.
-            idx = combined_df[metric].idxmax()
+            idx = combined_df.groupby("dataset")[metric].idxmax()
             best_df = combined_df.loc[idx].copy()
             best_df['best_metric'] = metric
-            best_df = pd.DataFrame([best_df])
+            #best_df = pd.DataFrame([best_df])
             best_rows.append(best_df)
 
         # Concatenate the best rows for all metrics.
@@ -114,5 +113,6 @@ class ResultAggregator():
             print("No aggregated results to save.")
 
 if __name__ == "__main__":
-    aggregator = ResultAggregator()
+    aggregator = ResultAggregator(result_name="results.csv",
+                                  common_metrics_name="comon_metrics.csv")
     aggregator.run_aggregation()

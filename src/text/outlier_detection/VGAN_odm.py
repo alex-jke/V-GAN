@@ -57,6 +57,9 @@ class VGAN_ODM(EnsembleODM):
         self.vgan.epochs = epochs
         print(f"training vmmd for {self.vgan.epochs} epochs.")
 
+        if len(train) == len(self.dataset.get_training_data()): #TODO embedding dataset somehow seems to be trained with too many samples.
+            raise RuntimeError(f"The training data should be filtered")
+
         #with self.ui.display():
         for epoch in self.vgan.yield_fit(train, yield_epochs=200):
             #self.ui.update(f"Fitting VGAN, current epoch {epoch}")
@@ -65,7 +68,7 @@ class VGAN_ODM(EnsembleODM):
 
         self.vgan.approx_subspace_dist(add_leftover_features=False, subspace_count=50)
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.vgan.subspaces,
-                 n_jobs=-1, bps_flag=False, approx_flag_global=False, verbose=True)
+                 n_jobs=2, bps_flag=False, approx_flag_global=False, verbose=True)
 
         self.ensemble_model.fit(self.x_train.cpu())
 

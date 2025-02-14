@@ -7,7 +7,9 @@ from pyod.models.lof import LOF as pyod_LOF
 from pyod.models.lunar import LUNAR as pyod_LUNAR
 from pyod.models.ecod import ECOD as pyod_ECOD
 from pyod.models.feature_bagging import FeatureBagging as pyod_FeatureBagging
+from sklearn.preprocessing import StandardScaler
 from torch import Tensor
+import torch
 
 from text.Embedding.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
@@ -120,4 +122,10 @@ class EmbeddingBaseDetector(BaseDetector):
     def _embed(self, X: ndarray) -> ndarray:
         x_tensor = Tensor(X)
         embedded: Tensor = self.embedding_fun(x_tensor)
-        return embedded.cpu().numpy()
+        embedded = embedded
+        means = embedded.mean(1, keepdim=True)
+        stds = embedded.std(1, keepdim=True)
+        standardized = (embedded - means) / stds
+        normalized = torch.nn.functional.normalize(standardized, p=2, dim=1)
+        return normalized.cpu().numpy()
+

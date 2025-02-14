@@ -5,6 +5,7 @@ from typing import List, Tuple, Optional, Dict
 
 import pandas as pd
 import torch
+import random
 
 from pyod.models.lunar import LUNAR as pyod_LUNAR
 from pyod.models.ecod import ECOD as pyod_ECOD
@@ -26,6 +27,7 @@ from text.outlier_detection.VGAN_odm import VGAN_ODM
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.trivial_odm import TrivialODM
+from text.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer import ResultVisualizer
 
 
@@ -170,7 +172,8 @@ class Experiment:
         self.output_path.mkdir(parents=True, exist_ok=True)
         self.result_df.to_csv(self.output_path / self.result_csv_name, index=False)
         self.error_df.to_csv(self.output_path / "errors.csv", index=False)
-        self.comon_metrics.to_csv(self.output_path / self.comon_metrics_name, index=False)
+        if not (self.output_path / self.comon_metrics_name).exists():
+            self.comon_metrics.to_csv(self.output_path / self.comon_metrics_name, index=False)
 
     def _filter_for_not_run(self):
         result_path = self.output_path / self.result_csv_name
@@ -183,7 +186,7 @@ class Experiment:
             if model.name not in run:
                 not_run.append(model)
         #print(f"Not run: {len(not_run)} models")
-        not_run_names = [model.name for model in not_run]
+        random.shuffle(not_run)
         self.models = not_run
         self.result_df = result_df
 
@@ -213,6 +216,12 @@ class Experiment:
         #print(self.result_df)
         self._visualize_and_save_results()
 
+def aggregate_results():
+    aggregator = ResultAggregator(
+        common_metrics_name=Experiment.comon_metrics_name,
+        result_name=Experiment.result_csv_name
+    )
+    aggregator.run_aggregation()
 
 if __name__ == '__main__':
     datasets = [
@@ -220,9 +229,19 @@ if __name__ == '__main__':
                    IMBdDataset(),
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
-    embedding_models = [DeepSeek1B, GPT2, Bert, DeepSeek7B]
+    embedding_models = [DeepSeek1B, GPT2, Bert,
+                        #DeepSeek7B
+                        ]
+
+    # Python garbage collection does not collect garbage, that is clear the created models and datasets.
+    # Thus, eventually, the program will crash.
+    # The Experiment class checks, which models and datasets have been run. This approach guarantees, that
+    # every model and dataset can run at some point.
+    random.shuffle(embedding_models)
+    #random.shuffle(datasets)
+
     ui = cli.get()
-    train_size = 100_000
+    train_size = 10_000
     test_size = 10_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
@@ -234,8 +253,9 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.23_adam+STE", use_cached=True)
+                                            experiment_name=f"0.24_small_standardization", use_cached=True)
                     experiment.run()
+                    aggregate_results()
                     del emb_model
                     del experiment
 

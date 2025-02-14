@@ -122,6 +122,7 @@ class MMDLossConstrained(nn.Module):
         YY = K[X_size:, X_size:].mean()
 
         if torch.isnan(XX).any() or torch.isnan(XY).any() or torch.isnan(YY).any():
+            raise ValueError("XX or XY contain nan values.")
             XX = torch.where(torch.isnan(XX), torch.zeros_like(XX), XX)
             XY = torch.where(torch.isnan(XY), torch.zeros_like(XY), XY)
             YY = torch.where(torch.isnan(YY), torch.zeros_like(YY), YY)
@@ -141,7 +142,7 @@ class MMDLossConstrained(nn.Module):
 
         mmd_loss = XX - 2 * XY + YY
         if math.isnan(mmd_loss):
-            print("mmd is nan.")
+            raise ValueError("mmd is nan.")
         return mmd_loss + penalty + middle_penalty, mmd_loss
 
     def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):
