@@ -39,13 +39,13 @@ class DatasetEmbedder:
         """
         self.desired_labels = labels
         tokenizer = DatasetTokenizer(tokenizer=self.model, dataset=self.dataset, max_samples=samples)
-        path = self.dir_path / f"{'train' if train else 'test'}.csv"
+        path = self.dir_path / f"{'train' if train else 'test'}_l{'all' if labels is None else labels}.csv"
         tokenized_data, labels = tokenizer.get_tokenized_training_data(class_labels=labels) if train else tokenizer.get_tokenized_testing_data()
         embedded = self._get_embedded_tensor(tokenized_data, path, samples)
         return embedded, labels
 
     def _get_embedded_tensor(self, tokenized_dataset: Tensor, path: Path, samples: int) -> Tensor:
-        embedded_dataframe: pd.DataFrame = self._get_embedded_dataframe(tokenized_dataset, path, samples)
+        embedded_dataframe: pd.DataFrame = self._get_embedded_dataframe(tokenized_dataset, path)
 
         #labels = self.labels.reset_index(drop=True)
         #mask = labels.isin(self.desired_labels) if self.desired_labels is not None else labels.apply(lambda row: True)
@@ -57,7 +57,7 @@ class DatasetEmbedder:
         return tensor
 
 
-    def _get_embedded_dataframe(self, tokenized_dataset: Tensor, path: Path, samples: int) -> pd.DataFrame:
+    def _get_embedded_dataframe(self, tokenized_dataset: Tensor, path: Path) -> pd.DataFrame:
         dataset = pd.DataFrame()
         start_index = 0
         if path.exists():

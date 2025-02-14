@@ -52,13 +52,13 @@ class VGAN_ODM(EnsembleODM):
         self.init_dataset()
         train = self.x_train.to(self.device)
 
-        epochs = int(10 ** 6.7 / len(train) + 400)
-        epochs = epochs if self.pre_embed else epochs * 2
+        epochs = int(10 ** 6.7 / len(train) + 400) * 2
+        #epochs = epochs if self.pre_embed else epochs * 2
         self.vgan.epochs = epochs
         print(f"training vmmd for {self.vgan.epochs} epochs.")
 
-        if len(train) == len(self.dataset.get_training_data()): #TODO embedding dataset somehow seems to be trained with too many samples.
-            raise RuntimeError(f"The training data should be filtered")
+        if train.shape[0] != len(self.y_train): #TODO embedding dataset somehow seems to be trained with too many samples.
+            raise RuntimeError(f"The training data and label should have the same length.")
 
         #with self.ui.display():
         for epoch in self.vgan.yield_fit(train, yield_epochs=200):
@@ -78,8 +78,23 @@ class VGAN_ODM(EnsembleODM):
         test = self.x_test.to(self.device)
         decision_function_scores_ens = self.ensemble_model.decision_function(
             test.cpu())
-        self.predictions = self.aggregator_funct(
+        agg_dec_fun = self.aggregator_funct(
             decision_function_scores_ens, weights=self.vgan.proba, type="avg")
+        if not self.pre_embed:
+            self.predictions = agg_dec_fun
+            return
+
+        subspace_min_distance = []
+        subspaces = Tensor(self.vgan.subspaces).to(self.device)
+        max_dist = test.shape[1]**0.5
+        for point in test:
+            min_distance = max_dist# Should not be more due to normalization.
+            for subspace in subspaces:
+                sub_dist = (point - subspace * point).norm()
+                min_distance = min(min_distance, sub_dist)
+            subspace_min_distance.append(min_distance)
+        dist_tensor = Tensor(subspace_min_distance) / max_dist
+        self.predictions = agg_dec_fun + dist_tensor.cpu().numpy()
 
     def _get_name(self):
         return f"VGAN + {self.base_detector.__name__} + {self.space[0]}"

@@ -229,7 +229,8 @@ if __name__ == '__main__':
                    IMBdDataset(),
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
-    embedding_models = [DeepSeek1B, GPT2, Bert,
+    embedding_models = [DeepSeek1B,
+                        GPT2, Bert,
                         #DeepSeek7B
                         ]
 
@@ -237,7 +238,7 @@ if __name__ == '__main__':
     # Thus, eventually, the program will crash.
     # The Experiment class checks, which models and datasets have been run. This approach guarantees, that
     # every model and dataset can run at some point.
-    random.shuffle(embedding_models)
+    #random.shuffle(embedding_models)
     #random.shuffle(datasets)
 
     ui = cli.get()
@@ -253,7 +254,8 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.24_small_standardization", use_cached=True)
+                                            experiment_name=f"0.25_small_standardization+subspace_dist", use_cached=True,
+                                            run_cachable=True)
                     experiment.run()
                     aggregate_results()
                     del emb_model
