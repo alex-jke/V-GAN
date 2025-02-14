@@ -1,5 +1,7 @@
+import os
 import unittest
 from itertools import takewhile
+from pathlib import Path
 from time import time
 
 import pandas as pd
@@ -8,7 +10,9 @@ from torch import Tensor
 
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
+from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
+from text.outlier_detection.VGAN_odm import VGAN_ODM
 from text.outlier_detection.pyod_odm import LUNAR
 
 
@@ -80,6 +84,33 @@ class OutlierDetectionMethodTest(unittest.TestCase):
         lunar.stop_timer()
         lunar.evaluate()
         print(f"auc: {lunar.metrics['auc']}")
+
+    def test_vgan_subspace_distance(self):
+        dataset= AGNews()
+        model = GPT2()
+        vgan_dist = VGAN_ODM(dataset, model, 10_000, 10_000, pre_embed=True, use_cached=True, use_subspace_distance=True)
+        vgan_dist.start_timer()
+        vgan_dist.train()
+        vgan_dist.predict()
+        vgan_dist.stop_timer()
+        result_dist = vgan_dist.evaluate()[0]
+        result_dist["distance_used"] = True
+
+        vgan_no_dist = VGAN_ODM(dataset, model, 10_000, 10_000, pre_embed=True, use_cached=True, use_subspace_distance=False)
+        vgan_no_dist.start_timer()
+        vgan_no_dist.train()
+        vgan_no_dist.predict()
+        vgan_no_dist.stop_timer()
+        result_no_dist = vgan_no_dist.evaluate()[0]
+        result_no_dist["distance_used"] = False
+
+        result = pd.concat([result_dist, result_no_dist])
+        path =  Path(os.path.dirname(__file__)) / ".." / "results" / "distance_test" / "vgan_subspace_distance.csv"
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+        result.to_csv(path)
+
+
 
 
 

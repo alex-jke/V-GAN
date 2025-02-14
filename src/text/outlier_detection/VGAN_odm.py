@@ -27,7 +27,8 @@ from vmmd import VMMD
 
 class VGAN_ODM(EnsembleODM):
 
-    def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False):
+    def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False,
+                 use_subspace_distance= True):
         self.space = "Embedding" if pre_embed else "Tokenized"
         self.model = model
         self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSigmoidSTE,
@@ -41,6 +42,7 @@ class VGAN_ODM(EnsembleODM):
         self.init_dataset = self.use_embedding if pre_embed else self.use_tokenized
         self.pre_embed = pre_embed
         self.ensemble_model = None
+        self.use_subspace_distance = use_subspace_distance
         super().__init__(dataset, model, train_size, test_size, inlier_label, use_cached=use_cached)
 
     def _get_detector(self) -> BaseDetector:
@@ -80,7 +82,7 @@ class VGAN_ODM(EnsembleODM):
             test.cpu())
         agg_dec_fun = self.aggregator_funct(
             decision_function_scores_ens, weights=self.vgan.proba, type="avg")
-        if not self.pre_embed:
+        if not self.pre_embed or not self.use_subspace_distance:
             self.predictions = agg_dec_fun
             return
 
@@ -106,10 +108,11 @@ class VGAN_ODM(EnsembleODM):
         return self.space
 
     def evaluate(self, output_path: Path = None, print_results = False) ->( pd.DataFrame, pd.DataFrame):
-        output_path = output_path / self._get_name()
-        visualizer = CollectiveVisualizer(tokenized_data=self.x_test, tokenizer = self.model, vmmd_model=self.vgan, export_path=str(output_path), text_visualization=not self.pre_embed)
-        visualizer.visualize(samples=30, epoch=self.vgan.epochs)
-        self.vgan.model_snapshot(path_to_directory=output_path)
+        if output_path is not None:
+            output_path = output_path / self._get_name()
+            visualizer = CollectiveVisualizer(tokenized_data=self.x_test, tokenizer = self.model, vmmd_model=self.vgan, export_path=str(output_path), text_visualization=not self.pre_embed)
+            visualizer.visualize(samples=30, epoch=self.vgan.epochs)
+            self.vgan.model_snapshot(path_to_directory=output_path)
         return super().evaluate(output_path=output_path)
 
 if __name__ == '__main__':
