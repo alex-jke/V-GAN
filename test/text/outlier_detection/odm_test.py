@@ -14,6 +14,7 @@ from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
 from text.outlier_detection.VGAN_odm import VGAN_ODM
 from text.outlier_detection.pyod_odm import LUNAR
+from text.visualizer.result_visualizer import ResultVisualizer
 
 
 class OutlierDetectionMethodTest(unittest.TestCase):
@@ -87,28 +88,39 @@ class OutlierDetectionMethodTest(unittest.TestCase):
 
     def test_vgan_subspace_distance(self):
         dataset= AGNews()
-        model = GPT2()
-        vgan_dist = VGAN_ODM(dataset, model, 10_000, 10_000, pre_embed=True, use_cached=True, use_subspace_distance=True)
-        vgan_dist.start_timer()
-        vgan_dist.train()
-        vgan_dist.predict()
-        vgan_dist.stop_timer()
-        result_dist = vgan_dist.evaluate()[0]
-        result_dist["distance_used"] = True
-
-        vgan_no_dist = VGAN_ODM(dataset, model, 10_000, 10_000, pre_embed=True, use_cached=True, use_subspace_distance=False)
-        vgan_no_dist.start_timer()
-        vgan_no_dist.train()
-        vgan_no_dist.predict()
-        vgan_no_dist.stop_timer()
-        result_no_dist = vgan_no_dist.evaluate()[0]
-        result_no_dist["distance_used"] = False
-
-        result = pd.concat([result_dist, result_no_dist])
-        path =  Path(os.path.dirname(__file__)) / ".." / "results" / "distance_test" / "vgan_subspace_distance.csv"
+        model = DeepSeek1B()
+        path =  Path(os.path.dirname(__file__)) / ".."/ ".." / "results" / "classifier_test" / "vgan_subspace_distance.csv"
         if not path.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
-        result.to_csv(path)
+        step_size = 0.2
+        #lambdas = [x *step_size for x in range(int(10/step_size),int(20/step_size))]
+        deltas = [x * step_size for x in range(int(0/step_size),int(2/step_size))]
+        lambdas = [1]
+        for lambda_used in lambdas:
+            for delta in deltas:
+                vgan_dist = VGAN_ODM(dataset, model, 10_000, 10_000, pre_embed=True, use_cached=True,
+                                     subspace_distance_lambda=lambda_used, classifier_delta=delta,
+                                     output_path=path.parent / "VGAN")
+                vgan_dist.start_timer()
+                vgan_dist.train()
+                vgan_dist.predict()
+                vgan_dist.stop_timer()
+                result_dist = vgan_dist.evaluate(path.parent)[0]
+                result_dist["distance_lambda_used"] = lambda_used
+                result_dist["classifier_delta"] = delta
+                if path.exists():
+                    result_dist.to_csv(path, mode="a", header=False)
+                else:
+                    result_dist.to_csv(path)
+        result_df = pd.read_csv(path)
+        visualizer = ResultVisualizer(result=result_df, output_dir=path.parent)
+        #x_column = "distance_lambda_used"
+        x_column = "classifier_delta"
+        y_columns = ["auc", "prauc", "f1"]
+        for y_column in y_columns:
+            visualizer.visualize(x_column=x_column, y_column=y_column, type=visualizer.line)
+
+
 
 
 

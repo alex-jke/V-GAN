@@ -51,7 +51,7 @@ class ResultAggregator():
                     df = results_df.join(common_df, how='cross')
 
                     self.results.append(df)
-                    print(f"Loaded results from: {folder}")
+                    #print(f"Loaded results from: {folder}")
                 except Exception as e:
                     print(f"Failed to load results from {folder}: {e}")
 

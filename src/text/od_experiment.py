@@ -23,7 +23,7 @@ from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset.wikipedia_slim import WikipediaPeopleDataset
-from text.outlier_detection.VGAN_odm import VGAN_ODM
+from text.outlier_detection.VGAN_odm import VGAN_ODM, DistanceVGAN_ODM, EnsembleVGAN_ODM
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.trivial_odm import TrivialODM
@@ -69,6 +69,11 @@ class Experiment:
         # Parameters used for models that require embedding.
         self.params: Dict = {**self.partial_params, "pre_embed": True}
 
+        # Determine the output directory.
+        self.output_path = output_path
+        if output_path is None:
+            self.output_path: Path = self._get_output_path()
+
         # Build the list of outlier detection models.
         self.models = models
         if models is None:
@@ -78,11 +83,6 @@ class Experiment:
         self.result_df: pd.DataFrame = pd.DataFrame()
         self.comon_metrics: pd.DataFrame = pd.DataFrame()
         self.error_df: pd.DataFrame = pd.DataFrame(columns=["model", "error"])
-
-        # Determine the output directory.
-        self.output_path = output_path
-        if output_path is None:
-            self.output_path: Path = self._get_output_path()
 
         self.ui = cli.get()
 
@@ -114,11 +114,17 @@ class Experiment:
 
         # VGAN ODM models with both use_embedding False and True.
         use_emb_list = [True] if self.run_cachable else [False, True]
+        models.extend(
+            [EnsembleVGAN_ODM(**self.partial_params, base_detector=base, pre_embed=use_emb,
+                              output_path = self.output_path)
+            for base in bases
+            for use_emb in use_emb_list])
+        models.extend([DistanceVGAN_ODM(**self.partial_params, pre_embed=True, output_path=self.output_path)])
+
         models.extend([
-            omd_model(**self.partial_params, base_detector=base, pre_embed=use_emb)
+            FeatureBagging(**self.partial_params, base_detector=base, pre_embed=use_emb)
             for base in bases
             for use_emb in use_emb_list
-            for omd_model in [VGAN_ODM, FeatureBagging] # Todo: currently causes memory problems
         ])
 
 
@@ -208,6 +214,9 @@ class Experiment:
                 self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
                 if error is not None:
                     self.error_df = pd.concat([self.error_df, error], ignore_index=True)
+                    if not self.output_path.exists():
+                        self.output_path.mkdir(parents=True, exist_ok=True)
+                    self.error_df.to_csv(self.output_path / "errors.csv", index=False)
                     continue
                 self._visualize_and_save_results()
                 del model
@@ -239,10 +248,10 @@ if __name__ == '__main__':
     # The Experiment class checks, which models and datasets have been run. This approach guarantees, that
     # every model and dataset can run at some point.
     random.shuffle(embedding_models)
-    #random.shuffle(datasets)
+    random.shuffle(datasets)
 
     ui = cli.get()
-    train_size = 10_000
+    train_size = 100_000
     test_size = 10_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
@@ -254,7 +263,7 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.25_small_standardization+subspace_dist", use_cached=True,
+                                            experiment_name=f"0.261", use_cached=True,
                                             run_cachable=True)
                     experiment.run()
                     aggregate_results()
