@@ -33,9 +33,8 @@ class NLP_ADBench(Dataset):
             test_dataset = pd.read_csv(dataset_path / "test.csv")
 
         task_label = self._get_row()
-        task_column = train_dataset["original_task"]
-        train_dataset_filtered = train_dataset[task_column == task_label]
-        test_dataset_filtered = test_dataset[task_column == task_label]
+        train_dataset_filtered = train_dataset[train_dataset["original_task"] == task_label].reset_index(drop=True)
+        test_dataset_filtered = test_dataset[test_dataset["original_task"] == task_label].reset_index(drop=True)
 
         self.x_train = train_dataset_filtered[self.x_label_name]
         self.y_train = train_dataset_filtered[self.y_label_name]
