@@ -26,6 +26,9 @@ class NLP_ADBench(Dataset):
             test_dataset = dataset["test"]
             test_dataset = pd.DataFrame(test_dataset)
 
+            # Shuffle the dataset as all outliers are concentrated, where the original labels were.
+            test_dataset = test_dataset.sample(frac=1).reset_index(drop=True)
+
             train_dataset.to_csv(dataset_path / "train.csv", index=False)
             test_dataset.to_csv(dataset_path / "test.csv", index=False)
         else:
