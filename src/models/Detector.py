@@ -6,8 +6,11 @@ class Encoder(nn.Module): #Not gonna try convolutions yet nor transformers. But 
         super(Encoder, self).__init__()
         self.main = nn.Sequential(
             nn.Linear(img_size, 8*latent_size),
+            nn.LeakyReLU(0.2),
             nn.Linear(8*latent_size, 4*latent_size),
+            nn.LeakyReLU(0.2),
             nn.Linear(4*latent_size, 2*latent_size),
+            nn.LeakyReLU(0.2),
             nn.Linear(2*latent_size, latent_size)
         )
     def forward(self, input):
@@ -19,8 +22,11 @@ class Decoder(nn.Module): #Not gonna try convolutions yet nor transformers. But 
         super(Decoder, self).__init__()
         self.main = nn.Sequential(
             nn.Linear(latent_size, 2*latent_size),
+            nn.LeakyReLU(0.2),
             nn.Linear(2*latent_size, 4*latent_size),
+            nn.LeakyReLU(0.2),
             nn.Linear(4*latent_size, 8*latent_size),
+            nn.LeakyReLU(0.2),
             nn.Linear(8*latent_size, img_size),
         )
     def forward(self, input):

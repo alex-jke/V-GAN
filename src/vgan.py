@@ -1,3 +1,5 @@
+import inspect
+
 import torch
 from collections import defaultdict
 from models.Generator import Generator_big
@@ -25,25 +27,35 @@ class VGAN:
     kernel learning is performed. The default values for the kernel are
     '''
 
-    def __init__(self, batch_size=500, temperature=1, epochs=30, lr_G=0.007, lr_D=0.007, iternum_d=1, iternum_g=5, momentum=0.99, seed=777, weight_decay=0.04, path_to_directory=None):
+    def __init__(self, batch_size=500, penalty=1, epochs=30, lr_G=0.007, lr_D=0.007,
+                 iternum_d=1, iternum_g=5, seed=777,
+                 weight_decay=0.04, path_to_directory=None,
+                 generator= None,
+                 #Currently does not do anything:
+                 print_updates=True, gradient_clipping=False):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.batch_size = batch_size
-        self.temperature = temperature
+        self.penalty = penalty
         self.epochs = epochs
         self.lr_G = lr_G
         self.lr_D = lr_D
         self.iternum_d = iternum_d
         self.iternum_g = iternum_g
-        self.momentum = momentum
+        #self.momentum = momentum
         self.seed = seed
+        if seed is None:
+            self.seed = 777
         self.weight_decay = weight_decay
         self.path_to_directory = path_to_directory
         self.generator_optimizer = None
         self.__elm = False
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
-        self.seed = 777
+
+        self.provided_generator = generator
+        if generator is None:
+            self.provided_generator = Generator_big
 
     def __normalize(x, dim=1):
         return x.div(x.norm(2, dim=dim).expand_as(x))
@@ -98,7 +110,8 @@ class VGAN:
 
     def get_params(self) -> dict:
         return {'batch size': self.batch_size, 'epochs': self.epochs, 'lr_g': self.lr_G,
-                'momentum': self.momentum, 'weight decay': self.weight_decay,
+                #'momentum': self.momentum,
+                'weight decay': self.weight_decay,
                 'batch_size': self.batch_size, 'seed': self.seed,
                 'generator optimizer': self.generator_optimizer}
 
@@ -143,13 +156,13 @@ class VGAN:
         '''
         if device == None:
             device = self.device
-        self.generator = Generator_big(
-            img_size=ndims, latent_size=max(int(ndims/16), 1)).to(device)
+        latent_size = max(int(ndims / 16), 1)
+        self.generator =self.get_the_networks(ndims, latent_size, device=device)[0]
         self.generator.load_state_dict(torch.load(
             path_to_generator, map_location=device))
         self.generator.eval()  # This only works for dropout layers
         self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space'
-        self.__latent_size = max(int(ndims/16), 1)
+        self.__latent_size = latent_size
 
     def get_the_networks(self, ndims: int, latent_size: int, device: str = None) -> tuple:
         """Object function to obtain the networks' architecture
@@ -164,12 +177,21 @@ class VGAN:
         """
         if device == None:
             device = self.device
-        generator = Generator_big(
-            img_size=ndims, latent_size=latent_size).to(device)
+            # Check if only the constructor or a whole generator was passed.
+        if inspect.isclass(self.provided_generator):
+            generator = self.provided_generator(
+                img_size=ndims, latent_size=latent_size).to(device)
+        else:
+            generator = self.provided_generator
+
         detector = Detector(latent_size, ndims, Encoder, Decoder).to(device)
         return generator, detector
 
-    def fit(self, X):
+    def fit(self, X: np.array):
+        for _ in self.yield_fit(X):
+            continue
+
+    def yield_fit(self, X: np.array, embedding = lambda x: x, yield_epochs: int = None):
 
         cuda = torch.cuda.is_available()
         mps = torch.backends.mps.is_available()
@@ -192,14 +214,16 @@ class VGAN:
         generator.apply(self.__weights_init)
         detector.apply(self.__weights_init)
 
-        gen_optimizer = torch.optim.Adadelta(
-            generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay)
-        det_optimizer = torch.optim.Adadelta(
-            detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay)
+        #gen_optimizer = torch.optim.Adadelta(generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay)
+        #det_optimizer = torch.optim.Adadelta(detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay)
+
+        gen_optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay, betas=(0.5,0.9))
+        det_optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr_D, weight_decay=self.weight_decay, betas=(0.5,0.9))
+
         self.generator_optimizer = gen_optimizer.__class__.__name__
         self.detector_optimizer = det_optimizer.__class__.__name__
         # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
-        loss_function = MMDLossConstrained(weight=self.temperature)
+        loss_function = MMDLossConstrained(weight=self.penalty)
 
         # OPTIMIZATION STUFF
         one = torch.mps.Tensor([1])
@@ -312,11 +336,15 @@ class VGAN:
                 iternum_g += 1
                 if iternum_g > self.iternum_g:
                     iternum_d = 1
-
             print(f"Average loss in the epoch Generator: {generator_loss}")
             print(f"Average loss in the epoch Detector: {detector_loss}")
             self.train_history["generator_loss"].append(generator_loss)
             self.train_history["detector_loss"].append(detector_loss)
+
+            if yield_epochs is not None and epoch % yield_epochs == 0:
+                self.generator = generator
+                self.detector = detector
+                yield epoch
 
         if not self.path_to_directory == None:
             path_to_directory = Path(self.path_to_directory)
@@ -341,7 +369,8 @@ class VGAN:
         noise_tensor.normal_()
         u = self.generator(noise_tensor.to(self.device))
         if round:
-            u = torch.greater_equal(u, 1/u.shape[1])
+            u = torch.greater_equal(u, 0.5) * 1
+        u = u.detach()
         return u
 
 
@@ -354,7 +383,7 @@ if __name__ == "__main__":
            [0, 0, 0, 0, 0, 0, 0, 1, 0, 0], [500, 0, 0, 0, 0, 0, 0, 0, 1, 500], [500, 0, 0, 0, 0, 0, 0, 0, 500, 1]]
     X_data = np.random.multivariate_normal(mean, cov, 2000)
 
-    model = VGAN(epochs=15, temperature=1, path_to_directory=Path() / "experiments" /
+    model = VGAN(epochs=15, penalty=1, path_to_directory=Path() / "experiments" /
                  f"Example_normal_{datetime.datetime.now()}_vgan", lr_G=0.01, lr_D=0.1)
     model.fit(X_data)
 

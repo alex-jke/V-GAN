@@ -174,6 +174,8 @@ class VMMD:
         Fits the model to the data. The model is trained using the MMD loss function. The model is trained using the Adadelta optimizer.
         @param X: A two-dimensional numpy array with the data to be fitted.
         The data should be in the form: n_samples x n_features
+        @param embedding: A function that transforms the data. By default, it is the identity function.
+        This function is used inside the RBF kernel before calculating the distance.
         '''
 
         cuda = torch.cuda.is_available()

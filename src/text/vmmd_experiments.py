@@ -1,15 +1,17 @@
 import os
+from abc import abstractmethod
 from argparse import ArgumentError
 from datetime import datetime
 from pathlib import Path
 from tokenize import Ignore
+from typing import Type
 
 import torch
 from torch import Tensor
 
 # === Imports from your modules ===
 from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE, \
-    GeneratorSpectralNorm, GeneratorSigmoidSTEMBD
+    GeneratorSpectralNorm, GeneratorSigmoidSTEMBD, Generator_big
 from modules.od_module import VMMD_od
 from text.Embedding.bert import Bert
 from text.Embedding.gpt2 import GPT2
@@ -28,6 +30,7 @@ from text.dataset.wikipedia_slim import WikipediaPeopleDataset
 from src.text.dataset_converter.dataset_embedder import DatasetEmbedder
 from text.dataset_converter.dataset_processor import DatasetProcessor
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
+from text.v_experiment import VExperiment
 from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
 from text.visualizer.collective_visualizer import CollectiveVisualizer
 from text.visualizer.timer import Timer
@@ -48,111 +51,19 @@ DEVICE = get_device()
 
 
 # === Experiment class ===
-class Experiment:
+class VMMDExperiment(VExperiment):
     """
-    Encapsulates one experiment (data processing, model training/evaluation, visualization).
+    Encapsulates one experiment for VMMD (data processing, model training/evaluation, visualization).
     """
-    def __init__(self,
-                 dataset: Dataset, model: HuggingModel, generator_class = GeneratorSigmoidSTE, sequence_length: int = None, epochs: int = 2000,
-                 batch_size: int = 500, samples: int = 2000, penalty_weight: float = 0.5, lr: float = 0.007, momentum: float = 0.99, weight_decay: float = 0.04,
-                 version: str ="0.0", yield_epochs: int = 200, train: bool = False, pre_embed: bool = False, use_embedding: bool = False,
-                 gradient_clipping = False):
-        self.dataset = dataset
-        self.model = model
-        self.generator_class = generator_class
-        self.sequence_length: int | None= sequence_length
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.samples = samples
-        self.penalty_weight = penalty_weight
-        self.lr = lr
-        self.momentum = momentum
-        self.weight_decay = weight_decay
-        self.version = version
-        self.yield_epochs = yield_epochs
-        self.train = train
-        self.pre_embed = pre_embed
-        self.device = DEVICE
-        self.gradient_clipping = gradient_clipping
-        if use_embedding and pre_embed:
-            raise ValueError("Cannot pre-embed and use embedding")
-        self.embedding_fun = model.get_embedding_fun(batch_first=True) if use_embedding else lambda x: x
-        self.export_path = self._build_export_path()
-        self.vmmd = None
 
-    def _build_export_path(self) -> str:
-        embedding_str = "embedding" if self.pre_embed else "token"
-        sl_str = self.sequence_length if self.sequence_length is not None else "(longest)"
-        base_dir = os.path.join(
-            os.getcwd(),
-            'experiments',
-            f"{self.version}",
-            embedding_str,
-            self.generator_class.__name__,
-            self.model._model_name,
-            f"{self.dataset.name}_sl{sl_str}_vmmd_{self.model.model_name}_e{self.epochs}_pw{self.penalty_weight}_s{self.samples}"
-        )
-        if self.train:
-            base_dir += "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
-        return base_dir
-
-    def prepare_data(self):
-        processor = DatasetProcessor(
-            dataset=self.dataset,
-            model=self.model,
-            sequence_length=self.sequence_length,
-            samples=self.samples,
-            pre_embed=self.pre_embed
-        )
-        self.tokenized_data, self.normalized_data = processor.process()
-        self.sequence_length = self.tokenized_data.shape[1]
-        self.export_path = self._build_export_path()
-
-
-    def visualize(self, epoch: int):
-        visualizer = CollectiveVisualizer(tokenized_data=self.tokenized_data,
-                                          tokenizer=self.model,
-                                          vmmd_model=self.vmmd,
-                                          export_path=self.export_path,
-                                          text_visualization=not self.pre_embed)
-        visualizer.visualize(epoch=epoch, samples=30)
-
-    def run(self):
-        self.prepare_data()
-
-        # Create VMMD model instance
-        self.vmmd = VMMD_od(path_to_directory=self.export_path, epochs=self.epochs,  batch_size=self.batch_size,  lr=self.lr,
+    def _get_model(self):
+        return VMMD_od(path_to_directory=self.export_path, epochs=self.epochs,  batch_size=self.batch_size,  lr=self.lr,
             momentum=self.momentum, weight_decay=self.weight_decay,  seed=None, penalty_weight=self.penalty_weight,
             generator=self.generator_class, print_updates=True, gradient_clipping= self.gradient_clipping
         )
 
-        evals = []
-        timer = Timer(amount_epochs=self.epochs, export_path=self.export_path)
-        model_path = Path(self.export_path) / "models" / "generator_0.pt"
-
-        # If a saved experiment exists, load it.
-        if os.path.exists(self.export_path) and model_path.exists():
-            self.vmmd.load_models(path_to_generator=model_path, ndims=self.sequence_length)
-            # (Optionally) perform evaluation here.
-        else:
-            # Training loop (using a generator interface from VMMD_od)
-            for epoch in self.vmmd.yield_fit(X=self.normalized_data, yield_epochs=self.yield_epochs, embedding=self.embedding_fun):
-                timer.measure(epoch=epoch)
-                timer.pause()
-
-                self.visualize(epoch=epoch)
-
-                eval_result = model_eval(self.vmmd, self.normalized_data.cpu())
-                evals.append(eval_result)
-
-                timer.resume()
-
-        # Final visualization and myopic check
-        self.visualize(epoch=self.epochs)
-
-        p_value_df = self.vmmd.check_if_myopic(x_data=self.tokenized_data.cpu().numpy(), count=1000)
-        print(f"{self.dataset.name}\n{p_value_df}\n")
-        return self.vmmd, evals
+    def _get_name(self) -> str:
+        return "VMMD"
 
 # === Example: Running a fake experiment ===
 def run_fake_experiment():
@@ -166,7 +77,7 @@ def run_fake_experiment():
     amount_samples = 2000
     batch_size = amount_samples // 4
 
-    experiment = Experiment(
+    experiment = VMMDExperiment(
         dataset=SimpleDataset(samples=samples, amount_samples=int(amount_samples / 0.8 + 1)),
         model=GPT2ExtraSubspaces(3),
         generator_class=FakeGenerator(fake_subspaces),

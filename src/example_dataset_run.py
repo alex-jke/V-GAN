@@ -23,7 +23,7 @@ if __name__ == "__main__":
         X_data = normalize(X_data, axis = 0)
 
         #model = VMMD(epochs = 1500, batch_size= 500, path_to_directory=Path()/ "experiments" / f"Example_dataset_{datetime.datetime.now()}", lr=0.01)
-        model = VGAN(epochs = 1500, temperature=10, batch_size= 500, path_to_directory=Path()/ "experiments" / f"Example_dataset_{datetime.datetime.now()}", iternum_d=1, iternum_g=5,lr_G = 0.01, lr_D = 0.01)
+        model = VGAN(epochs = 1500, penalty=10, batch_size= 500, path_to_directory=Path() / "experiments" / f"Example_dataset_{datetime.datetime.now()}", iternum_d=1, iternum_g=5, lr_G = 0.01, lr_D = 0.01)
         model.fit(X_data)
 
         X_sample = torch.mps.Tensor(pd.DataFrame(X_data).sample(500).to_numpy()).to('mps:0')
