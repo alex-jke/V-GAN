@@ -3,7 +3,7 @@ import inspect
 import torch
 from collections import defaultdict
 from models.Generator import Generator_big
-from models.Detector import Detector, Encoder, Decoder
+from models.Detector import Detector, Encoder, Decoder, DetectorExtra
 import torch_two_sample as tts
 from models.Mmd_loss import MMDLoss
 from models.Mmd_loss_constrained import MMDLossConstrained
@@ -113,7 +113,9 @@ class VGAN:
                 #'momentum': self.momentum,
                 'weight decay': self.weight_decay,
                 'batch_size': self.batch_size, 'seed': self.seed,
-                'generator optimizer': self.generator_optimizer}
+                'generator optimizer': self.generator_optimizer,
+                "generator": self.generator.__class__.__name__,
+                "detector": self.detector.__class__.__name__,}
 
     def model_snapshot(self, path_to_directory=None, run_number=0, show=False):
         ''' Creates an snapshot of the model
@@ -184,7 +186,8 @@ class VGAN:
         else:
             generator = self.provided_generator
 
-        detector = Detector(latent_size, ndims, Encoder, Decoder).to(device)
+        #detector = Detector(latent_size, ndims, Encoder, Decoder).to(device)
+        detector = DetectorExtra(img_size=ndims, latent_size=latent_size).to(device)
         return generator, detector
 
     def fit(self, X: np.array):
@@ -276,22 +279,23 @@ class VGAN:
                         p.requires_grad = True
                     batch_enc, batch_dec = detector(batch)
                     with torch.no_grad():
-                        noise_tensor = Variable(noise_tensor.normal_())
-                        fake_subspaces = Variable(
-                            generator(noise_tensor).clone().detach())  # Freeze G
+                        #noise_tensor = Variable(noise_tensor.normal_())
+                        #fake_subspaces = Variable(generator(noise_tensor).clone().detach())  # Freeze G
+                        noise_tensor = noise_tensor.normal_()
+                        fake_subspaces = generator(noise_tensor).clone().detach()  # Freeze G
 
                     projected_batch = fake_subspaces * batch
 
                     projected_batch_enc, projected_batch_dec = detector(
                         projected_batch
-                        + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                        #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
                     )
 
                     L2_distance_batch = self.__distance(
                         batch.view(self.batch_size, -1), batch_dec, 'L2')
 
                     L2_distance_projected_batch = self.__distance(
-                        (projected_batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                        (projected_batch #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
                          ).view(self.batch_size, -1)
                         , projected_batch_dec, 'L2')
 
@@ -321,12 +325,17 @@ class VGAN:
                     # GET SUBSPACES AND ENCODING-DECODING
                     batch_enc, batch_dec = detector(batch)
 
-                    noise_tensor = Variable(noise_tensor.normal_())
-                    fake_subspaces = Variable(generator(noise_tensor))  # Unfreeze G
+                    #noise_tensor = Variable(noise_tensor.normal_())
+                    #fake_subspaces = Variable(generator(noise_tensor))  # Unfreeze G
+                    #fake_subspaces.requires_grad = True
 
-                    fake_subspaces.requires_grad = True
+                    noise_tensor = torch.normal(mean=0, std=1, size=noise_tensor.shape, device=noise_tensor.device,
+                                                requires_grad=True)
+                    fake_subspaces = generator(noise_tensor)  # Unfreeze G
+
                     projected_batch_enc, projected_batch_dec = detector(
-                        fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0))
+                        fake_subspaces*batch #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                        )
 
                     #L2_distance_batch = self.__distance(
                     #    batch.view(self.batch_size, -1), batch_dec, 'L2')
@@ -339,9 +348,21 @@ class VGAN:
                     gen_optimizer.zero_grad()
 
                     batch_loss_G = loss_function(
-                        batch_enc, projected_batch_enc, fake_subspaces)  # Constrained MMD Loss
+                       projected_batch_enc,  batch_enc, fake_subspaces)  # Constrained MMD Loss
                     self.bandwidth = loss_function.bandwidth
                     batch_loss_G.backward()
+
+                    # Calculate the gradient norm
+                    tensors_with_grad = [p for p in generator.parameters() if p.grad is not None]
+                    if len(tensors_with_grad) > 0:
+                        gradient_norm = torch.norm(torch.stack(
+                            [torch.norm(p.grad.detach(), 2) for p in generator.parameters() if p.grad is not None]), 2)
+                        # Print the gradient norm
+                        print(f"Gradient norm for Generator: {gradient_norm}")
+                    else:
+                        raise ValueError("No gradient for the generator")
+
+
                     gen_optimizer.step()
                     generator_loss += float(batch_loss_G.to(
                         'cpu').detach().numpy())/batch_number
