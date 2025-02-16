@@ -118,6 +118,16 @@ class ODExperimentTest(unittest.TestCase):
         exp = Experiment(dataset, model, skip_error=False, train_size=train_size, test_size=test_size, models=models, experiment_name="tiny")
         exp.run()
 
+    def test_nlp_adbench_emotion_deepseek(self):
+        dataset = NLP_ADBench.emotion()
+        model = DeepSeek1B()
+        train_size = 100_000
+        test_size = 10_000
+        exp = Experiment(dataset, model, skip_error=False,
+                         experiment_name="emotion", train_size=train_size, test_size=test_size,
+                         use_cached=True)
+        exp.run()
+
 
 if __name__ == '__main__':
     unittest.main()

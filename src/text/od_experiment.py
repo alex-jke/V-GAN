@@ -114,11 +114,13 @@ class Experiment:
 
         # VGAN ODM models with both use_embedding False and True.
         use_emb_list = [True] if self.run_cachable else [False, True]
-        models.extend(
+
+        """models.extend(
             [EnsembleVGAN_ODM(**self.partial_params, base_detector=base, pre_embed=use_emb,
                               output_path = self.output_path)
             for base in bases
-            for use_emb in use_emb_list])
+            for use_emb in use_emb_list])"""
+
         models.extend([DistanceVGAN_ODM(**self.partial_params, pre_embed=True, output_path=self.output_path)])
 
         models.extend([

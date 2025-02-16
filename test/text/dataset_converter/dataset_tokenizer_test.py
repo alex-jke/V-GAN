@@ -1,8 +1,12 @@
 import unittest
 
+from torch import Tensor
+
+from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
+from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 
@@ -22,3 +26,11 @@ class DatasetTokenizerTest(unittest.TestCase):
 
         self.assertEqual(tokenized_data.shape[0], samples)
         # Delete the created file
+
+    def test_contains_outlier(self):
+        model = DeepSeek1B()
+        dataset = NLP_ADBench.agnews()
+        tokenizer = DatasetTokenizer(tokenizer=model, dataset=dataset, max_samples=1000)
+        self.assertListEqual(dataset.get_testing_data()[1][:1000].unique().tolist(), dataset.get_possible_labels(), "Original dataset does not contain outliers in the first 1000 datapoints")
+        actual_labels: Tensor = tokenizer.get_tokenized_testing_data()[1]
+        self.assertListEqual(dataset.get_possible_labels(), actual_labels.unique().tolist(), "Tokenized dataset does not contain outliers")

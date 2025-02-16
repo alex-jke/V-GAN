@@ -36,7 +36,7 @@ class RBF(nn.Module):
             The input tensor of shape (n_samples, feature_dim * 2) (X and Y are concatenated)
             Alternatively, a shape of (embedding_dim, n_samples, feature_dim)
         '''
-        X_embedded = self.embedding(X) #todo: does an embedding function make sense when the tokens are concatenated?
+        X_embedded = self.embedding(X)
         Y_embedded = self.embedding(Y)
 
         embedded = torch.vstack([X_embedded, Y_embedded])

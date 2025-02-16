@@ -1,10 +1,11 @@
 import os
 
-from models.Generator import GeneratorSigmoidSTE
+from models.Generator import GeneratorSigmoidSTE, GeneratorUpperSoftmax, GeneratorSigmoid
 from modules.od_module import VGAN_od
 from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
+from text.dataset.emotions import EmotionDataset
 from text.dataset_converter.dataset_embedder import DatasetEmbedder
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 from text.v_experiment import VExperiment
@@ -27,9 +28,10 @@ class VGANExperiment(VExperiment):
         return "VGAN"
 
 if __name__ == "__main__":
-    dataset = AGNews()
+    dataset = EmotionDataset()
     model = DeepSeek1B()
-    exp = VGANExperiment(dataset, model, epochs=1_000, yield_epochs=200,
-                         pre_embed=True, version="0.1_adam", lr=10e-5, train=True)
+    exp = VGANExperiment(dataset, model, epochs=200, yield_epochs=20,
+                         pre_embed=True, version="0.11_adam+??", lr=10e-5, train=True, samples=-1, generator_class=GeneratorSigmoidSTE,
+                         weight_decay=0.0)
     exp.run()
     #lr_G=0.01, lr_D=0.1

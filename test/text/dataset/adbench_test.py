@@ -10,9 +10,10 @@ class ADBenchDatasetTest(unittest.TestCase):
         datasets = NLP_ADBench.get_all_datasets()
         for dataset in datasets:
             _, y = dataset.get_testing_data()
-            if not 1 in y:
+            if len(y.unique()) != 2:
                 no_outliers.append(dataset.name)
-            if not 1 in y[:1000]:
+            truncated = y[:1000]
+            if len(truncated.unique()) != 2:
                 no_truncated_outliers.append(dataset.name)
 
         self.assertEqual(len(no_outliers), 0, f"Datasets without outliers: {no_outliers}")

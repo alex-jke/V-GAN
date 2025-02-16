@@ -62,7 +62,7 @@ class VExperiment:
                  batch_size: int = 500, samples: int = 2000, penalty_weight: float = 0.5, lr: float = 0.007,
                  momentum: float = 0.99, weight_decay: float = 0.04,
                  version: str = "0.0", yield_epochs: int = 200, train: bool = False, pre_embed: bool = False,
-                 use_embedding: bool = False,
+                 use_embedding: bool = False, inlier_labels: list = None,
                  gradient_clipping=False):
         self.dataset = dataset
         self.model = model
@@ -81,6 +81,7 @@ class VExperiment:
         self.pre_embed = pre_embed
         self.device = DEVICE
         self.gradient_clipping = gradient_clipping
+        self.inlier_labels = inlier_labels
         if use_embedding and pre_embed:
             raise ValueError("Cannot pre-embed and use embedding")
         self.embedding_fun = model.get_embedding_fun(batch_first=True) if use_embedding else lambda x: x
@@ -110,7 +111,8 @@ class VExperiment:
             model=self.model,
             sequence_length=self.sequence_length,
             samples=self.samples,
-            pre_embed=self.pre_embed
+            pre_embed=self.pre_embed,
+            inlier_labels=self.inlier_labels
         )
         self.tokenized_data, self.normalized_data = processor.process()
         self.sequence_length = self.tokenized_data.shape[1]

@@ -11,7 +11,8 @@ class DatasetProcessor:
     """
     Handles tokenization and optional embedding of the dataset.
     """
-    def __init__(self, dataset: Dataset, model: HuggingModel, sequence_length: int | None, samples: int, pre_embed: bool):
+    def __init__(self, dataset: Dataset, model: HuggingModel, sequence_length: int | None, samples: int, pre_embed: bool,
+                 inlier_labels: list):
         self.dataset = dataset
         self.model = model
         # Ensure sequence_length does not exceed model maximum
@@ -19,15 +20,18 @@ class DatasetProcessor:
         self.samples = samples
         self.device = get_device()
         self.pre_embed = pre_embed
+        self.inlier_labels = inlier_labels
+        if inlier_labels is None:
+            self.inlier_labels = dataset.get_possible_labels()[:1]
 
     def process(self) -> (Tensor, Tensor):
         # Tokenize the data
         tokenizer = DatasetTokenizer(tokenizer=self.model, dataset=self.dataset, max_samples=self.samples)
-        labels = self.dataset.get_possible_labels()[:1]
+        #labels = self.dataset.get_possible_labels()[:1]
 
 
         if not self.pre_embed:
-            data, _ = tokenizer.get_tokenized_training_data(labels)
+            data, _ = tokenizer.get_tokenized_training_data(self.inlier_labels)
             # Take only the first sequence_length tokens per sample
 
             if self.sequence_length is not None:
@@ -40,7 +44,7 @@ class DatasetProcessor:
         else:
             # If using embeddings, embed and then normalize
             embedder = DatasetEmbedder(dataset=self.dataset, model=self.model)
-            first_part, _ = embedder.embed(train=True, samples=self.samples)
+            first_part, _ = embedder.embed(train=True, samples=self.samples, labels=self.inlier_labels)
             normalized = torch.nn.functional.normalize(first_part, p=2, dim=1)
 
         return first_part, normalized

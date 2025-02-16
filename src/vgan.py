@@ -218,7 +218,7 @@ class VGAN:
         #det_optimizer = torch.optim.Adadelta(detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay)
 
         gen_optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay, betas=(0.5,0.9))
-        det_optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr_D, weight_decay=self.weight_decay, betas=(0.5,0.9))
+        det_optimizer = torch.optim.Adam(detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay, betas=(0.5,0.9))
 
         self.generator_optimizer = gen_optimizer.__class__.__name__
         self.detector_optimizer = det_optimizer.__class__.__name__
@@ -279,17 +279,27 @@ class VGAN:
                         noise_tensor = Variable(noise_tensor.normal_())
                         fake_subspaces = Variable(
                             generator(noise_tensor).clone().detach())  # Freeze G
+
+                    projected_batch = fake_subspaces * batch
+
                     projected_batch_enc, projected_batch_dec = detector(
-                        fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0))
+                        projected_batch
+                        + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                    )
+
                     L2_distance_batch = self.__distance(
                         batch.view(self.batch_size, -1), batch_dec, 'L2')
-                    L2_distance_projected_batch = self.__distance((fake_subspaces*batch + torch.less(
-                        batch, 1/batch.shape[1])*torch.mean(batch, dim=0)).view(self.batch_size, -1), projected_batch_dec, 'L2')
+
+                    L2_distance_projected_batch = self.__distance(
+                        (projected_batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                         ).view(self.batch_size, -1)
+                        , projected_batch_dec, 'L2')
 
                     # OPTIMIZATION STEP DETECTOR
                     det_optimizer.zero_grad()
-                    batch_loss_D = minusone.to(self.device)*(loss_function(batch_enc, projected_batch_enc, fake_subspaces) - .1 *
-                                                       L2_distance_batch - .1*L2_distance_projected_batch)  # Constrained MMD Loss
+                    batch_loss_D = (minusone.to(self.device)*
+                                    (loss_function(batch_enc, projected_batch_enc, fake_subspaces) - .1 *
+                                                       L2_distance_batch - .1*L2_distance_projected_batch))  # Constrained MMD Loss
                     self.bandwidth = loss_function.bandwidth
                     batch_loss_D.backward()
                     det_optimizer.step()
@@ -310,16 +320,18 @@ class VGAN:
                             torch.device('mps'))  # float64 not suported with mps
                     # GET SUBSPACES AND ENCODING-DECODING
                     batch_enc, batch_dec = detector(batch)
+
                     noise_tensor = Variable(noise_tensor.normal_())
-                    fake_subspaces = Variable(
-                        generator(noise_tensor))  # Unfreeze G
+                    fake_subspaces = Variable(generator(noise_tensor))  # Unfreeze G
+
                     fake_subspaces.requires_grad = True
                     projected_batch_enc, projected_batch_dec = detector(
                         fake_subspaces*batch + torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0))
-                    L2_distance_batch = self.__distance(
-                        batch.view(self.batch_size, -1), batch_dec, 'L2')
-                    L2_distance_projected_batch = self.__distance((fake_subspaces*batch + torch.less(
-                        batch, 1/batch.shape[1])*torch.mean(batch, dim=0)).view(self.batch_size, -1), projected_batch_dec, 'L2')
+
+                    #L2_distance_batch = self.__distance(
+                    #    batch.view(self.batch_size, -1), batch_dec, 'L2')
+                    #L2_distance_projected_batch = self.__distance((fake_subspaces*batch + torch.less(
+                    #    batch, 1/batch.shape[1])*torch.mean(batch, dim=0)).view(self.batch_size, -1), projected_batch_dec, 'L2')
 
                     # OPTIMIZATION STEP GENERATOR
                     for p in detector.parameters():
@@ -349,7 +361,7 @@ class VGAN:
         if not self.path_to_directory == None:
             path_to_directory = Path(self.path_to_directory)
             if operator.not_(path_to_directory.exists()):
-                os.mkdir(path_to_directory)
+                os.makedirs(path_to_directory, exist_ok=True)
             if operator.not_(Path(path_to_directory/'models').exists()):
                 os.mkdir(path_to_directory / 'models')
             run_number = int(len(os.listdir(path_to_directory/'models'))/2)
@@ -385,10 +397,10 @@ if __name__ == "__main__":
 
     model = VGAN(epochs=15, penalty=1, path_to_directory=Path() / "experiments" /
                  f"Example_normal_{datetime.datetime.now()}_vgan", lr_G=0.01, lr_D=0.1)
-    model.fit(X_data)
+    model.fit(X_data.astype(np.float32))
 
     X_sample = torch.mps.Tensor(pd.DataFrame(
-        X_data).sample(500).to_numpy()).to('mps:0')
+        X_data).sample(500).to_numpy()).to('cuda:0')
     u = model.generate_subspaces(500)
     uX_data = model.detector.encoder(
         u * torch.mps.Tensor(X_sample).to(model.device) + torch.mean(X_sample, dim=0)*(~u))
