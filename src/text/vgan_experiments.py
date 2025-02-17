@@ -28,10 +28,12 @@ class VGANExperiment(VExperiment):
         return "VGAN"
 
 if __name__ == "__main__":
-    dataset = AGNews()
+    dataset = EmotionDataset()
     model = DeepSeek1B()
-    exp = VGANExperiment(dataset, model, epochs=1_000, yield_epochs=20,
-                         pre_embed=True, version="0.11_adam+detector_extra", lr=10e-5, train=True, samples=-1, generator_class=GeneratorSigmoidSTE,
-                         weight_decay=0.0)
+    epochs = 10_000
+    yield_epochs = epochs // 20
+    exp = VGANExperiment(dataset, model, epochs=epochs, yield_epochs=yield_epochs,
+                         pre_embed=True, version="0.11_test_collapse", lr=10e-5, train=True, samples=10_000, generator_class=GeneratorSigmoidSTE,
+                         weight_decay=10e-5)
     exp.run()
     #lr_G=0.01, lr_D=0.1

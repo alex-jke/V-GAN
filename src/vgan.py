@@ -358,7 +358,7 @@ class VGAN:
                         gradient_norm = torch.norm(torch.stack(
                             [torch.norm(p.grad.detach(), 2) for p in generator.parameters() if p.grad is not None]), 2)
                         # Print the gradient norm
-                        print(f"Gradient norm for Generator: {gradient_norm}")
+                        #print(f"Gradient norm for Generator: {gradient_norm}")
                     else:
                         raise ValueError("No gradient for the generator")
 
