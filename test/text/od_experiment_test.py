@@ -3,7 +3,7 @@ import unittest
 from typing import List
 
 from text.Embedding.bert import Bert
-from text.Embedding.deepseek import DeepSeek1B
+from text.Embedding.deepseek import DeepSeek1B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
@@ -118,10 +118,10 @@ class ODExperimentTest(unittest.TestCase):
         exp = Experiment(dataset, model, skip_error=False, train_size=train_size, test_size=test_size, models=models, experiment_name="tiny")
         exp.run()
 
-    def test_nlp_adbench_emotion_deepseek(self):
-        dataset = NLP_ADBench.emotion()
-        model = DeepSeek1B()
-        train_size = 100_000
+    def test_nlp_adbench_deepseek(self):
+        dataset = NLP_ADBench.bbc()
+        model = DeepSeek7B()
+        train_size = 10_000
         test_size = 10_000
         exp = Experiment(dataset, model, skip_error=False,
                          experiment_name="emotion", train_size=train_size, test_size=test_size,

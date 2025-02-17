@@ -129,7 +129,11 @@ class OutlierDetectionModel(ABC):
             print(f"Warning: Predicted ({len(decision_function_scores)}) and actual labels ({len(y_test)}) have different lengths. Trimming to common length: {common_len}.")
             decision_function_scores = decision_function_scores[:common_len]
             y_test = y_test[:common_len]
-        auc = roc_auc_score(y_test, decision_function_scores)
+        try:
+            auc = roc_auc_score(y_test, decision_function_scores)
+        except ValueError as e:
+            print(e)
+            raise e
         prauc = average_precision_score(y_test, decision_function_scores)
         f1 = f1_score(y_test, (decision_function_scores > np.quantile(decision_function_scores, .80)) * 1)
 
@@ -265,7 +269,7 @@ class OutlierDetectionModel(ABC):
         #self._x_train = _x_train_trimmed[:length]
         #self._y_train = _y_train[mask][:length]
 
-        self. _x_test,self. _y_test = dataset_embedder.embed(train=False, samples=self.test_size)
+        self._x_test,self._y_test = dataset_embedder.embed(train=False, samples=self.test_size)
         #length = min(self.test_size, len(_x_test))
         #self._x_test = _x_test[:length]
         #self._y_test = _y_test[:length]

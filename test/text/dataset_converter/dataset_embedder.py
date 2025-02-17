@@ -10,6 +10,7 @@ from text.Embedding.gpt2 import GPT2
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from src.text.dataset_converter.dataset_embedder import DatasetEmbedder
+from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 
@@ -102,6 +103,21 @@ class DatasetEmbedderTest(unittest.TestCase):
         embedder = DatasetEmbedder(dataset=dataset, model=model)
         embedded, labels = embedder.embed(train=True, samples=amount)
         self.assertEqual(embedder.ui, embedder.model.ui, "UIs are not equal")
+
+    def test_contains_outliers(self):
+        model = DeepSeek1B()
+        datasets = [NLP_ADBench.emotion(), NLP_ADBench.yelp_review_polarity()]
+        for dataset in datasets:
+            embedder = DatasetEmbedder(dataset=dataset, model=model)
+            labels: Tensor = embedder.embed(train=False, samples=10000)[1]
+            labels_1k: Tensor = embedder.embed(train=False, samples=1000)[1]
+            unique_labels, counts = torch.unique(labels, return_counts=True)
+            unique_1k = torch.unique(labels_1k)
+            self.assertListEqual(dataset.get_possible_labels(),
+                                 unique_1k.tolist())
+            self.assertListEqual(dataset.get_possible_labels(),
+                                 unique_labels.tolist())
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -115,12 +115,23 @@ class Experiment:
         # VGAN ODM models with both use_embedding False and True.
         use_emb_list = [True] if self.run_cachable else [False, True]
 
-        """models.extend(
-            [EnsembleVGAN_ODM(**self.partial_params, base_detector=base, pre_embed=use_emb,
+        # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
+        # distance does not make sense for tokens.
+        models.extend(
+            [VGAN_ODM(**self.partial_params, base_detector=base, pre_embed=True,
                               output_path = self.output_path)
-            for base in bases
-            for use_emb in use_emb_list])"""
+            for base in bases])
 
+        # VGAN ODM on the token space only using the ensemble method.
+        if not self.run_cachable:
+            models.extend([EnsembleVGAN_ODM(**self.partial_params, base_detector=base, pre_embed=False,
+                                    output_path=self.output_path) for base in bases])
+
+
+        # VGAN ODM with only ensemble outlier detection.
+        models.extend([EnsembleVGAN_ODM(**self.partial_params, pre_embed=use_emb, output_path=self.output_path) for use_emb in use_emb_list])
+
+        # VGAN ODM with only subspace distance.
         models.extend([DistanceVGAN_ODM(**self.partial_params, pre_embed=True, output_path=self.output_path)])
 
         models.extend([
@@ -250,10 +261,10 @@ if __name__ == '__main__':
     # The Experiment class checks, which models and datasets have been run. This approach guarantees, that
     # every model and dataset can run at some point.
     random.shuffle(embedding_models)
-    random.shuffle(datasets)
+    #random.shuffle(datasets)
 
     ui = cli.get()
-    train_size = 100_000
+    train_size = 10_000
     test_size = 10_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
@@ -265,7 +276,7 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.261", use_cached=True,
+                                            experiment_name=f"0.261_small", use_cached=True,
                                             run_cachable=True)
                     experiment.run()
                     aggregate_results()

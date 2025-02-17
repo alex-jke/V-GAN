@@ -123,7 +123,7 @@ class VGAN_ODM(EnsembleODM):
         self.predictions = self.classifier_delta * agg_dec_fun + dist_tensor.cpu().numpy()
 
     def _get_name(self):
-        return f"VGAN + ∂{self.classifier_delta} {self.base_detector.__name__} + {self.space[0]} + λ{self.subspace_distance_lambda}"
+        return f"VGAN + {self.base_detector.__name__} + {self.space[0]} + (λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"
 
     def _get_predictions(self) -> List[float]:
         return self.predictions

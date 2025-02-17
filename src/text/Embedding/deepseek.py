@@ -104,6 +104,9 @@ class DeepSeek7B(DeepSeek1B):
     def _model_name(self) -> str:
         return "DeepSeek-R1-Distill-Qwen-7B"
 
+    def get_embedding_fun(self, chunk_size = 2, batch_first=False) -> Callable[[Tensor], Tensor]:
+        return super().get_embedding_fun(chunk_size, batch_first)
+
 if __name__ == '__main__':
     model = DeepSeek1B()
     tokenized = model.tokenize("Hello World!")

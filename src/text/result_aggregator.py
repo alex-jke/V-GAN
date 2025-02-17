@@ -39,6 +39,7 @@ class ResultAggregator():
           - one with the experiment results (self.results_name)
         """
         folders = self.results_path.glob('**/*')
+        error_occurred = False
         for folder in folders:
             if folder.is_dir() and self.is_experiment_result_dir(folder):
                 try:
@@ -53,7 +54,10 @@ class ResultAggregator():
                     self.results.append(df)
                     #print(f"Loaded results from: {folder}")
                 except Exception as e:
-                    print(f"Failed to load results from {folder}: {e}")
+                    if not error_occurred:
+                        print(f"Failed to load results from {folder}: {e}", end=" ")
+                    else:
+                        print(f"and {folder}", end=" ")
 
     def aggregate_best_results(self) -> pd.DataFrame:
         """
