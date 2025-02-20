@@ -233,7 +233,7 @@ class Experiment:
         # Run each model experiment.
         with self.ui.display():
             for model in self.models:
-                self.ui.update(f"Running model {model.name}")
+                self.ui.update(f"Running model {model.__class__.__name__}")
                 evaluation, error = self._run_single_model(model)
                 self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
                 if error is not None:
@@ -246,7 +246,6 @@ class Experiment:
                 del model
 
 
-        #print(self.result_df)
         self._visualize_and_save_results()
 
 def aggregate_results():

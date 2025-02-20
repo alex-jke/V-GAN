@@ -18,7 +18,7 @@ from text.outlier_detection.pyod_odm import LUNAR, LOF, ECOD
 class ODExperimentTest(unittest.TestCase):
 
     def test_ag_gpt2(self):
-        exp = Experiment(AGNews(), GPT2(), skip_error=False)
+        exp = Experiment(AGNews(), GPT2(), skip_error=False, use_cached=True)
         exp.run()
 
     def test_ag_deepseek_vgan(self):

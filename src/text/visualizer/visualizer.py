@@ -14,6 +14,7 @@ class Visualizer(ABC):
 
     def __init__(self, model, tokenized_data: Tensor, tokenizer: Tokenizer, path: str):
         self.set_params(model, tokenized_data, tokenizer, path)
+        self.vgan_color = "#72AD44"
 
     def set_params(self, model, tokenized_data: Tensor, tokenizer: Tokenizer, path: str):
         self.num_subspaces = 500

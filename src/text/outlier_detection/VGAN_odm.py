@@ -29,26 +29,18 @@ class VGAN_ODM(EnsembleODM):
 
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False,
                  subspace_distance_lambda= 1.0, output_path: Path | None = None, classifier_delta = 1.0, model_type = VGAN):
-        self.space = "Embedding" if pre_embed else "Tokenized"
         self.model_type = model_type
         if model_type != VGAN and model_type != VMMD:
             raise ValueError("VGAN_ODM only supports 'VGAN' and 'VMMD' models, passed: " + model_type)
         self.model = model
         self.seed = 777
-        self.output_path = output_path / model_type / self.space
-        if model_type == "VMMD":
-            self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSigmoidSTE,
-                            lr=1e-5, epochs=10_000, seed=self.seed, path_to_directory=self.output_path,
-                                weight_decay=0.0)
-        elif model_type == "VGAN":
-            self.vgan = VGAN_od(penalty=0.1, generator=GeneratorSigmoidSTE,
-                            lr_G=1e-5, lr_D=1e-4, epochs=10_000, seed=self.seed, path_to_directory=self.output_path,
-                                weight_decay=0.0)
         self.number_of_subspaces = 50
         self.base_detector: Type[BaseDetector] = base_detector
         if base_detector is None:
             self.base_detector = LUNAR
 
+        self.base_output_path = output_path
+        self.output_path = None
         self.detectors: List[BaseDetector] = []
         self.init_dataset = self.use_embedding if pre_embed else self.use_tokenized
         self.pre_embed = pre_embed
@@ -72,8 +64,20 @@ class VGAN_ODM(EnsembleODM):
 
         self.ensemble_model.fit(self.x_train.cpu())
 
+    def init_model(self):
+        self.output_path = self.base_output_path / self.model_type / self.get_space()
+        if self.model_type == "VMMD":
+            self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSigmoidSTE,
+                                lr=1e-5, epochs=10_000, seed=self.seed, path_to_directory=self.output_path,
+                                weight_decay=0.0)
+        elif self.model_type == "VGAN":
+            self.vgan = VGAN_od(penalty=0.1, generator=GeneratorSigmoidSTE,
+                                lr_G=1e-5, lr_D=1e-4, epochs=10_000, seed=self.seed, path_to_directory=self.output_path,
+                                weight_decay=0.0)
+
     def train(self):
         self.init_dataset()
+        self.init_model()
         if self.seed is not None and self.output_path is not None:
             generator_path = self.output_path / "models" / "generator_0.pt"
             if generator_path.exists():
@@ -84,11 +88,11 @@ class VGAN_ODM(EnsembleODM):
 
         train = self.x_train.to(self.device)
         samples = self.x_train.shape[0]
-        #if self.model_type == "VMMD":
         epochs = int(10 ** 6.7 / samples + 400) * 4
+        # TODO: find a better way to set the epochs.
         if self.model_type == VGAN:
             epochs = int(10 ** 7.5 / samples + 7000) * 2
-        if self.space == "Tokenized":
+        if self.get_space() == "Tokenized":
             epochs = int(epochs * 1.5)
         batch_size = min(2500, samples)
         #epochs = epochs if self.pre_embed else epochs * 2
@@ -97,11 +101,10 @@ class VGAN_ODM(EnsembleODM):
         print(f"training vmmd for {self.vgan.epochs} epochs.")
 
         if train.shape[0] != len(self.y_train):
+            # TODO: this is causing errors, when not caching the data.
             raise RuntimeError(f"The training data and label should have the same length.")
 
-        #with self.ui.display():
         for epoch in self.vgan.yield_fit(train, yield_epochs=200):
-            #self.ui.update(f"Fitting VGAN, current epoch {epoch}")
             if epoch != 0:
                 print(f"({epoch}, {self.vgan.train_history[self.vgan.generator_loss_key][-1]})")
         self.visualize_results()
@@ -146,13 +149,10 @@ class VGAN_ODM(EnsembleODM):
             visualizer.visualize(samples=30, epoch=self.vgan.epochs)
 
     def _get_name(self):
-        return f"{self.model_type} + {self.base_detector.__name__} + {self.space[0]} + (λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"
+        return f"{self.model_type} + {self.base_detector.__name__} + {self.get_space()[0]} + (λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"
 
     def _get_predictions(self) -> List[float]:
         return self.predictions
-
-    def get_space(self):
-        return self.space
 
     def evaluate(self, output_path: Path = None, print_results = False) ->( pd.DataFrame, pd.DataFrame):
         return super().evaluate(output_path=output_path)

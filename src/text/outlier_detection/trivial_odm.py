@@ -21,6 +21,3 @@ class TrivialODM(OutlierDetectionModel):
 
     def _get_predictions(self) -> List[float]:
         return self.predictions
-
-    def get_space(self):
-        return "Tokenized"
