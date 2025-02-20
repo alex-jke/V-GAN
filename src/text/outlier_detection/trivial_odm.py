@@ -14,7 +14,7 @@ class TrivialODM(OutlierDetectionModel):
         self.use_tokenized()
 
     def predict(self):
-        self.predictions = [random() for _ in range(len(self.x_test))]
+        self.predictions = [1 if random() < self.guess_rate else 0 for _ in range(len(self.x_test))]
 
     def _get_name(self):
         return f"Trivial + {self.guess_rate}"

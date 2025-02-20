@@ -20,13 +20,16 @@ class ValueVisualizer(Visualizer):
             for i in range(samples):
                 ax.plot(subspaces[i].cpu().detach().numpy(), label=f"Sample {i}")
 
+        y_label_text = "Subspace value"
+
         # Plot the average subspace
         if samples == 0:
             ax.plot(self.avg_subspace.detach().cpu().numpy(), label="Average")
+            y_label_text = "Average " + y_label_text
 
-        ax.set_title("Average Subspace Value per Token position")
-        ax.set_xlabel("Token Position")
-        ax.set_ylabel("Average Subspace Value")
+        ax.set_title(f"{y_label_text} per Dimension")
+        ax.set_xlabel("Dimension")
+        ax.set_ylabel(y_label_text)
 
         # Set the y-axis to be between 0 and 1
         ax.set_ylim(-0.05, 1.05)

@@ -30,6 +30,7 @@ from text.dataset.wikipedia_slim import WikipediaPeopleDataset
 from src.text.dataset_converter.dataset_embedder import DatasetEmbedder
 from text.dataset_converter.dataset_processor import DatasetProcessor
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
+from text.od_experiment import Experiment
 from text.v_experiment import VExperiment
 from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
 from text.visualizer.collective_visualizer import CollectiveVisualizer
@@ -193,19 +194,20 @@ def run_everything():
 def run_all_datasets():
     datasets = [AGNews(), EmotionDataset(), IMBdDataset(), WikipediaPeopleDataset()] + NLP_ADBench.get_all_datasets()
     models = [GPT2(), Bert(), DeepSeek1B()]
-    for pre_embed in [False, True]:
+    for pre_embed in [False]:#, True]:
         for model in models:
             for dataset in datasets:
                 filtered_data_len = (dataset.get_training_data()[1] == dataset.get_possible_labels()[0]) * 1
                 train_length = filtered_data_len.sum()
                 #train_length = len(dataset.get_training_data()[1])
-                epochs = int(10 ** 6.7 / train_length + 400)
+                epochs = int(10 ** 6.7 / train_length + 400) * 2
                 lr = 1e-5
                 epochs = epochs if pre_embed else epochs * 2
                 yield_epochs = epochs // 20
-                experiment = Experiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=pre_embed,
-                                        samples=200_000, version="0.463_adam+full_length+grad_clip", yield_epochs=yield_epochs,
-                                        penalty_weight=0.1, generator_class=GeneratorSigmoidSTE, gradient_clipping = True)
+                experiment = VMMDExperiment(dataset=dataset, model=model, epochs=epochs, lr=lr, pre_embed=pre_embed,
+                                        samples=10_000, version="0.47", yield_epochs=yield_epochs,
+                                        penalty_weight=0.1, generator_class=GeneratorSigmoidSTE, gradient_clipping = False,
+                                        weight_decay=0.0)
                 experiment.run()
 
 # === Main entry point experiments ===

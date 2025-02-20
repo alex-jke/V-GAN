@@ -32,7 +32,7 @@ class VGAN:
                  weight_decay=0.04, path_to_directory=None,
                  generator= None,
                  #Currently does not do anything:
-                 print_updates=True, gradient_clipping=False):
+                 print_updates=False, gradient_clipping=False):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.batch_size = batch_size
@@ -54,8 +54,10 @@ class VGAN:
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
         self.provided_generator = generator
+        self.generator_loss_key = 'generator_loss'
         if generator is None:
             self.provided_generator = Generator_big
+        self.print_updates = print_updates
 
     def __normalize(x, dim=1):
         return x.div(x.norm(2, dim=dim).expand_as(x))
@@ -247,7 +249,8 @@ class VGAN:
         detector_loss = np.nan
         generator_loss = np.nan
         for epoch in range(self.epochs):
-            print(f'\rEpoch {epoch} of {self.epochs}')
+            if self.print_updates:
+                print(f'\rEpoch {epoch} of {self.epochs}')
 
             # GET NOISE TENSORS#
             if cuda:
@@ -369,8 +372,9 @@ class VGAN:
                 iternum_g += 1
                 if iternum_g > self.iternum_g:
                     iternum_d = 1
-            print(f"Average loss in the epoch Generator: {generator_loss}")
-            print(f"Average loss in the epoch Detector: {detector_loss}")
+            if self.print_updates:
+                print(f"Average loss in the epoch Generator: {generator_loss}")
+                print(f"Average loss in the epoch Detector: {detector_loss}")
             self.train_history["generator_loss"].append(generator_loss)
             self.train_history["detector_loss"].append(detector_loss)
 

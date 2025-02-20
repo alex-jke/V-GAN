@@ -23,6 +23,7 @@ from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset.wikipedia_slim import WikipediaPeopleDataset
+from text.outlier_detection import VGAN_odm
 from text.outlier_detection.VGAN_odm import VGAN_ODM, DistanceVGAN_ODM, EnsembleVGAN_ODM
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
@@ -102,7 +103,8 @@ class Experiment:
         """
         bases = [
             pyod_LUNAR,
-            pyod_ECOD, pyod_LOF]
+            #pyod_ECOD,
+            pyod_LOF]
         models = []
 
         # Base models that always use embedding.
@@ -114,13 +116,16 @@ class Experiment:
 
         # VGAN ODM models with both use_embedding False and True.
         use_emb_list = [True] if self.run_cachable else [False, True]
+        model_types = [VGAN_odm.VMMD]#[VGAN_odm.VGAN, VGAN_odm.VMMD]
 
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.
         models.extend(
             [VGAN_ODM(**self.partial_params, base_detector=base, pre_embed=True,
-                              output_path = self.output_path)
-            for base in bases])
+                              output_path = self.output_path, model_type=model_type)
+            for base in bases
+            for model_type in model_types]
+        )
 
         # VGAN ODM on the token space only using the ensemble method.
         if not self.run_cachable:
@@ -129,10 +134,16 @@ class Experiment:
 
 
         # VGAN ODM with only ensemble outlier detection.
-        models.extend([EnsembleVGAN_ODM(**self.partial_params, pre_embed=use_emb, output_path=self.output_path) for use_emb in use_emb_list])
+        models.extend([EnsembleVGAN_ODM(**self.partial_params, pre_embed=use_emb, output_path=self.output_path, model_type=model_type)
+                       for use_emb in use_emb_list
+                       for model_type in model_types
+                       ])
 
         # VGAN ODM with only subspace distance.
-        models.extend([DistanceVGAN_ODM(**self.partial_params, pre_embed=True, output_path=self.output_path)])
+        models.extend([DistanceVGAN_ODM(**self.partial_params, pre_embed=True, output_path=self.output_path,
+                                        model_type=model_type)
+                       for model_type in model_types
+                       ])
 
         models.extend([
             FeatureBagging(**self.partial_params, base_detector=base, pre_embed=use_emb)
@@ -252,7 +263,7 @@ if __name__ == '__main__':
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
     embedding_models = [DeepSeek1B,
-                        GPT2, Bert,
+                        #GPT2, Bert,
                         #DeepSeek7B
                         ]
 
@@ -276,8 +287,8 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.261_small", use_cached=True,
-                                            run_cachable=True)
+                                            experiment_name=f"0.272_small", use_cached=True,
+                                            run_cachable=False)
                     experiment.run()
                     aggregate_results()
                     del emb_model

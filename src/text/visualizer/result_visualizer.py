@@ -22,12 +22,13 @@ class ResultVisualizer():
             raise e
         plt.figure(figsize=(12, 8))  # Set the figure size
         if type == self.bar:
-            plt.bar(x_values, y_values)
+            plt.barh(x_values, y_values)
+            x_column, y_column = y_column, x_column
         else:
             plt.plot(x_values, y_values, 'o-', color='blue')
         plt.xlabel(x_column)
         plt.ylabel(y_column)
-        plt.xticks(rotation=90)
+        #plt.xticks(rotation=90)
         plt.title(f"{y_column} by {x_column}")
         plt.tight_layout()
         path = self.output_dir / f"{y_column}_by_{x_column}.png"

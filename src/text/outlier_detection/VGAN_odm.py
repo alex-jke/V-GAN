@@ -12,7 +12,7 @@ from torch import Tensor
 
 import torch
 from models.Generator import GeneratorSigmoidSTE, GeneratorUpperSoftmax, GeneratorSpectralNorm
-from modules.od_module import VMMD_od
+from modules.od_module import VMMD_od, VGAN_od
 
 from text.Embedding.gpt2 import GPT2
 from text.dataset.SimpleDataset import SimpleDataset
@@ -22,19 +22,28 @@ from text.outlier_detection.ensemle_odm import EnsembleODM
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import EmbeddingBaseDetector
 from text.visualizer.collective_visualizer import CollectiveVisualizer
-from vmmd import VMMD
-
+VGAN = "VGAN"
+VMMD = "VMMD"
 
 class VGAN_ODM(EnsembleODM):
 
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, base_detector: Type[BaseDetector] = None, pre_embed=False, use_cached=False,
-                 subspace_distance_lambda= 1.0, output_path: Path | None = None, classifier_delta = 1.0):
+                 subspace_distance_lambda= 1.0, output_path: Path | None = None, classifier_delta = 1.0, model_type = VGAN):
         self.space = "Embedding" if pre_embed else "Tokenized"
+        self.model_type = model_type
+        if model_type != VGAN and model_type != VMMD:
+            raise ValueError("VGAN_ODM only supports 'VGAN' and 'VMMD' models, passed: " + model_type)
         self.model = model
         self.seed = 777
-        self.output_path = output_path
-        self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSigmoidSTE,
-                            lr=1e-5, epochs=5000, seed=self.seed, path_to_directory=output_path)
+        self.output_path = output_path / model_type / self.space
+        if model_type == "VMMD":
+            self.vgan = VMMD_od(penalty_weight=0.1, generator=GeneratorSigmoidSTE,
+                            lr=1e-5, epochs=10_000, seed=self.seed, path_to_directory=self.output_path,
+                                weight_decay=0.0)
+        elif model_type == "VGAN":
+            self.vgan = VGAN_od(penalty=0.1, generator=GeneratorSigmoidSTE,
+                            lr_G=1e-5, lr_D=1e-4, epochs=10_000, seed=self.seed, path_to_directory=self.output_path,
+                                weight_decay=0.0)
         self.number_of_subspaces = 50
         self.base_detector: Type[BaseDetector] = base_detector
         if base_detector is None:
@@ -59,7 +68,7 @@ class VGAN_ODM(EnsembleODM):
         if self.classifier_delta == 0:
             return
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.vgan.subspaces,
-                                       n_jobs=6, bps_flag=False, approx_flag_global=False, verbose=True)
+                                       n_jobs=4, bps_flag=False, approx_flag_global=False, verbose=True)
 
         self.ensemble_model.fit(self.x_train.cpu())
 
@@ -74,13 +83,20 @@ class VGAN_ODM(EnsembleODM):
                 return
 
         train = self.x_train.to(self.device)
-
-        epochs = int(10 ** 6.7 / len(train) + 400) * 2
+        samples = self.x_train.shape[0]
+        #if self.model_type == "VMMD":
+        epochs = int(10 ** 6.7 / samples + 400) * 4
+        if self.model_type == VGAN:
+            epochs = int(10 ** 7.5 / samples + 7000) * 2
+        if self.space == "Tokenized":
+            epochs = int(epochs * 1.5)
+        batch_size = min(2500, samples)
         #epochs = epochs if self.pre_embed else epochs * 2
         self.vgan.epochs = epochs
+        self.vgan.batch_size = batch_size
         print(f"training vmmd for {self.vgan.epochs} epochs.")
 
-        if train.shape[0] != len(self.y_train): #TODO embedding dataset somehow seems to be trained with too many samples.
+        if train.shape[0] != len(self.y_train):
             raise RuntimeError(f"The training data and label should have the same length.")
 
         #with self.ui.display():
@@ -88,7 +104,7 @@ class VGAN_ODM(EnsembleODM):
             #self.ui.update(f"Fitting VGAN, current epoch {epoch}")
             if epoch != 0:
                 print(f"({epoch}, {self.vgan.train_history[self.vgan.generator_loss_key][-1]})")
-
+        self.visualize_results()
         self.train_ensemble()
 
     def get_ensemble_decision_function(self):
@@ -122,8 +138,15 @@ class VGAN_ODM(EnsembleODM):
 
         self.predictions = self.classifier_delta * agg_dec_fun + dist_tensor.cpu().numpy()
 
+    def visualize_results(self):
+        if self.output_path is not None and not self.loaded_model:
+            self.output_path.mkdir(parents=True, exist_ok=True)
+            visualizer = CollectiveVisualizer(tokenized_data=self.x_test, tokenizer=self.model, vmmd_model=self.vgan,
+                                              export_path=str(self.output_path), text_visualization=not self.pre_embed)
+            visualizer.visualize(samples=30, epoch=self.vgan.epochs)
+
     def _get_name(self):
-        return f"VGAN + {self.base_detector.__name__} + {self.space[0]} + (λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"
+        return f"{self.model_type} + {self.base_detector.__name__} + {self.space[0]} + (λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"
 
     def _get_predictions(self) -> List[float]:
         return self.predictions
@@ -132,32 +155,26 @@ class VGAN_ODM(EnsembleODM):
         return self.space
 
     def evaluate(self, output_path: Path = None, print_results = False) ->( pd.DataFrame, pd.DataFrame):
-
-        if output_path is not None and not self.loaded_model:
-            output_path = output_path / "VGAN"
-            visualizer = CollectiveVisualizer(tokenized_data=self.x_test, tokenizer = self.model, vmmd_model=self.vgan, export_path=str(output_path), text_visualization=not self.pre_embed)
-            visualizer.visualize(samples=30, epoch=self.vgan.epochs)
-            self.vgan.model_snapshot(path_to_directory=output_path)
         return super().evaluate(output_path=output_path)
 
 class DistanceVGAN_ODM(VGAN_ODM):
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, pre_embed=False, use_cached=False,
-                 output_path=None):
+                 output_path=None, model_type: str = VGAN):
         super().__init__(dataset, model, train_size, test_size, inlier_label, pre_embed=pre_embed,
-                         use_cached=use_cached, classifier_delta = 0.0, output_path=output_path)
+                         use_cached=use_cached, classifier_delta = 0.0, output_path=output_path, model_type=model_type)
 
     def _get_name(self):
-        return f"VGAN + only distance + {self.space[0]}"
+        return f"{self.model_type} + only distance + {self.space[0]}"
 
 class EnsembleVGAN_ODM(VGAN_ODM):
     def __init__(self, dataset, model, train_size, test_size, inlier_label=None, pre_embed=False,
-                 use_cached=False, base_detector=None, output_path = None):
+                 use_cached=False, base_detector=None, output_path = None, model_type: str = VGAN):
         super().__init__(dataset, model, train_size, test_size, inlier_label, pre_embed=pre_embed,
                          use_cached=use_cached, subspace_distance_lambda = 0.0, base_detector=base_detector,
-                         output_path=output_path)
+                         output_path=output_path, model_type=model_type)
 
     def _get_name(self):
-        return f"VGAN + {self.base_detector.__name__} + {self.space[0]}"
+        return f"{self.model_type} + {self.base_detector.__name__} + {self.space[0]}"
 
 
 if __name__ == '__main__':
