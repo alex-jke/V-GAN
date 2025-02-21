@@ -35,3 +35,12 @@ class Space(ABC):
         testing data.
         """
         pass
+
+
+    @property
+    @abstractmethod
+    def name(self):
+        """
+        Returns the name of the space.
+        """
+        pass

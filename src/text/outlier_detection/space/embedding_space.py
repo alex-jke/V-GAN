@@ -11,6 +11,10 @@ from text.outlier_detection.space.token_space import TokenSpace
 name = "Embedding"
 class EmbeddingSpace(Space):
 
+    @property
+    def name(self):
+        return name
+
     def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label) -> PreparedData:
         if use_cached:
             return self._use_cached(dataset, inlier_label)

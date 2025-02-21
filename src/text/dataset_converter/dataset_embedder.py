@@ -42,16 +42,17 @@ class DatasetEmbedder:
         path = self.dir_path / f"{'train' if train else 'test'}_l{'all' if labels is None else labels}.csv"
         tokenized_data, labels = tokenizer.get_tokenized_training_data(class_labels=labels) if train else tokenizer.get_tokenized_testing_data()
         embedded = self._get_embedded_tensor(tokenized_data, path, samples)
+        if len(labels) != len(embedded):
+            raise ValueError(f"The amount of labels and the amount of embedded samples do not match. labels:  {len(labels)} != {len(embedded)} (samples)")
         return embedded, labels
 
     def _get_embedded_tensor(self, tokenized_dataset: Tensor, path: Path, samples: int) -> Tensor:
         embedded_dataframe: pd.DataFrame = self._get_embedded_dataframe(tokenized_dataset, path)
 
-        #labels = self.labels.reset_index(drop=True)
-        #mask = labels.isin(self.desired_labels) if self.desired_labels is not None else labels.apply(lambda row: True)
-        #trimmed_mask = mask[:len(embedded_dataframe)]
-        #filtered_df = embedded_dataframe[trimmed_mask]
-        trimmed_df = embedded_dataframe.iloc[:samples]
+        if samples > 0:
+            trimmed_df = embedded_dataframe.iloc[:samples + 1]
+        else:
+            trimmed_df = embedded_dataframe
 
         tensor: Tensor = Tensor(trimmed_df.to_numpy()).to(self.device)
         return tensor

@@ -27,6 +27,8 @@ from text.outlier_detection import VGAN_odm
 from text.outlier_detection.VGAN_odm import VGAN_ODM, DistanceVGAN_ODM, EnsembleVGAN_ODM
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
+from text.outlier_detection.space.embedding_space import EmbeddingSpace
+from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.trivial_odm import TrivialODM
 from text.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer import ResultVisualizer
@@ -60,15 +62,16 @@ class Experiment:
         self.run_cachable = run_cachable
 
         # Experiment parameters
-        self.partial_params: Dict = {
+        self.token_params: Dict = {
             "dataset": self.dataset,
-            "model": self.emb_model,
-            "train_size": train_size,  # TODO: add ability to not crash when chosen too large
-            "test_size": test_size,
-            "use_cached": use_cached
+            "use_cached": use_cached,
+            "space": TokenSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
-        # Parameters used for models that require embedding.
-        self.params: Dict = {**self.partial_params, "pre_embed": True}
+        self.emb_params: Dict = {
+            "dataset": self.dataset,
+            "use_cached": use_cached,
+            "space": EmbeddingSpace(model=emb_model, train_size=train_size, test_size=test_size)
+        }
 
         # Determine the output directory.
         self.output_path = output_path
@@ -109,19 +112,19 @@ class Experiment:
 
         # Base models that always use embedding.
         models.extend([
-            LOF(**self.params),
-            LUNAR(**self.params),
-            ECOD(**self.params)
+            LOF(**self.emb_params),
+            LUNAR(**self.emb_params),
+            ECOD(**self.emb_params)
         ])
 
         # VGAN ODM models with both use_embedding False and True.
-        use_emb_list = [True] if self.run_cachable else [False, True]
+        params = [self.emb_params] if self.run_cachable else [self.token_params, self.emb_params]
         model_types = [VGAN_odm.VMMD]#[VGAN_odm.VGAN, VGAN_odm.VMMD]
 
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.
         models.extend(
-            [VGAN_ODM(**self.partial_params, base_detector=base, pre_embed=True,
+            [VGAN_ODM(**self.emb_params, base_detector=base,
                               output_path = self.output_path, model_type=model_type)
             for base in bases
             for model_type in model_types]
@@ -129,33 +132,33 @@ class Experiment:
 
         # VGAN ODM on the token space only using the ensemble method.
         if not self.run_cachable:
-            models.extend([EnsembleVGAN_ODM(**self.partial_params, base_detector=base, pre_embed=False,
+            models.extend([EnsembleVGAN_ODM(**self.token_params, base_detector=base,
                                     output_path=self.output_path) for base in bases])
 
 
         # VGAN ODM with only ensemble outlier detection.
-        models.extend([EnsembleVGAN_ODM(**self.partial_params, pre_embed=use_emb, output_path=self.output_path, model_type=model_type)
-                       for use_emb in use_emb_list
+        models.extend([EnsembleVGAN_ODM(**param, output_path=self.output_path, model_type=model_type)
+                       for param in params
                        for model_type in model_types
                        ])
 
         # VGAN ODM with only subspace distance.
-        models.extend([DistanceVGAN_ODM(**self.partial_params, pre_embed=True, output_path=self.output_path,
+        models.extend([DistanceVGAN_ODM(**self.emb_params, output_path=self.output_path,
                                         model_type=model_type)
                        for model_type in model_types
                        ])
 
         models.extend([
-            FeatureBagging(**self.partial_params, base_detector=base, pre_embed=use_emb)
+            FeatureBagging(**param, base_detector=base)
             for base in bases
-            for use_emb in use_emb_list
+            for param in params
         ])
 
 
 
         # Trivial ODM models with different guess inlier rates.
         models.extend([
-            TrivialODM(**self.partial_params, guess_inlier_rate=rate)
+            TrivialODM(**self.token_params, guess_inlier_rate=rate)
             for rate in [0.0, 0.5, 1.0]
         ])
 
@@ -173,10 +176,10 @@ class Experiment:
         Returns a tuple (evaluation_results, error_record) where each is a DataFrame.
         """
         try:
-            model.start_timer()
+            #model.start_timer()
             model.train()
             model.predict()
-            model.stop_timer()
+            #model.stop_timer()
             evaluation, self.comon_metrics = model.evaluate(self.output_path)
             print(f" | finished successfully (auc: {float(evaluation['auc']):>1.3f}).")
             return evaluation, None
@@ -213,7 +216,7 @@ class Experiment:
         not_run = []
         for model in self.models:
             run = result_df[model.method_column].tolist()
-            if model.name not in run:
+            if model._get_name() not in run:
                 not_run.append(model)
         #print(f"Not run: {len(not_run)} models")
         random.shuffle(not_run)

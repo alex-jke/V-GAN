@@ -1,7 +1,5 @@
 from torch import Tensor
 
-
-
 class PreparedData:
     """
     This class is a simple container for the prepared data.
@@ -20,3 +18,13 @@ class PreparedData:
         self.x_test = x_test
         self.y_test = y_test
         self.space = space
+        self._validate_data()
+
+    def _validate_data(self):
+        """
+        Validates the data.
+        """
+        if self.x_train.shape[0] != self.y_train.shape[0]:
+            raise ValueError(f"The number of training samples and labels must be the same. Got {self.x_train.shape[0]} samples and {self.y_train.shape[0]} labels.")
+        if self.x_test.shape[0] != self.y_test.shape[0]:
+            raise ValueError(f"The number of test samples and labels must be the same. Got {self.x_test.shape[0]} samples and {self.y_test.shape[0]} labels.")

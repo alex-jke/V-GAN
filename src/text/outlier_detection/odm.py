@@ -24,6 +24,7 @@ from abc import ABC, abstractmethod
 
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.prepared_data import PreparedData
+from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
 
 not_initizalied_error_msg = "The train data has not been set. Have you called use_embedding or use_tokenized?"
@@ -32,27 +33,33 @@ class OutlierDetectionModel(ABC):
     """
     Abstract class for outlier detection models. Specifically for one-class classification.
     """
-    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, inlier_label: int | None = None, use_cached: bool = False):
+    def __init__(self, dataset: Dataset, space: Space, inlier_label: int | None = None, use_cached: bool = False):
         self.dataset = dataset
-        self.model = model
-        self.train_size = train_size
-        self.test_size = test_size
         self.use_cached = use_cached
         self.inlier_label = inlier_label
         if inlier_label is None:
             self.inlier_label = self.dataset.get_possible_labels()[0]
-        self._x_test = self._y_test = self._x_train = self._y_train = None
-        self.device = self.model.device
         self.ui = cli.get()
         self.method_column = "method"
         self.data: PreparedData | None = None
+        self.space: Space = space
+        self.device = self.space.model.device
 
     @abstractmethod
-    def train(self):
+    def _train(self):
         pass
 
-    @abstractmethod
+    def train(self):
+        self._start_timer()
+        self.data = self.space.transform_dataset(self.dataset, self.use_cached, self.inlier_label)
+        self._train()
+
     def predict(self):
+        self._predict()
+        self._stop_timer()
+
+    @abstractmethod
+    def _predict(self):
         pass
 
     @abstractmethod
@@ -64,9 +71,7 @@ class OutlierDetectionModel(ABC):
         pass
 
     def get_space(self):
-        if self.data is None:
-            raise ValueError(not_initizalied_error_msg)
-        return self.data.space
+        return self.space.name
 
     @property
     def x_train(self) -> Tensor:
@@ -92,10 +97,10 @@ class OutlierDetectionModel(ABC):
             raise ValueError(not_initizalied_error_msg)
         return self.data.y_test
 
-    def start_timer(self):
+    def _start_timer(self):
         self.start_time = time()
 
-    def stop_timer(self):
+    def _stop_timer(self):
         self.time_elapsed = time() - self.start_time
 
     def evaluate(self, output_path: Path = None )-> (pd.DataFrame, pd.DataFrame):
@@ -133,7 +138,7 @@ class OutlierDetectionModel(ABC):
             decision_function_scores = decision_function_scores[:common_len]
             y_test = y_test[:common_len]
         try:
-            auc = roc_auc_score(y_test, decision_function_scores)
+            auc = roc_auc_score(y_true=y_test, y_score=decision_function_scores)
         except ValueError as e:
             print(e)
             raise e
@@ -166,25 +171,11 @@ class OutlierDetectionModel(ABC):
             "total_train_samples": [len(self.x_train)],
             "inlier_label": [self.inlier_label],
             "outlier_labels": str([label for label in self.dataset.get_possible_labels() if label != self.inlier_label]),
-            "model": [self.model.model_name],
+            "model": [self.space.model.model_name],
             "dataset": [self.dataset.name],
         })
 
         return self.metrics, self.common_parameters
-
-    def use_embedding(self) -> None:
-        """Processes and embeds training and testing data.
-        This method is used when the classification model should use the embeddings."""
-        space = EmbeddingSpace(model=self.model, train_size=self.train_size, test_size=self.test_size)
-        prepared_data = space.transform_dataset(self.dataset, self.use_cached, self.inlier_label)
-        self.data = prepared_data
-
-    def use_tokenized(self) -> None:
-        """Sets the train and test data for the classification model to use the tokenized data."""
-        space = TokenSpace(model=self.model, train_size=self.train_size, test_size=self.test_size)
-        prepared_data = space.transform_dataset(self.dataset, self.use_cached, self.inlier_label)
-        self.data = prepared_data
-
 
 
 

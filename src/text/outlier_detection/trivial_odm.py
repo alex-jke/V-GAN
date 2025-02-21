@@ -10,10 +10,10 @@ class TrivialODM(OutlierDetectionModel):
         self.guess_rate = guess_inlier_rate
         super().__init__(**kwargs)
 
-    def train(self):
-        self.use_tokenized()
+    def _train(self):
+        pass
 
-    def predict(self):
+    def _predict(self):
         self.predictions = [1 if random() < self.guess_rate else 0 for _ in range(len(self.x_test))]
 
     def _get_name(self):

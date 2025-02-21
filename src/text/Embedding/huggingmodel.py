@@ -49,6 +49,8 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         return first_elem
 
     def tokenize_batch(self, data: List[str]) -> Tensor:
+        if len(data) == 0:
+            raise ValueError("No data to tokenize.")
         with self.ui.display():
             tokenized_list = []
             for i, d in enumerate(data):

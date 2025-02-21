@@ -14,20 +14,20 @@ import torch
 from text.Embedding.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
 from text.outlier_detection.odm import OutlierDetectionModel
+from text.outlier_detection.space.space import Space
+from text.outlier_detection.space.token_space import TokenSpace
 
 
 class PyODM(OutlierDetectionModel, ABC):
-    def __init__(self, dataset: Dataset, model: HuggingModel, train_size: int, test_size: int, pre_embed = True, use_cached = False):
+    def __init__(self, dataset: Dataset, space: Space, use_cached = False):
         #self.space = "Embedding" if pre_embed else "Tokenized"
-        self.initializing_fun = self.use_embedding if pre_embed else self.use_tokenized
-        super().__init__(dataset=dataset, model=model, train_size=train_size, test_size=test_size, use_cached=use_cached)
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached)
         self.od_model = self._get_model()
 
-    def train(self):
-        self.initializing_fun()
+    def _train(self):
         self.od_model.fit(self.x_train.cpu().numpy(), None)
 
-    def predict(self):
+    def _predict(self):
         test = self.x_test
         decision_function = self.od_model.decision_function(test.cpu().numpy())
         self.decision_function = decision_function
@@ -64,7 +64,7 @@ class ECOD(PyODM):
 
 class FeatureBagging(PyODM):
 
-    def __init__(self, dataset: Dataset, model: HuggingModel, base_detector:  Type[BaseDetector], train_size: int, test_size: int, pre_embed = True, use_cached = False):
+    def __init__(self, dataset: Dataset, space: Space, base_detector:  Type[BaseDetector], use_cached = False):
         """
         :param dataset: The dataset to use.
         :param model: The model to use.
@@ -79,11 +79,11 @@ class FeatureBagging(PyODM):
         self.base_name = base_detector.__name__
         self.base_estimator: BaseDetector = base_detector()
 
-        if not pre_embed:
-            self.base_estimator = EmbeddingBaseDetector(model.get_embedding_fun(batch_first=True), lambda: base_detector)
+        if isinstance(space, TokenSpace):
+            self.base_estimator = EmbeddingBaseDetector(space.model.get_embedding_fun(batch_first=True), lambda: base_detector)
 
         self.__model = pyod_FeatureBagging(base_estimator=self.base_estimator)
-        super().__init__(dataset, model, train_size, test_size, pre_embed, use_cached=use_cached)
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached)
 
     def _get_model(self):
         return self.__model
