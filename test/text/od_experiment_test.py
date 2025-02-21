@@ -11,8 +11,9 @@ from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench
 from text.od_experiment import Experiment
-from text.outlier_detection.VGAN_odm import VGAN_ODM
 from text.outlier_detection.pyod_odm import LUNAR, LOF, ECOD
+from text.outlier_detection.space.embedding_space import EmbeddingSpace
+from text.outlier_detection.v_method.V_odm import V_ODM
 
 
 class ODExperimentTest(unittest.TestCase):
@@ -24,14 +25,15 @@ class ODExperimentTest(unittest.TestCase):
     def test_ag_deepseek_vgan(self):
         dataset = AGNews()
         emb_model = GPT2()
-        model = VGAN_ODM(dataset, emb_model, 10_000, 10_000, use_cached=True, pre_embed=True)
+        space = EmbeddingSpace(model=emb_model, train_size=10_000, test_size=10_000)
+        model = V_ODM(dataset, space=space, use_cached=True)
         #model.vgan.epochs = 200
         exp = Experiment(dataset, emb_model, skip_error=False, models=[model], use_cached=True)
         exp.run()
 
     def test_emotion_gpt2(self):
-        experiment = Experiment(dataset=EmotionDataset(), emb_model=GPT2(), train_size=-1, test_size=-1,
-                                experiment_name=f"0.2_adam+large", run_cachable=True, use_cached=True, skip_error=False)
+        experiment = Experiment(dataset=AGNews(), emb_model=GPT2(), train_size=-1, test_size=-1,
+                                experiment_name=f"test_refactor", run_cachable=True, use_cached=True, skip_error=False)
         experiment.run()
 
     def test_emotions_gpt2_vgan_lunar_embedding(self):
@@ -39,7 +41,7 @@ class ODExperimentTest(unittest.TestCase):
         model = GPT2()
         train_size = 200
         test_size = 20
-        vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed =True)
+        vgan = V_ODM(dataset, model, train_size, test_size, pre_embed =True)
         vgan.vgan.lr = 1e-4
         vgan.vgan.epochs = 3000
         exp = Experiment(dataset, model, skip_error=False,
@@ -52,7 +54,7 @@ class ODExperimentTest(unittest.TestCase):
         model = GPT2()
         train_size: int = 20000
         test_size: int = 2000
-        vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed =True)
+        vgan = V_ODM(dataset, model, train_size, test_size, pre_embed =True)
         exp = Experiment(dataset, model, skip_error=False,
                          train_size=train_size, test_size=test_size,
                          models=[vgan])
@@ -64,7 +66,7 @@ class ODExperimentTest(unittest.TestCase):
         model = DeepSeek1B()
         train_size: int = 2000
         test_size: int = 200
-        vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed =False)
+        vgan = V_ODM(dataset, model, train_size, test_size, pre_embed =False)
         exp = Experiment(dataset, model, skip_error=False,
                          train_size=train_size, test_size=test_size,
                          models=[vgan])
@@ -75,7 +77,7 @@ class ODExperimentTest(unittest.TestCase):
         model = DeepSeek1B()
         train_size: int = 10000
         test_size: int = 1000
-        vgan = VGAN_ODM(dataset, model, train_size, test_size, pre_embed=True)
+        vgan = V_ODM(dataset, model, train_size, test_size, pre_embed=True)
         exp = Experiment(dataset, model, skip_error=False,
                          train_size=train_size, test_size=test_size,
                          models=[vgan], use_cached=True)
@@ -94,7 +96,7 @@ class ODExperimentTest(unittest.TestCase):
                 exp = Experiment(dataset, model, skip_error=False,
                                  train_size=train_size, test_size=test_size)
                 for model in exp.models:
-                    if isinstance(model, VGAN_ODM):
+                    if isinstance(model, V_ODM):
                         model.vgan.epochs = 500
                         model.vgan.lr = 0.5
                 exp.run()

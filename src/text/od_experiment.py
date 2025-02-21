@@ -23,13 +23,17 @@ from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset.wikipedia_slim import WikipediaPeopleDataset
-from text.outlier_detection import VGAN_odm
-from text.outlier_detection.VGAN_odm import VGAN_ODM, DistanceVGAN_ODM, EnsembleVGAN_ODM
+#from text.outlier_detection import VGAN_odm
+#from text.outlier_detection.VGAN_odm import V_ODM, DistanceV_ODM, EnsembleV_ODM
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.trivial_odm import TrivialODM
+from text.outlier_detection.v_method.V_odm import V_ODM
+from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
+from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
+from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer import ResultVisualizer
 
@@ -119,32 +123,32 @@ class Experiment:
 
         # VGAN ODM models with both use_embedding False and True.
         params = [self.emb_params] if self.run_cachable else [self.token_params, self.emb_params]
-        model_types = [VGAN_odm.VMMD]#[VGAN_odm.VGAN, VGAN_odm.VMMD]
+        model_types = [VMMDAdapter()]#, VGANAdapter()]
 
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.
         models.extend(
-            [VGAN_ODM(**self.emb_params, base_detector=base,
-                              output_path = self.output_path, model_type=model_type)
-            for base in bases
-            for model_type in model_types]
+            [V_ODM(**self.emb_params, base_detector=base,
+                   output_path = self.output_path, odm_model=model_type)
+             for base in bases
+             for model_type in model_types]
         )
 
         # VGAN ODM on the token space only using the ensemble method.
         if not self.run_cachable:
-            models.extend([EnsembleVGAN_ODM(**self.token_params, base_detector=base,
-                                    output_path=self.output_path) for base in bases])
+            models.extend([EnsembleV_ODM(**self.token_params, base_detector=base,
+                                         output_path=self.output_path) for base in bases])
 
 
         # VGAN ODM with only ensemble outlier detection.
-        models.extend([EnsembleVGAN_ODM(**param, output_path=self.output_path, model_type=model_type)
+        models.extend([EnsembleV_ODM(**param, output_path=self.output_path, odm_model=model_type)
                        for param in params
                        for model_type in model_types
                        ])
 
         # VGAN ODM with only subspace distance.
-        models.extend([DistanceVGAN_ODM(**self.emb_params, output_path=self.output_path,
-                                        model_type=model_type)
+        models.extend([DistanceV_ODM(**self.emb_params, output_path=self.output_path,
+                                     odm_model=model_type)
                        for model_type in model_types
                        ])
 

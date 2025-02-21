@@ -12,7 +12,7 @@ from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
-from text.outlier_detection.VGAN_odm import VGAN_ODM
+from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.pyod_odm import LUNAR
 from text.visualizer.result_visualizer import ResultVisualizer
 
@@ -98,9 +98,9 @@ class OutlierDetectionMethodTest(unittest.TestCase):
         lambdas = [1]
         for lambda_used in lambdas:
             for delta in deltas:
-                vgan_dist = VGAN_ODM(dataset, model, 10_000, 10_000, pre_embed=True, use_cached=True,
-                                     subspace_distance_lambda=lambda_used, classifier_delta=delta,
-                                     output_path=path.parent / "VGAN")
+                vgan_dist = V_ODM(dataset, model, 10_000, 10_000, pre_embed=True, use_cached=True,
+                                  subspace_distance_lambda=lambda_used, classifier_delta=delta,
+                                  output_path=path.parent / "VGAN")
                 vgan_dist.start_timer()
                 vgan_dist.train()
                 vgan_dist.predict()
