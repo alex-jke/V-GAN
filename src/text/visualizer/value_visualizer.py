@@ -1,5 +1,6 @@
 import os
 
+from colors import VGAN_GREEN
 from text.visualizer.visualizer import Visualizer
 import matplotlib.pyplot as plt
 
@@ -24,7 +25,8 @@ class ValueVisualizer(Visualizer):
 
         # Plot the average subspace
         if samples == 0:
-            ax.plot(self.avg_subspace.detach().cpu().numpy(), label="Average")
+            ax.plot(self.avg_subspace.detach().cpu().numpy(), label="Average", color=VGAN_GREEN, linewidth=2,
+                    marker="o")
             y_label_text = "Average " + y_label_text
 
         ax.set_title(f"{y_label_text} per Dimension")

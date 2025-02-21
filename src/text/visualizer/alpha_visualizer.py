@@ -5,6 +5,7 @@ import torch
 from matplotlib import pyplot as plt
 from torch import Tensor
 
+from colors import VGAN_GREEN_RGB
 from .visualizer import Visualizer
 from ..UI.cli import ConsoleUserInterface
 
@@ -83,7 +84,8 @@ class AlphaVisualizer(Visualizer):
                 if string == padding_token:
                     string = "-"
                 color_intensity = int(alpha * 255)
-                html_content += f'<span class="token" style="color: rgba({color_intensity}, 0, 0, 1);">{string}</span>'
+                html_content += (f'<span class="token" style="color: rgba({color_intensity}, '
+                                 f'{VGAN_GREEN_RGB[0]}, {VGAN_GREEN_RGB[1]}, {VGAN_GREEN_RGB[2]});">{string}</span>')
             html_content += "<br><br>"
 
         # Close the HTML content

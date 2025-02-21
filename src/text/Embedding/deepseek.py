@@ -45,7 +45,10 @@ class DeepSeek(HuggingModel, ABC):
         token_vec = tokenized.clone().detach().int().to(self.device)
 
         # Remove final padding tokens, if all tensors are padded longer than the longest tensor, this is not necessary.
-        largest_non_token_index = torch.max(torch.nonzero(token_vec)).item()
+        if self.padding_token == 0:
+            largest_non_token_index = torch.max(torch.nonzero(token_vec)).item()
+        else:
+            largest_non_token_index = token_vec.shape[0] - 1
         trimmed_token_vec = token_vec[:largest_non_token_index + 1]
         #remainder = token_vec[largest_non_token_index:]
         attention_mask = torch.not_equal(trimmed_token_vec, self.padding_token)

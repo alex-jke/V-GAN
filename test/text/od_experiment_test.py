@@ -103,11 +103,12 @@ class ODExperimentTest(unittest.TestCase):
 
     def test_full_datasets_lunar(self):
         datasets: List[Dataset] =[AGNews()] #NLP_ADBench.get_all_datasets()
-        samples = 100_000
+        samples = 10_000
         test_samples = 10_000
         embedding_model = GPT2()
+        space = EmbeddingSpace(embedding_model, samples, test_samples)
         for dataset in datasets:
-            exp = Experiment(dataset, embedding_model, skip_error=False, experiment_name="lunar", models=[LUNAR(dataset, embedding_model, -1, -1)]
+            exp = Experiment(dataset, embedding_model, skip_error=False, experiment_name="lunar", models=[LUNAR(dataset, space)]
                              ,use_cached=True)
             exp.run()
 

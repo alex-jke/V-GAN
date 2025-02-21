@@ -50,7 +50,7 @@ class DatasetEmbedder:
         embedded_dataframe: pd.DataFrame = self._get_embedded_dataframe(tokenized_dataset, path)
 
         if samples > 0:
-            trimmed_df = embedded_dataframe.iloc[:samples + 1]
+            trimmed_df = embedded_dataframe.iloc[:samples]
         else:
             trimmed_df = embedded_dataframe
 

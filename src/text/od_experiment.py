@@ -191,11 +191,11 @@ class Experiment:
             if not self.skip_error:
                 raise e
             error_record = pd.DataFrame({
-                "model": [model.name],
+                "model": [model._get_name()],
                 "error": [str(e)],
                 "traceback": [str(traceback.format_exc())]
             })
-            print(f"{model.name} encountered an error.")
+            print(f"{model._get_name()} encountered an error.")
             return pd.DataFrame(), error_record
 
     def _visualize_and_save_results(self) -> None:
@@ -216,7 +216,10 @@ class Experiment:
         result_path = self.output_path / self.result_csv_name
         if not result_path.exists():
             return
-        result_df = pd.read_csv(result_path)
+        try:
+            result_df = pd.read_csv(result_path)
+        except pd.errors.EmptyDataError:
+            return
         not_run = []
         for model in self.models:
             run = result_df[model.method_column].tolist()

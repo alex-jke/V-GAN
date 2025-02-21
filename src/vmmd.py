@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from matplotlib import pyplot
 
+from colors import VGAN_GREEN, COMPLIMENTARY
 from models.Generator import Generator, Generator_big
 
 import torch_two_sample as tts
@@ -65,9 +66,9 @@ class VMMD:
         mmd_y = train_history[self.mmd_loss_key]
         x = np.linspace(1, len(generator_y), len(generator_y))
         fig, ax = plt.subplots()
-        ax.plot(x, generator_y, color="cornflowerblue",
+        ax.plot(x, generator_y, color=VGAN_GREEN,
                 label="Generator loss", linewidth=2)
-        ax.plot(x, mmd_y, color="r",
+        ax.plot(x, mmd_y, color=COMPLIMENTARY,
                 label="MMD loss", linewidth=2)
 
         plt.xlabel("Epoch")

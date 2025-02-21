@@ -3,6 +3,8 @@ from pathlib import Path
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from colors import VGAN_GREEN, COMPLIMENTARY
+
 
 class ResultVisualizer():
 
@@ -22,7 +24,12 @@ class ResultVisualizer():
             raise e
         plt.figure(figsize=(12, 8))  # Set the figure size
         if type == self.bar:
-            plt.barh(x_values, y_values)
+            bars = plt.barh(x_values, y_values)
+            for i, bar in enumerate(bars):
+                if "VMMD" in x_values[i] or "VGAN" in x_values[i]:
+                    bar.set_color(VGAN_GREEN)
+                else:
+                    bar.set_color(COMPLIMENTARY)
             x_column, y_column = y_column, x_column
         else:
             plt.plot(x_values, y_values, 'o-', color='blue')
