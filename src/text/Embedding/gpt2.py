@@ -75,12 +75,15 @@ class GPT2(HuggingModel):
         #cached = self.embedded_cache.get(key)
         #if cached is not None:
             #return cached
+        attention_mask = torch.not_equal(tokenized, self.padding_token)
+        # Shorten tokenized sequence to only those tokens, that are not padding tokens
+        filtered_tokens = tokenized[attention_mask]
+
         max_length = self.model.config.n_positions
-        length = min(tokenized.shape[0], max_length)
-        token_vec = tokenized.clone().detach().to(self.device)[:length]
-        attention_mask = torch.not_equal(token_vec, self.padding_token) * 1.0
+        length = min(filtered_tokens.shape[0], max_length)
+        token_vec = filtered_tokens.clone().detach().to(self.device)[:length]
         with torch.no_grad():
-            outputs = self.model(token_vec, attention_mask=attention_mask)
+            outputs = self.model(token_vec)
             embeddings = outputs.last_hidden_state.T
 
         #self.embedded_cache[key] = embeddings

@@ -135,7 +135,7 @@ class VMMD:
             - path_to_generator: Path to the generator (has to be stored as a .keras model)
             - path_to_discriminator: Path to the discriminator (has to be stored as a .keras model) (Optional)
         '''
-        if device == None:
+        if device is None:
             device = self.device
         #self.generator = Generator_big(img_size=ndims, latent_size=max(int(ndims/16), 1)).to(device)
         self.generator = self.get_the_networks(ndims, latent_size=max(int(ndims/16), 1)).to(device)
@@ -292,7 +292,7 @@ class VMMD:
     def generate_subspaces(self, nsubs, round = True):
         # Need to load in cpu as mps Tensor module doesn't properly fix the seed
         if self._latent_size is None:
-            self._latent_size = int(self._latent_size / 16)
+            raise RuntimeError('Latent size not set.')
         noise_tensor = torch.Tensor(nsubs, self._latent_size).to('cpu')
         if not self.seed == None:
             torch.manual_seed(self.seed)

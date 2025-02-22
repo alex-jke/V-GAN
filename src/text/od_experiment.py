@@ -299,7 +299,7 @@ if __name__ == '__main__':
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
                                             experiment_name=f"0.282_smaller", use_cached=True,
-                                            run_cachable=False, skip_error=False)
+                                            run_cachable=False, skip_error=True)
                     experiment.run()
                     aggregate_results()
                     del emb_model

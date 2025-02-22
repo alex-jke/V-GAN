@@ -45,16 +45,19 @@ class DeepSeek(HuggingModel, ABC):
         token_vec = tokenized.clone().detach().int().to(self.device)
 
         # Remove final padding tokens, if all tensors are padded longer than the longest tensor, this is not necessary.
-        if self.padding_token == 0:
-            largest_non_token_index = torch.max(torch.nonzero(token_vec)).item()
-        else:
-            largest_non_token_index = token_vec.shape[0] - 1
-        trimmed_token_vec = token_vec[:largest_non_token_index + 1]
+        #if self.padding_token == 0:
+        #    largest_non_token_index = torch.max(torch.nonzero(token_vec)).item()
+        #else:
+        #    largest_non_token_index = token_vec.shape[0] - 1
+        #trimmed_token_vec = token_vec[:largest_non_token_index + 1]
         #remainder = token_vec[largest_non_token_index:]
+        attention_mask = torch.not_equal(token_vec, self.padding_token)
+        attention_mask_all = attention_mask.all(dim=0)
+        trimmed_token_vec = token_vec[:, attention_mask_all]
         attention_mask = torch.not_equal(trimmed_token_vec, self.padding_token)
 
         with torch.no_grad():
-            outputs = self.model.model(trimmed_token_vec, attention_mask=attention_mask) # not surprisingly, this takes the majority of the time.
+            outputs = self.model.model(trimmed_token_vec) # not surprisingly, this takes the majority of the time.
             embeddings: Tensor = outputs.last_hidden_state.to(dtype=torch.float32)
         embeddings_list = [embeddings[i] for i in range(embeddings.shape[0])]
         attention_mask_list = [attention_mask[i] for i in range(attention_mask.shape[0])]
@@ -66,6 +69,7 @@ class DeepSeek(HuggingModel, ABC):
         return embeddings_list
 
     def aggregateEmbeddings(self, embeddings: List[Tensor]):
+        #print(f"Aggregated {embeddings[0].shape[0]} embeddings")
         aggregated = [torch.mean(emb, dim=0) for emb in embeddings]
         stacked = torch.stack(aggregated)
         return stacked

@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import List, Type
+from typing import List, Type, Callable
 
 import pandas as pd
+from numpy import ndarray
 from pyod.models.base import BaseDetector
 from pyod.models.lunar import LUNAR
 from sel_suod.models.base import sel_SUOD
@@ -40,13 +41,19 @@ class V_ODM(EnsembleODM):
         self.classifier_delta = classifier_delta
         super().__init__(dataset=dataset, space=space, use_cached=use_cached)
 
-    def _get_transformation_function(self):
+    def _get_transformation_function(self) -> Callable[[ndarray], ndarray]:
         """
         Returns a function that can be used to transform the input data to the space used by the model.
         If the space is a token space, the base detector is expected to work on the embeddings generated from the projected tokens.
         """
+
         if isinstance(self.space, TokenSpace): #TODO: find a better solution
-            return self.model.get_embedding_fun(batch_first=True)
+            return TransformBaseDetector.configure_transform_fun(
+                transformation= self.model.get_embedding_fun(batch_first=True),
+                normalize = True,
+                standardize = True
+            )
+
         return lambda x: x
 
     def _get_detector(self) -> BaseDetector:
@@ -90,6 +97,7 @@ class V_ODM(EnsembleODM):
         # memory issues. Also, currently this approach still seems fast
         # enough. Though, it should be kept in mind.
         subspace_min_distance = []
+        subspace_dist = Tensor([])
         subspaces = Tensor(self.odm_model.get_subspaces()).to(self.device)
 
         transform = self._get_transformation_function()
@@ -101,13 +109,26 @@ class V_ODM(EnsembleODM):
         # The distance is calculated in the transformed space. Which,
         # currently is the embedding space. That is, either the point is in the token space and transformed into the embedding space,
         # using the embedding function, or the point is already in the embedding space. Then, the identity function is applied.
-        for point in self.x_test:
+        if isinstance(self.space, TokenSpace):# TODO: remove, currently in place, as it is not tested and want the other code to run without errors.
+
+            test_data = self.x_test.cpu().numpy()
+            transformed_points = transform(test_data)
+            for subspace in subspaces:
+                projected = subspace * self.x_test
+                transformed_projected = transform(projected)
+                sub_distances = Tensor(transformed_points - transformed_projected).norm(dim=1)
+                #torch.cat(subspace_dist, sub_distances, subspace_dist) #todo continue here.
+                subspace_dist = torch.cat((subspace_dist, sub_distances), dim=1)
+            dist_tensor = subspace_dist.min(dim=1).values / max_dist * self.subspace_distance_lambda
+            return dist_tensor
+        test_data = self.x_test.cpu().numpy()
+        transformed_points = transform(test_data)
+        for point in transformed_points:
             min_distance = max_dist
-            transformed_point = transform(point)
 
             for subspace in subspaces:
                 transformed_projected_point = transform(subspace * point)
-                sub_dist = (transformed_point - transformed_projected_point).norm()
+                sub_dist = (point - transformed_projected_point).norm()
                 min_distance = min(min_distance, sub_dist)
 
             subspace_min_distance.append(min_distance)

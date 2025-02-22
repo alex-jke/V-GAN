@@ -118,13 +118,14 @@ class Bert(HuggingModel):
         maximum_length = 512
         with torch.no_grad():
             tokenized = tokenized.clone().detach().to(self.device)
-            token_vec = tokenized.unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
-            token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
-            #attention_mask = torch.ones_like(token_vec).to(self.device)
-            # if a token is a padding token, set the mask to 0
-            attention_mask = torch.not_equal(token_vec, self.padding_token)
+            attention_mask = torch.not_equal(tokenized, self.padding_token)
+            token_vec = tokenized[attention_mask].unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
+            if len(token_vec.shape) > 1:
+                token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
+            else:
+                token_vec = token_vec[:maximum_length]
 
-            outputs = self.model(token_vec, attention_mask=attention_mask)
+            outputs = self.model(token_vec)
             # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension
             embeddings = outputs.last_hidden_state.T[:, :, 0]
 
