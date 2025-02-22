@@ -128,10 +128,11 @@ class Experiment:
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.
         models.extend(
-            [V_ODM(**self.emb_params, base_detector=base,
+            [V_ODM(**param, base_detector=base,
                    output_path = self.output_path, odm_model=model_type)
              for base in bases
-             for model_type in model_types]
+             for model_type in model_types
+             for param in params]
         )
 
         # VGAN ODM on the token space only using the ensemble method.
@@ -147,9 +148,10 @@ class Experiment:
                        ])
 
         # VGAN ODM with only subspace distance.
-        models.extend([DistanceV_ODM(**self.emb_params, output_path=self.output_path,
+        models.extend([DistanceV_ODM(**param, output_path=self.output_path,
                                      odm_model=model_type)
                        for model_type in model_types
+                       for param in params
                        ])
 
         models.extend([

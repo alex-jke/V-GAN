@@ -10,7 +10,7 @@ from torch import Tensor
 import torch
 
 from text.outlier_detection.ensemle_odm import EnsembleODM
-from text.outlier_detection.pyod_odm import EmbeddingBaseDetector
+from text.outlier_detection.pyod_odm import TransformBaseDetector
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
@@ -40,10 +40,19 @@ class V_ODM(EnsembleODM):
         self.classifier_delta = classifier_delta
         super().__init__(dataset=dataset, space=space, use_cached=use_cached)
 
-    def _get_detector(self) -> BaseDetector:
+    def _get_transformation_function(self):
+        """
+        Returns a function that can be used to transform the input data to the space used by the model.
+        If the space is a token space, the base detector is expected to work on the embeddings generated from the projected tokens.
+        """
         if isinstance(self.space, TokenSpace): #TODO: find a better solution
-            return EmbeddingBaseDetector(self.model.get_embedding_fun(batch_first=True), lambda: self.base_detector)
-        return self.base_detector()
+            return self.model.get_embedding_fun(batch_first=True)
+        return lambda x: x
+
+    def _get_detector(self) -> BaseDetector:
+        transform_fun = self._get_transformation_function()
+        return TransformBaseDetector(transform_fun=transform_fun, base_detector= lambda: self.base_detector)
+
 
     def _train_ensemble(self):
         """
@@ -78,18 +87,27 @@ class V_ODM(EnsembleODM):
         # Use python list to avoid memory issues. Torch tensor operation
         # would likely involve unsquezing and expanding the tensor.
         # Doing this for all subspaces and all points would likely cause
-        # memory issues.
+        # memory issues. Also, currently this approach still seems fast
+        # enough. Though, it should be kept in mind.
         subspace_min_distance = []
         subspaces = Tensor(self.odm_model.get_subspaces()).to(self.device)
+
+        transform = self._get_transformation_function()
 
         # Should not be more due to normalization.
         max_dist = self.x_test.shape[1] ** 0.5
 
+        # For each point, calculate the distance to the closest subspace.
+        # The distance is calculated in the transformed space. Which,
+        # currently is the embedding space. That is, either the point is in the token space and transformed into the embedding space,
+        # using the embedding function, or the point is already in the embedding space. Then, the identity function is applied.
         for point in self.x_test:
             min_distance = max_dist
+            transformed_point = transform(point)
 
             for subspace in subspaces:
-                sub_dist = (point - subspace * point).norm()
+                transformed_projected_point = transform(subspace * point)
+                sub_dist = (transformed_point - transformed_projected_point).norm()
                 min_distance = min(min_distance, sub_dist)
 
             subspace_min_distance.append(min_distance)
