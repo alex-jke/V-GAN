@@ -58,6 +58,7 @@ class VMMD:
         if print_updates is None:
             self.print_updates = False
         self.apply_gradient_clipping = gradient_clipping
+        self._latent_size: int | None = None
 
     def _create_plot(self) -> pyplot:
         train_history = self.train_history
@@ -141,7 +142,7 @@ class VMMD:
         self.generator.load_state_dict(torch.load(path_to_generator, map_location=device))
         self.generator.eval()  # This only works for dropout layers
         self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space'
-        self.__latent_size = max(int(ndims/16), 1)
+        self._latent_size = max(int(ndims / 16), 1)
 
     def get_the_networks(self, ndims: int, latent_size: int, device: str = None) -> Generator_big:
         """Object function to obtain the networks' architecture
@@ -158,6 +159,7 @@ class VMMD:
             device = self.device
 
         # Check if only the constructor or a whole generator was passed.
+        self._latent_size = latent_size
         if inspect.isclass(self.provided_generator):
             generator = self.provided_generator(
                 img_size=ndims, latent_size=latent_size).to(device)
@@ -190,7 +192,7 @@ class VMMD:
 
         # MODEL INTIALIZATION#
         epochs = self.epochs
-        self.__latent_size = latent_size = max(int(X.shape[1]/16), 1)
+        self._latent_size = latent_size = max(int(X.shape[1] / 16), 1)
         ndims = X.shape[1]
         train_size = X.shape[0]
         self.batch_size = min(self.batch_size, train_size)
@@ -289,7 +291,9 @@ class VMMD:
 
     def generate_subspaces(self, nsubs, round = True):
         # Need to load in cpu as mps Tensor module doesn't properly fix the seed
-        noise_tensor = torch.Tensor(nsubs, self.__latent_size).to('cpu')
+        if self._latent_size is None:
+            self._latent_size = int(self._latent_size / 16)
+        noise_tensor = torch.Tensor(nsubs, self._latent_size).to('cpu')
         if not self.seed == None:
             torch.manual_seed(self.seed)
         noise_tensor.normal_()

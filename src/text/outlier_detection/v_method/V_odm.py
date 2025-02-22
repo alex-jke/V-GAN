@@ -8,8 +8,6 @@ from sel_suod.models.base import sel_SUOD
 from torch import Tensor
 
 import torch
-from models.Generator import GeneratorSigmoidSTE
-from modules.od_module import VMMD_od, VGAN_od
 
 from text.outlier_detection.ensemle_odm import EnsembleODM
 from text.outlier_detection.pyod_odm import EmbeddingBaseDetector
@@ -17,9 +15,6 @@ from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
-from text.visualizer.collective_visualizer import CollectiveVisualizer
-VGAN = "VGAN"
-VMMD = "VMMD"
 
 class V_ODM(EnsembleODM):
 

@@ -1,5 +1,5 @@
 from text.outlier_detection.space.space import Space
-from text.outlier_detection.v_method.V_odm import V_ODM, VGAN
+from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 

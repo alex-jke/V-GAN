@@ -272,7 +272,7 @@ if __name__ == '__main__':
                    EmotionDataset(),
                    ] + NLP_ADBench.get_all_datasets()
     embedding_models = [DeepSeek1B,
-                        #GPT2, Bert,
+                        GPT2, Bert,
                         #DeepSeek7B
                         ]
 
@@ -284,8 +284,8 @@ if __name__ == '__main__':
     #random.shuffle(datasets)
 
     ui = cli.get()
-    train_size = 10_000
-    test_size = 10_000
+    train_size = 5_000
+    test_size = 1_000
 
     # Create and run an experiment for every combination of dataset and embedding model.
     with ui.display():
@@ -296,8 +296,8 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.272_small", use_cached=True,
-                                            run_cachable=False)
+                                            experiment_name=f"0.282_smaller", use_cached=True,
+                                            run_cachable=False, skip_error=False)
                     experiment.run()
                     aggregate_results()
                     del emb_model

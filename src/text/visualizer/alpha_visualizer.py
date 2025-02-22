@@ -83,9 +83,11 @@ class AlphaVisualizer(Visualizer):
             for string, alpha in zip(strings, values):
                 if string == padding_token:
                     string = "-"
-                color_intensity = int(alpha * 255)
-                html_content += (f'<span class="token" style="color: rgba({color_intensity}, '
-                                 f'{VGAN_GREEN_RGB[0]}, {VGAN_GREEN_RGB[1]}, {VGAN_GREEN_RGB[2]});">{string}</span>')
+                red = int(VGAN_GREEN_RGB[0] * alpha)
+                green = int(VGAN_GREEN_RGB[1] * alpha)
+                blue = int(VGAN_GREEN_RGB[2] * alpha)
+                html_content += (f'<span class="token" style="color: rgba('
+                                 f'{red}, {green}, {blue}, 1);">{string}</span>')
             html_content += "<br><br>"
 
         # Close the HTML content
