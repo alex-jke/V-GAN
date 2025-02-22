@@ -89,51 +89,38 @@ class V_ODM(EnsembleODM):
             decision_function_scores_ens, weights=self.odm_model.get_subspace_probabilities(), type="avg")
         return agg_dec_fun
 
-    def _get_distances(self):
-
-        # Use python list to avoid memory issues. Torch tensor operation
-        # would likely involve unsquezing and expanding the tensor.
-        # Doing this for all subspaces and all points would likely cause
-        # memory issues. Also, currently this approach still seems fast
-        # enough. Though, it should be kept in mind.
-        subspace_min_distance = []
-        subspace_dist = Tensor([])
-        subspaces = Tensor(self.odm_model.get_subspaces()).to(self.device)
-
+    def _get_distances(self) -> Tensor:
+        subspaces = self.odm_model.get_subspaces().to(self.device)
         transform = self._get_transformation_function()
+        x_test = self.x_test
+        subspace_distance_lambda = self.subspace_distance_lambda
+        return self._calculate_distances(transform, subspaces, x_test) * subspace_distance_lambda
+
+    @staticmethod
+    def _calculate_distances(transform: Callable[[ndarray], ndarray], subspaces: Tensor, x_test: Tensor) -> Tensor:
+        """
+        Calculates for each datapoint its distance to the closest subspace. The distance is measured in the transformed space.
+        :param transform: The transformation function to apply to the data to measure the distance.
+            For example, if the space is a token space, the data should be transformed into the embedding space, before measuring the distance.
+        :param subspaces: A two-dimensional tensor containing the subspaces to measure the distance to. Shape: (num_subspaces, num_features)
+        :param x_test: The data to measure the distance for. As a two-dimensional tensor. Shape: (num_samples, num_features)
+        :return: A tensor of the distances for each data point of shape (num_samples,)
+        """
+
+        subspace_dist = Tensor([])
 
         # Should not be more due to normalization.
-        max_dist = self.x_test.shape[1] ** 0.5
+        max_dist = x_test.shape[1] ** 0.5
 
-        # For each point, calculate the distance to the closest subspace.
-        # The distance is calculated in the transformed space. Which,
-        # currently is the embedding space. That is, either the point is in the token space and transformed into the embedding space,
-        # using the embedding function, or the point is already in the embedding space. Then, the identity function is applied.
-        if isinstance(self.space, TokenSpace):# TODO: remove, currently in place, as it is not tested and want the other code to run without errors.
-
-            test_data = self.x_test.cpu().numpy()
-            transformed_points = transform(test_data)
-            for subspace in subspaces:
-                projected = subspace * self.x_test
-                transformed_projected = transform(projected)
-                sub_distances = Tensor(transformed_points - transformed_projected).norm(dim=1)
-                #torch.cat(subspace_dist, sub_distances, subspace_dist) #todo continue here.
-                subspace_dist = torch.cat((subspace_dist, sub_distances), dim=1)
-            dist_tensor = subspace_dist.min(dim=1).values / max_dist * self.subspace_distance_lambda
-            return dist_tensor
-        test_data = self.x_test.cpu().numpy()
-        transformed_points = transform(test_data)
-        for point in transformed_points:
-            min_distance = max_dist
-
-            for subspace in subspaces:
-                transformed_projected_point = transform(subspace * point)
-                sub_dist = (point - transformed_projected_point).norm()
-                min_distance = min(min_distance, sub_dist)
-
-            subspace_min_distance.append(min_distance)
-
-        dist_tensor = Tensor(subspace_min_distance) / max_dist * self.subspace_distance_lambda
+        test_data = x_test.cpu().numpy()
+        transformed_points = Tensor(transform(test_data))
+        for subspace in subspaces:
+            projected = subspace * x_test
+            transformed_projected = transform(projected)
+            sub_distances = Tensor(transformed_points - transformed_projected).norm(dim=1)
+            sub_distances = sub_distances.unsqueeze(1)
+            subspace_dist = torch.cat((subspace_dist, sub_distances), dim=1)
+        dist_tensor = subspace_dist.min(dim=1).values / max_dist
         return dist_tensor
 
     def _predict(self):
