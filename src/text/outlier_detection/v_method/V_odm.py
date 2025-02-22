@@ -99,7 +99,7 @@ class V_ODM(EnsembleODM):
 
     def _predict(self):
         agg_dec_fun = torch.zeros_like(self.y_test).cpu().numpy()
-        dist_tensor = torch.zeros_like(self.y_test).cpu().numpy()
+        dist_tensor = torch.zeros_like(self.y_test)
         # No need to calculate the ensemble decision function if the classifier delta is 0.
         if self.classifier_delta != 0.0:
             agg_dec_fun = self._get_ensemble_decision_function()
