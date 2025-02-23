@@ -113,6 +113,12 @@ class BaseVOdmAdapter(ABC):
         idx = proba.argsort()[-amount:][::-1]
         top_subspaces = subspaces[idx]
         top_proba = proba[idx]
+
+        # Ignore Subspaces contributing less than 0.2% to the model
+        threshold = 0.005
+        top_subspaces = top_subspaces[top_proba > threshold]
+        top_proba = top_proba[top_proba > threshold]
+
         return top_subspaces, top_proba
 
     def get_subspace_probabilities(self, num_subspaces=50):
