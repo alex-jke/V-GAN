@@ -114,10 +114,11 @@ class BaseVOdmAdapter(ABC):
         top_subspaces = subspaces[idx]
         top_proba = proba[idx]
 
-        # Ignore Subspaces contributing less than 0.2% to the model
-        threshold = 0.005
-        top_subspaces = top_subspaces[top_proba > threshold]
-        top_proba = top_proba[top_proba > threshold]
+        # Ignore Subspaces contributing less than 0.2% to the model if more than 20% subspaces exist otherwise
+        threshold = 0.002
+        if len(top_subspaces[top_proba > threshold]) > amount * 0.2:
+            top_subspaces = top_subspaces[top_proba > threshold]
+            top_proba = top_proba[top_proba > threshold]
 
         return top_subspaces, top_proba
 

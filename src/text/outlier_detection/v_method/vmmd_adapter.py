@@ -12,19 +12,41 @@ class VMMDAdapter(BaseVOdmAdapter):
     """
     Adapter for the VMMD model used for outlier detection.
     """
-    default_seed = 777
-    default_epochs = 10_000
-    default_lr = 1e-5
-    default_penalty_weight = 0.1
-    default_weight_decay = 0.0
-    default_generator = GeneratorSigmoidSTE
-    dataset_specific_params = True
-    default_max_batch_size = 2500
+
+    def __init__(self,  seed = 777,
+                        epochs = 10_000,
+                        lr = 1e-5,
+                        penalty_weight = 0.1,
+                        weight_decay = 0.0,
+                        generator = GeneratorSigmoidSTE,
+                        dataset_specific_params = True,
+                        max_batch_size = 2500):
+        """
+        The constructor for the VMMDAdapter class. It allows setting up the VMMD model.
+        :param seed: random seed for the model to use.
+        :param epochs: number of epochs to train the model. This is overwritten, if dataset_specific_params is True.
+        :param lr: learning rate for the model.
+        :param penalty_weight: penalty weight for the model.
+        :param weight_decay: weight decay for the model.
+        :param generator: generator for the model.
+        :param dataset_specific_params: whether to use dataset specification or not. For example, to recalculate the
+            amount of epochs, as smaller datasets require more epochs.
+        :param max_batch_size: maximum batch size to use.
+        """
+        self.seed = seed
+        self.epochs = epochs
+        self.lr = lr
+        self.penalty_weight = penalty_weight
+        self.weight_decay = weight_decay
+        self.generator = generator
+        self.dataset_specific_params = dataset_specific_params
+        self.max_batch_size = max_batch_size
+        super().__init__()
 
     def _init_model(self, data: PreparedData, space: Space) -> VMMD_od:
-        model = VMMD_od(penalty_weight=self.default_penalty_weight, generator=self.default_generator,
-                                lr=self.default_lr, epochs=self.default_epochs, seed=self.default_seed, path_to_directory=self.output_path,
-                                weight_decay=self.default_weight_decay)
+        model = VMMD_od(penalty_weight=self.penalty_weight, generator=self.generator,
+                        lr=self.lr, epochs=self.epochs, seed=self.seed, path_to_directory=self.output_path,
+                        weight_decay=self.weight_decay)
 
         if self.dataset_specific_params:
             self._update_params(model, data, space)
@@ -43,7 +65,7 @@ class VMMDAdapter(BaseVOdmAdapter):
             updated_epochs = int(updated_epochs * 1.5)
         model.epochs = updated_epochs
 
-        batch_size = min(self.default_max_batch_size, samples)
+        batch_size = min(self.max_batch_size, samples)
         model.batch_size = batch_size
 
     def get_name(self) -> str:

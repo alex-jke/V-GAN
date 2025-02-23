@@ -90,7 +90,7 @@ class V_ODM(EnsembleODM):
         return agg_dec_fun
 
     def _get_distances(self) -> Tensor:
-        subspaces = self.odm_model.get_subspaces().to(self.device)
+        subspaces = Tensor(self.odm_model.get_subspaces()).to(self.device)
         transform = self._get_transformation_function()
         x_test = self.x_test
         subspace_distance_lambda = self.subspace_distance_lambda
@@ -113,14 +113,22 @@ class V_ODM(EnsembleODM):
         max_dist = x_test.shape[1] ** 0.5
 
         test_data = x_test.cpu().numpy()
-        transformed_points = Tensor(transform(test_data))
+        transformed_points = Tensor(transform(test_data)).cpu()
         for subspace in subspaces:
-            projected = subspace * x_test
-            transformed_projected = transform(projected)
+            try:
+                projected: ndarray = (subspace * x_test).cpu().numpy()
+            except RuntimeError as e:
+                print(e)
+                raise e
+            transformed_projected = Tensor(transform(projected)).cpu()
             sub_distances = Tensor(transformed_points - transformed_projected).norm(dim=1)
             sub_distances = sub_distances.unsqueeze(1)
             subspace_dist = torch.cat((subspace_dist, sub_distances), dim=1)
-        dist_tensor = subspace_dist.min(dim=1).values / max_dist
+
+        # In case only one subspace was found.
+        agg_dist = subspace_dist.min(dim=1).values if len(subspace_dist.shape) == 2 else subspace_dist
+        print(f"Aggregated over {subspaces.shape} datapoints.")
+        dist_tensor = agg_dist / max_dist
         return dist_tensor
 
     def _predict(self):
@@ -142,5 +150,5 @@ class V_ODM(EnsembleODM):
     def _get_predictions(self) -> List[float]:
         return self.predictions.tolist()
 
-    def evaluate(self, output_path: Path = None, print_results = False) ->( pd.DataFrame, pd.DataFrame):
+    def evaluate(self, output_path: Path = None) ->( pd.DataFrame, pd.DataFrame):
         return super().evaluate(output_path=output_path)

@@ -270,8 +270,8 @@ def aggregate_results():
 if __name__ == '__main__':
     datasets = [
                    AGNews(),
-                   IMBdDataset(),
                    EmotionDataset(),
+                   IMBdDataset(),
                    ] + NLP_ADBench.get_all_datasets()
     embedding_models = [DeepSeek1B,
                         GPT2, Bert,
@@ -298,7 +298,7 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.282_smaller", use_cached=True,
+                                            experiment_name=f"0.283_smaller", use_cached=True,
                                             run_cachable=False, skip_error=True)
                     experiment.run()
                     aggregate_results()

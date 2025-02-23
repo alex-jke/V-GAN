@@ -10,7 +10,7 @@ class Space(ABC):
     This class represents the space that the outlier detection models
     should operate in.
     """
-    def __init__(self, model: HuggingModel, train_size: int, test_size: int):
+    def __init__(self, model: HuggingModel, train_size: int = -1, test_size: int = -1):
         """
         Initializes the Space object.
         :param model: The model to use to generate the space.

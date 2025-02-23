@@ -103,7 +103,7 @@ class OutlierDetectionModel(ABC):
     def _stop_timer(self):
         self.time_elapsed = time() - self.start_time
 
-    def evaluate(self, output_path: Path = None )-> (pd.DataFrame, pd.DataFrame):
+    def evaluate(self, output_path: Path = None)-> (pd.DataFrame, pd.DataFrame):
         """
         Evaluate the performance of a predictive model against a labeled test dataset.
 

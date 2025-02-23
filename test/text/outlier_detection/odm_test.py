@@ -3,6 +3,7 @@ import unittest
 from itertools import takewhile
 from pathlib import Path
 from time import time
+from pyod.models.lof import LOF
 
 import pandas as pd
 import torch
@@ -12,9 +13,14 @@ from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
+from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.pyod_odm import LUNAR
+from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
+from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
+from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.visualizer.result_visualizer import ResultVisualizer
+from vmmd import VMMD
 
 
 class OutlierDetectionMethodTest(unittest.TestCase):
@@ -119,6 +125,41 @@ class OutlierDetectionMethodTest(unittest.TestCase):
         y_columns = ["auc", "prauc", "f1"]
         for y_column in y_columns:
             visualizer.visualize(x_column=x_column, y_column=y_column, type=visualizer.line)
+
+    def test_vmmd_only_distance(self):
+        dataset = AGNews()
+        model = DeepSeek1B()
+        space = EmbeddingSpace(model=model, test_size=1_000)
+        vmmd = VMMDAdapter(epochs= 300, dataset_specific_params=False, lr=10e-3)
+        v_odm = DistanceV_ODM(dataset=dataset, space=space, odm_model=vmmd)
+        v_odm.train()
+        v_odm.predict()
+        result_df, _ = v_odm.evaluate()
+        print(result_df)
+
+    def test_hybrid_lunar_vmmd(self):
+        dataset = AGNews()
+        model = DeepSeek1B()
+        space = EmbeddingSpace(model=model, test_size=1_00, train_size=1_00)
+        vmmd = VMMDAdapter(epochs=300, dataset_specific_params=False, lr=10e-3)
+        v_odm = V_ODM(dataset=dataset, space=space, odm_model=vmmd)
+        v_odm.train()
+        v_odm.predict()
+        result_df: pd.DataFrame = v_odm.evaluate()[0]
+        print(result_df.columns.to_list())
+        print(result_df.iloc[0].to_list())
+
+    def test_lof_vmmd(self):
+        dataset = AGNews()
+        model = DeepSeek1B()
+        space = EmbeddingSpace(model=model, test_size=1_00)
+        vmmd = VMMDAdapter(epochs=300, dataset_specific_params=False, lr=10e-3)
+        v_odm = EnsembleV_ODM(dataset=dataset, space=space, odm_model=vmmd, base_detector=LOF)
+        v_odm.train()
+        v_odm.predict()
+        result_df = v_odm.evaluate()[0]
+        print(result_df.columns.to_list())
+        print(result_df.iloc[0].to_list())
 
 
 
