@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Tuple
+
+from numpy import ndarray
 
 from modules.od_module import VGAN_od, VMMD_od
 from text.outlier_detection.space.prepared_data import PreparedData
@@ -20,6 +23,8 @@ class BaseVOdmAdapter(ABC):
         self.space: Space | None = None
         self.output_path: Path | None = None
         self.initialized = False
+        self.subspaces: ndarray | None = None
+        self.proba: ndarray | None = None
 
     def init_model(self, data: PreparedData, base_path: Path, space: Space):
         """
@@ -34,7 +39,7 @@ class BaseVOdmAdapter(ABC):
         self._load_model(self.output_path, data.x_train.shape[1], self.model)
         self.initialized = True
 
-    def train(self, print_epochs: int = 300, num_subspaces: int = 50):
+    def train(self, print_epochs: int = 300):
         """
         If the model could be loaded, it skips the training, otherwise it trains a model.
         :param print_epochs: The number of epochs between each print.
@@ -43,7 +48,6 @@ class BaseVOdmAdapter(ABC):
         self.__assert_initialized()
         if not self.loaded_model:
             self._train(print_epochs)
-        self.model.approx_subspace_dist(add_leftover_features=False, subspace_count=num_subspaces)
 
     def _train(self, print_epochs: int):
         """
@@ -81,19 +85,45 @@ class BaseVOdmAdapter(ABC):
             model.load_models(generator_path, ndims=features)
             self.loaded_model = True
 
-    def get_subspaces(self):
+    def get_subspaces(self, num_subspaces=50):
         """
         Returns subspace_count operator samples from the random operator. This currently being axis parallel subspaces.
         """
         self.__assert_initialized()
-        return self.model.subspaces
 
-    def get_subspace_probabilities(self):
+        if self.subspaces is None:
+            self._init_subspaces(num_subspaces)
+
+        return self.subspaces
+
+    def _init_subspaces(self, num_subspaces: int):
+        self.model.approx_subspace_dist(add_leftover_features=False, subspace_count=1000)
+        subspaces = self.model.subspaces
+        proba = self.model.proba
+
+        # Select the num_subspaces most probable subspaces
+        self.subspaces, self.proba = self._get_top_subspaces(num_subspaces, proba, subspaces)
+
+    @staticmethod
+    def _get_top_subspaces(num_subspaces: int, proba: ndarray, subspaces: ndarray) -> Tuple[ndarray, ndarray]:
+        """
+        Returns the num_subspaces most probable subspaces, with their probabilities.
+        """
+        amount = min(num_subspaces, len(proba))
+        idx = proba.argsort()[-amount:][::-1]
+        top_subspaces = subspaces[idx]
+        top_proba = proba[idx]
+        return top_subspaces, top_proba
+
+    def get_subspace_probabilities(self, num_subspaces=50):
         """
         Returns the probabilities of the subspaces. This is used to determine the importance of the subspaces.
         """
         self.__assert_initialized()
-        return self.model.proba
+        if self.proba is None:
+            self._init_subspaces(num_subspaces)
+
+        return self.proba
 
     def visualize_results(self):
         """

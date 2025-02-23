@@ -67,7 +67,7 @@ class V_ODM(EnsembleODM):
         """
         if self.classifier_delta == 0:
             return
-        self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.odm_model.get_subspaces(),
+        self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.odm_model.get_subspaces(num_subspaces=self.num_subspaces),
                                        n_jobs=4, bps_flag=False, approx_flag_global=False, verbose=True)
 
         self.ensemble_model.fit(self.x_train.cpu())
@@ -76,7 +76,7 @@ class V_ODM(EnsembleODM):
         # The model is initialized here, as preparing the data (such as embedding) might take a not insignificant amount of time.
         # To allow for a fair comparison
         self.odm_model.init_model(self.data, self.base_output_path, self.space)
-        self.odm_model.train(num_subspaces=self.num_subspaces)
+        self.odm_model.train()
         self._train_ensemble()
 
     def _get_ensemble_decision_function(self):

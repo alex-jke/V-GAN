@@ -17,10 +17,11 @@ class DeepSeekTest(unittest.TestCase):
         embedding_fun = model.get_embedding_fun(batch_first=True)
         embedding = embedding_fun(tokenized)
 
+        print("--------------------")
         # Create a tensor of shape (1, 1) with the padding token
-        extra_padding_token = Tensor([model.padding_token]).unsqueeze(0).to(device=self.device)
+        extra_padding_token = Tensor([model.padding_token]*600).unsqueeze(0).to(device=self.device)
         tokenized_with_padding = torch.cat((tokenized, extra_padding_token), dim=1)
-        embedding_padded = embedding_fun(tokenized)
+        embedding_padded = embedding_fun(tokenized_with_padding)
 
         self.assertEqual(embedding.shape, embedding_padded.shape)
         self.assertTrue(torch.allclose(embedding, embedding_padded))

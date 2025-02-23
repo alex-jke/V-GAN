@@ -42,15 +42,17 @@ class DeepSeek(HuggingModel, ABC):
         raise NotImplementedError
 
     def fully_embed_tokenized(self, tokenized: Tensor) -> List[Tensor]:
+        """
+        Embeds the tokenized input and returns the embeddings of the individual tokens.
+        :param tokenized: The tokenized input. A tensor of shape (batch_size, sequence_length).
+        :return: A list of tensors, each containing the embeddings of the individual tokens.
+            The reason for returning a list of tensors is that the number of tokens in each sample might differ, as padding tokens are removed after embedding.
+        """
         token_vec = tokenized.clone().detach().int().to(self.device)
 
-        # Remove final padding tokens, if all tensors are padded longer than the longest tensor, this is not necessary.
-        #if self.padding_token == 0:
-        #    largest_non_token_index = torch.max(torch.nonzero(token_vec)).item()
-        #else:
-        #    largest_non_token_index = token_vec.shape[0] - 1
-        #trimmed_token_vec = token_vec[:largest_non_token_index + 1]
-        #remainder = token_vec[largest_non_token_index:]
+        # Remove all the padding tokens, that are shared by all samples, as they do not carry any information.
+        # Also, for the remaining tokens, create an attention mask.
+
         attention_mask = torch.not_equal(token_vec, self.padding_token)
         attention_mask_all = attention_mask.all(dim=0)
         trimmed_token_vec = token_vec[:, attention_mask_all]
