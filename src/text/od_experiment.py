@@ -35,25 +35,27 @@ from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
 from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.result_aggregator import ResultAggregator
-from text.visualizer.result_visualizer import ResultVisualizer
+from text.visualizer.result_visualizer.rank import RankVisualizer
+from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
 
 
 class Experiment:
     def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = -1, test_size: int = -1,
                  models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None,
-                 use_cached: bool = False, run_cachable: bool = False):
+                 use_cached: bool = False, run_cachable: bool = False, runs=1):
         """
         Initializes the experiment.
-        : param dataset: The dataset to use for the experiment.
-        : param emb_model: The embedding model to use for the experiment.
-        : param skip_error: Whether to skip errors and continue running the experiment.
-        : param train_size: The number of training samples to use for the experiment -1 means all samples will be used.
-        : param test_size: The number of testing samples to use for the experiment -1 means all samples will be used.
-        : param models: A list of OutlierDetectionModel instances to use for the experiment. If None, a default list will be used.
-        : param output_path: The path to save the results of the experiment. If None, a default path will be used.
-        : param experiment_name: The name of the experiment. If None, a default name will be used.
-        : param use_cached: Whether to use cached data for the experiment. Using caching might distort the time measurements.
-        : param run_cachable: Whether to run the cachable part of the experiment. If False, the experiment will run all models. This allows for quicker testing.
+        :param dataset: The dataset to use for the experiment.
+        :param emb_model: The embedding model to use for the experiment.
+        :param skip_error: Whether to skip errors and continue running the experiment.
+        :param train_size: The number of training samples to use for the experiment -1 means all samples will be used.
+        :param test_size: The number of testing samples to use for the experiment -1 means all samples will be used.
+        :param models: A list of OutlierDetectionModel instances to use for the experiment. If None, a default list will be used.
+        :param output_path: The path to save the results of the experiment. If None, a default path will be used.
+        :param experiment_name: The name of the experiment. If None, a default name will be used.
+        :param use_cached: Whether to use cached data for the experiment. Using caching might distort the time measurements.
+        :param run_cachable: Whether to run the cachable part of the experiment. If False, the experiment will run all models. This allows for quicker testing.
+        :param runs: The number of runs per experiment. This is used for ranking the methods in a box plot.
         """
         """
         Initializes the experiment
@@ -64,6 +66,7 @@ class Experiment:
         self.experiment_name = "experiment_od" if experiment_name is None else experiment_name
         self.use_cached = use_cached
         self.run_cachable = run_cachable
+        self.runs = runs
 
         # Experiment parameters
         self.token_params: Dict = {
@@ -164,8 +167,9 @@ class Experiment:
 
         # Trivial ODM models with different guess inlier rates.
         models.extend([
-            TrivialODM(**self.token_params, guess_inlier_rate=rate)
+            TrivialODM(**self.token_params, guess_inlier_rate=rate, base_method=base)
             for rate in [0.0, 0.5, 1.0]
+            for base in bases
         ])
 
         return models
@@ -202,22 +206,26 @@ class Experiment:
             print(f"{model._get_name()} encountered an error.")
             return pd.DataFrame(), error_record
 
-    def _visualize_and_save_results(self) -> None:
+    def _visualize_and_save_results(self, run: int) -> None:
         """
         Visualizes the results and saves both the result and error DataFrames to CSV files.
         """
-        visualizer = ResultVisualizer(self.result_df, self.output_path)
+        run_dir = self._get_run_path(run)
+        visualizer = ResultVisualizer(self.result_df, output_dir=run_dir)
         for column in self.result_df.columns:
             if column != "method":
                 visualizer.visualize(x_column="method", y_column=column)
-        self.output_path.mkdir(parents=True, exist_ok=True)
-        self.result_df.to_csv(self.output_path / self.result_csv_name, index=False)
-        self.error_df.to_csv(self.output_path / "errors.csv", index=False)
-        if not (self.output_path / self.comon_metrics_name).exists():
-            self.comon_metrics.to_csv(self.output_path / self.comon_metrics_name, index=False)
+        run_dir.mkdir(parents=True, exist_ok=True)
+        self.result_df.to_csv(run_dir / self.result_csv_name, index=False)
+        self.error_df.to_csv(run_dir / "errors.csv", index=False)
+        if not (run_dir / self.comon_metrics_name).exists():
+            self.comon_metrics.to_csv(run_dir / self.comon_metrics_name, index=False)
 
-    def _filter_for_not_run(self):
-        result_path = self.output_path / self.result_csv_name
+    def _get_run_path(self, run: int) -> Path:
+        return self.output_path / f"run_{run}"
+
+    def _filter_for_not_run(self, run: int) -> None:
+        result_path = self._get_run_path(run) / self.result_csv_name
         if not result_path.exists():
             return
         try:
@@ -242,25 +250,40 @@ class Experiment:
         # Import dataset data.
         self.dataset._import_data()  # Consider renaming to a public method if possible.
 
-        self._filter_for_not_run()
+        results: List[pd.DataFrame] = []
 
-        # Run each model experiment.
         with self.ui.display():
-            for model in self.models:
-                self.ui.update(f"Running model {model.__class__.__name__}")
-                evaluation, error = self._run_single_model(model)
-                self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
-                if error is not None:
-                    self.error_df = pd.concat([self.error_df, error], ignore_index=True)
-                    if not self.output_path.exists():
-                        self.output_path.mkdir(parents=True, exist_ok=True)
-                    self.error_df.to_csv(self.output_path / "errors.csv", index=False)
-                    continue
-                self._visualize_and_save_results()
-                del model
+            for run in range(self.runs):
+                self.result_df = pd.DataFrame(columns=self.result_df.columns)
+                self.ui.update(f"Run {run + 1}/{self.runs}")
+                self._filter_for_not_run(run=run)
 
+                # Run each model experiment.
+                with self.ui.display():
+                    for model in self.models:
+                        self.ui.update(f"Running model {model.__class__.__name__}")
+                        evaluation, error = self._run_single_model(model)
+                        self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
+                        if error is not None:
+                            self.error_df = pd.concat([self.error_df, error], ignore_index=True)
+                            if not self.output_path.exists():
+                                self.output_path.mkdir(parents=True, exist_ok=True)
+                            self.error_df.to_csv(self.output_path / "errors.csv", index=False)
+                            continue
+                        self._visualize_and_save_results(run=run)
+                        del model
+                    if len(self.result_df) > 0:
+                        results.append(self.result_df)
+                        self._visualize_ranks(results)
 
-        self._visualize_and_save_results()
+                self._visualize_and_save_results(run=run)
+
+    def _visualize_ranks(self, results: List[pd.DataFrame]):
+        visualizer = RankVisualizer(results, output_dir=self.output_path)
+        metrics = ["auc", "prauc", "f1"]
+        for metric in metrics:
+            visualizer.visualize(method_col="method", metric_col=metric, group_by="base")
+        print("Ranking visualizations saved to", self.output_path)
 
 def aggregate_results():
     aggregator = ResultAggregator(

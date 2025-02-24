@@ -41,7 +41,7 @@ class V_ODM(EnsembleODM):
         self.ensemble_model = None
         self.subspace_distance_lambda = subspace_distance_lambda
         self.classifier_delta = classifier_delta
-        super().__init__(dataset=dataset, space=space, use_cached=use_cached)
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_method=base_detector)
 
     def _get_transformation_function(self) -> Callable[[ndarray], ndarray]:
         """

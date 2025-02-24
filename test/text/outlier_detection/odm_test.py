@@ -19,7 +19,7 @@ from text.outlier_detection.pyod_odm import LUNAR
 from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
 from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
-from text.visualizer.result_visualizer import ResultVisualizer
+from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
 from vmmd import VMMD
 
 

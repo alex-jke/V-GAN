@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 from time import time
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Type
 
 import pandas as pd
 import numpy as np
 import torch.nn.functional
 from pandas import Series
+from pyod.models.base import BaseDetector
 from sklearn.preprocessing import StandardScaler
 from torch import Tensor
 
@@ -21,7 +22,6 @@ from sklearn.metrics import average_precision_score, f1_score
 from typing import List, Tuple
 from abc import ABC, abstractmethod
 
-
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
@@ -33,7 +33,7 @@ class OutlierDetectionModel(ABC):
     """
     Abstract class for outlier detection models. Specifically for one-class classification.
     """
-    def __init__(self, dataset: Dataset, space: Space, inlier_label: int | None = None, use_cached: bool = False):
+    def __init__(self, dataset: Dataset, space: Space, base_method: Type[BaseDetector], inlier_label: int | None = None, use_cached: bool = False):
         self.dataset = dataset
         self.use_cached = use_cached
         self.inlier_label = inlier_label
@@ -44,6 +44,7 @@ class OutlierDetectionModel(ABC):
         self.data: PreparedData | None = None
         self.space: Space = space
         self.device = self.space.model.device
+        self.base_method: Type[BaseDetector] = base_method
 
     @abstractmethod
     def _train(self):
@@ -162,6 +163,7 @@ class OutlierDetectionModel(ABC):
             "prauc": [prauc],
             "f1": [f1],
             "time_taken": [self.time_elapsed],
+            "base": [self.base_method.__name__]
         })
 
         self.common_parameters = pd.DataFrame({

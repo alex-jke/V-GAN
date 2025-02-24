@@ -2,6 +2,9 @@ import os
 import unittest
 from typing import List
 
+from pyod.models.lof import LOF as pyodLOF
+from pyod.models.lunar import LUNAR as pyodLUNAR
+
 from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
@@ -11,7 +14,7 @@ from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench
 from text.od_experiment import Experiment
-from text.outlier_detection.pyod_odm import LUNAR, LOF, ECOD
+from text.outlier_detection.pyod_odm import LUNAR, LOF, ECOD, FeatureBagging
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.v_method.V_odm import V_ODM
 
@@ -129,6 +132,19 @@ class ODExperimentTest(unittest.TestCase):
         exp = Experiment(dataset, model, skip_error=False,
                          experiment_name="emotion", train_size=train_size, test_size=test_size,
                          use_cached=True)
+        exp.run()
+
+    def test_ranking(self):
+        dataset = AGNews()
+        model = DeepSeek1B()
+        space = EmbeddingSpace(model, 100, 100)
+        methods = [#LUNAR(dataset, space, use_cached=True),
+                    LOF(dataset, space, use_cached=True),
+                    LUNAR(dataset, space, use_cached=True),
+                    FeatureBagging(dataset=dataset, space=space, base_detector=pyodLOF, use_cached=True),
+                    FeatureBagging(dataset=dataset, space=space, base_detector=pyodLUNAR, use_cached=True)
+            ]
+        exp = Experiment(dataset, model,  models=methods, runs=5, experiment_name="ranking5")
         exp.run()
 
 

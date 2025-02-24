@@ -42,3 +42,4 @@ class ResultVisualizer():
         if not self.output_dir.exists():
             self.output_dir.mkdir(parents=True, exist_ok=True)
         plt.savefig(path)
+        plt.close()

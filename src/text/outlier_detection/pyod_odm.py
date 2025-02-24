@@ -20,9 +20,9 @@ from text.outlier_detection.space.token_space import TokenSpace
 
 
 class PyODM(OutlierDetectionModel, ABC):
-    def __init__(self, dataset: Dataset, space: Space, use_cached = False):
+    def __init__(self, dataset: Dataset, space: Space, base_detector: Type[BaseDetector], use_cached = False):
         #self.space = "Embedding" if pre_embed else "Tokenized"
-        super().__init__(dataset=dataset, space=space, use_cached=use_cached)
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_method=base_detector)
         self.od_model = self._get_model()
 
     def _train(self):
@@ -37,26 +37,29 @@ class PyODM(OutlierDetectionModel, ABC):
         return self.decision_function
 
     @abstractmethod
-    def _get_model(self):
+    def _get_model(self) -> BaseDetector:
         pass
 
+class BasePyODM(PyODM, ABC):
+    def __init__(self, dataset: Dataset, space: Space, use_cached = False):
+        super().__init__(dataset, space, self._get_model().__class__, use_cached)
 
 #TODO: set the contamination parameter, as there is no contamination.
-class LOF(PyODM):
+class LOF(BasePyODM):
     def _get_model(self):
         return pyod_LOF()
 
     def _get_name(self):
         return f"LOF"
 
-class LUNAR(PyODM):
+class LUNAR(BasePyODM):
     def _get_model(self):
         return pyod_LUNAR()
 
     def _get_name(self):
         return f"LUNAR"
 
-class ECOD(PyODM):
+class ECOD(BasePyODM):
     def _get_model(self):
         return pyod_ECOD()
 
@@ -89,7 +92,7 @@ class FeatureBagging(PyODM):
             self.base_estimator = TransformBaseDetector(transformation, lambda: base_detector)
 
         self.__model = pyod_FeatureBagging(base_estimator=self.base_estimator)
-        super().__init__(dataset=dataset, space=space, use_cached=use_cached)
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_detector=base_detector)
 
     def _get_model(self):
         return self.__model
