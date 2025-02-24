@@ -9,6 +9,7 @@ from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
 from text.visualizer.collective_visualizer import CollectiveVisualizer
+from text.visualizer.od import od_subspace_visualizer
 
 
 class BaseVOdmAdapter(ABC):

@@ -16,6 +16,8 @@ from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
+from text.visualizer.od import od_subspace_visualizer
+
 
 class V_ODM(EnsembleODM):
 
@@ -143,6 +145,9 @@ class V_ODM(EnsembleODM):
             dist_tensor = self._get_distances()
 
         self.predictions = self.classifier_delta * agg_dec_fun + dist_tensor.cpu().numpy()
+
+        od_subspace_visualizer.plot_subspaces(self.odm_model.get_subspaces(), self.odm_model.get_subspace_probabilities(),
+                                              self.base_output_path / "subspaces_used" / f"{self._get_name()}")
 
     def _get_name(self):
         return f"{self.odm_model.get_name()} + {self.base_detector.__name__} + {self.get_space()[0]} + (λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"
