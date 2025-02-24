@@ -1,3 +1,5 @@
+from abc import ABC
+
 import numpy as np
 import pandas as pd
 
@@ -5,14 +7,7 @@ from text.visualizer.visualizer import Visualizer
 from vmmd import model_eval
 
 
-class SubspaceVisualizer(Visualizer):
-
-    def visualize(self, samples: int = 1, epoch: int = 0):
-        unique_subspaces = self.get_unique_subspaces()
-        output_dir = self.output_dir / "subspaces"
-        if not output_dir.exists():
-            output_dir.mkdir(parents=True)
-        unique_subspaces.to_csv(output_dir / f"subspaces_{epoch}.csv", index=False)
+class SubspaceVisualizer(Visualizer, ABC):
 
     def get_unique_subspaces(self):
         u = self.get_subspaces(1000, round=True)

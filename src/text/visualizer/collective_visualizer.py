@@ -4,7 +4,8 @@ from modules.od_module import VMMD_od
 from text.Embedding.tokenizer import Tokenizer
 from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
 from text.visualizer.random_alpha_visualizer import RandomAlphaVisualizer
-from text.visualizer.subspace_visualizer import SubspaceVisualizer
+
+from text.visualizer.subspace.csv_subspace_visualizer import CSVSubspaceVisualizer
 from text.visualizer.value_visualizer import ValueVisualizer
 from text.visualizer.visualizer import Visualizer
 
@@ -35,5 +36,6 @@ class CollectiveVisualizer(Visualizer):
         value_vis.visualize(samples=0, epoch=epoch)
         value_vis.visualize(samples=samples, epoch=epoch)
 
-        subspace_vis = SubspaceVisualizer(**self.params)
+        subspace_vis = CSVSubspaceVisualizer(**self.params)
         subspace_vis.visualize(samples=samples, epoch=epoch)
+

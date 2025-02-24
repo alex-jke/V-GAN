@@ -275,7 +275,7 @@ if __name__ == '__main__':
                    EmotionDataset(),
                    IMBdDataset(),
                    ] + NLP_ADBench.get_all_datasets()
-    embedding_models = [DeepSeek1B,
+    embedding_models = [#DeepSeek1B,
                         GPT2, Bert,
                         #DeepSeek7B
                         ]
