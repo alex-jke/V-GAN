@@ -183,6 +183,8 @@ class Experiment:
         """
         try:
             #model.start_timer()
+            if self.emb_model.model_name == DeepSeek1B().model_name and "VMMD + LUNAR + T" in model._get_name():
+                raise Exception("Skipping DeepSeek1B with VMMD + LUNAR + T, due to high runtime")
             model.train()
             model.predict()
             #model.stop_timer()
