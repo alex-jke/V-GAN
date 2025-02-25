@@ -64,14 +64,14 @@ class OutlierDetectionModel(ABC):
         pass
 
     @abstractmethod
-    def _get_name(self):
+    def _get_name(self) -> str:
         pass
 
     @abstractmethod
     def _get_predictions(self) -> List[float]:
         pass
 
-    def get_space(self):
+    def get_space(self) -> str:
         return self.space.name
 
     @property

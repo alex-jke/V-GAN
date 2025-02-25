@@ -141,6 +141,9 @@ class TransformBaseDetector(BaseDetector):
         device = torch.device("cuda" if torch.cuda.is_available() else
                               ("mps" if torch.backends.mps.is_available() else "cpu"))
         def transform(x: ndarray) -> ndarray:
+            """
+            Transforms the data, given the base transformation to apply.
+            """
             x_tensor = Tensor(x).to(device)
             embedded: Tensor = transformation(x_tensor)
             standardized = embedded

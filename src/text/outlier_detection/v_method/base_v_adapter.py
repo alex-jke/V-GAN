@@ -27,6 +27,14 @@ class BaseVOdmAdapter(ABC):
         self.subspaces: ndarray | None = None
         self.proba: ndarray | None = None
 
+    def _init_subspaces(self, num_subspaces: int):
+        self.model.approx_subspace_dist(add_leftover_features=False, subspace_count=1000)
+        subspaces = self.model.subspaces
+        proba = self.model.proba
+
+        # Select the num_subspaces most probable subspaces
+        self.subspaces, self.proba = self._get_top_subspaces(num_subspaces, proba, subspaces)
+
     def init_model(self, data: PreparedData, base_path: Path, space: Space):
         """
         Initializes the model used for outlier detection. If an already trained model is found in the base_path
@@ -96,14 +104,6 @@ class BaseVOdmAdapter(ABC):
             self._init_subspaces(num_subspaces)
 
         return self.subspaces
-
-    def _init_subspaces(self, num_subspaces: int):
-        self.model.approx_subspace_dist(add_leftover_features=False, subspace_count=1000)
-        subspaces = self.model.subspaces
-        proba = self.model.proba
-
-        # Select the num_subspaces most probable subspaces
-        self.subspaces, self.proba = self._get_top_subspaces(num_subspaces, proba, subspaces)
 
     @staticmethod
     def _get_top_subspaces(num_subspaces: int, proba: ndarray, subspaces: ndarray) -> Tuple[ndarray, ndarray]:
