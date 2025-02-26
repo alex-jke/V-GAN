@@ -72,12 +72,6 @@ class HuggingModel(Tokenizer, Embedding, ABC):
     def embed_words(self, words: List[str]) -> List[np.ndarray]:
         return [self.embed(data=word) for word in words]
 
-    def decode(self, embedding: np.ndarray) -> str:
-        with torch.no_grad():
-            output = self.decode2tokenized(embedding)
-            decoded = self.detokenize([output])
-        return decoded
-
     @abstractmethod
     def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
         pass

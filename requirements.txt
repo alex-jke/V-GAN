@@ -88,5 +88,5 @@ wheel==0.41.2
 zipp==3.17.0
 kagglehub
 datasets
-sentence-transformers
+staticvectors
 
