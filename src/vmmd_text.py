@@ -29,7 +29,7 @@ class VMMD_Text(VMMDBase):
         self.sequence_length = sequence_length
 
     def fit(self, x_data: ndarray[str],
-            embedding: Callable[[ndarray[str], Tensor], Tuple[Tensor, Tensor]]):
+            embedding: Callable[[ndarray[str], int], Tensor]):
         """
         Trains the model.
         :param x_data: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence as a string.
@@ -40,19 +40,22 @@ class VMMD_Text(VMMDBase):
         for _ in self.yield_fit(x_data, embedding):
             pass
 
-    def yield_fit(self, x_data: ndarray,
-                  embedding: Callable[[ndarray[str], Tensor], Tuple[Tensor, Tensor]],
+    def yield_fit(self, x_data_str: ndarray[str],
+                  embedding: Callable[[ndarray[str], int], Tensor],
                   yield_epochs=None) -> Iterable[int]:
         """
         Trains the model.
-        :param x_data: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence.
+        :param x_data_str: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence.
             This is due, to sentences having different lengths.
-        :param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentence as a string, and the subspace masks
-            as a two-dimensional Tensor. The function should return the embeddings of the sentences with and without the masks applied.
+        :param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentences as a numpy array of strings,
+        and the length to pad to or trim to. The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, n_words, n_dims).
         :param yield_epochs: The number of epochs between each print.
         """
         self._set_seed()
-        n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data)
+        n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str)
+
+        x_data = embedding(x_data_str, n_dims)
+
         self._latent_size = latent_size = max(n_dims // 16, 1)
         samples = x_data.shape[0]
         self.batch_size = min(self.batch_size, samples)
@@ -65,40 +68,40 @@ class VMMD_Text(VMMDBase):
         kernel = RBFConstrained()
         loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
 
+        #TODO: check if this is correct, having the data loader outside the loop.
+        data_loader = self._get_data_loader(x_data)
+
         for epoch in range(self.epochs):
             if self.print_updates:
                 print(f'\rEpoch {epoch} of {self.epochs}', end=" | ")
             generator_loss = 0
             mmd_loss = 0
 
-            data_loader = self._get_data_loader(x_data)
+            #data_loader = self._get_data_loader(x_data)
             batch_number = data_loader.__len__()
 
             noise_tensor = self._get_noise_tensor(latent_size)
 
             for batch in tqdm(data_loader, leave=False):
-                print("start batch", end=" | ")
                 noise_tensor.normal_()
 
                 #OPTIMIZATION STEP#
+                batch = batch.to(self.device)
                 optimizer.zero_grad()
                 subspaces = generator(noise_tensor)
-                print("getting embeddings", end=" ")
-                with torch.no_grad():
-                    embeddings, masked_embeddings = embedding(batch, subspaces)
-                print("done", end=" | ")
+
+                embeddings = batch.mean(1)
+                # Calculate the masked embeddings by multiplying the batch of shape (batch_size, sequence_length, n_dims) with the subspaces of shape (batch_size, sequence_length)
+                masked_embeddings = (batch * subspaces.unsqueeze(2)).mean(1)
+
                 masked_embeddings = masked_embeddings.to(self.device)
                 embeddings = embeddings.to(self.device)
-                print("calulating loss", end=" ")
                 batch_loss = loss_function(embeddings, masked_embeddings, subspaces)
-                print("done", end=" | ")
                 batch_mmd_loss = loss_function.mmd_loss
                 self.bandwidth = loss_function.bandwidth
-                print("backprop", end="  ")
                 batch_loss.backward()
 
                 optimizer.step()
-                print("done")
                 generator_loss += float(batch_loss.to(
                     'cpu').detach().numpy()) / batch_number
                 mmd_loss += float(batch_mmd_loss.to(
@@ -117,10 +120,3 @@ class VMMD_Text(VMMDBase):
         """
         return int(np.mean([len(x) for x in x_data]))
 
-if __name__ == "__main__":
-    dataset = AGNews()
-    model = VMMD_Text(print_updates=True)
-    embedding_fun = FastText().embed_with_mask
-    preparer = DatasetPreparer(dataset)
-    x_train = preparer.get_training_data()
-    model.fit(x_train, embedding_fun)

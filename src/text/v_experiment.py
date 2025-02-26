@@ -50,12 +50,7 @@ def get_device() -> torch.device:
 DEVICE = get_device()
 
 
-# === Experiment class ===
-class VExperiment:
-    """
-    Encapsulates one experiment (data processing, model training/evaluation, visualization).
-    """
-
+class VBaseExperiment:
     def __init__(self,
                  dataset: Dataset, model: HuggingModel, generator_class=GeneratorSigmoidSTE,
                  sequence_length: int = None, epochs: int = 2000,
@@ -105,6 +100,15 @@ class VExperiment:
             base_dir += "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
         return base_dir
 
+    @abstractmethod
+    def _get_name(self) -> str:
+        pass
+
+# === Experiment class ===
+class VExperiment(VBaseExperiment):
+    """
+    Encapsulates one experiment (data processing, model training/evaluation, visualization).
+    """
     def prepare_data(self):
         processor = DatasetProcessor(
             dataset=self.dataset,
@@ -128,10 +132,6 @@ class VExperiment:
 
     @abstractmethod
     def _get_model(self) -> VMMD_od | VGAN_od:
-        pass
-
-    @abstractmethod
-    def _get_name(self) -> str:
         pass
 
     def run(self):

@@ -1,3 +1,5 @@
+from torch import Tensor
+
 from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
@@ -9,12 +11,7 @@ from text.dataset_converter.dataset_embedder import DatasetEmbedder
 import random
 
 if __name__ == '__main__':
-    models = [DeepSeek1B, GPT2, Bert, DeepSeek7B]
-    datasets = [AGNews(), EmotionDataset(), IMBdDataset()] + NLP_ADBench.get_all_datasets()
-    random.shuffle(datasets)
-    for model in models:
-        for dataset in datasets:
-            embedder = DatasetEmbedder(dataset, model())
-            labels = dataset.get_possible_labels()[:1]
-            embedder.embed(train=True,samples=-1, labels=labels)
-            embedder.embed(train=False,samples=-1)
+    test_tensor = Tensor([[1,1], [2,2], [3,3]])
+    test_mask = Tensor([1, 0, 1])
+    masked = test_tensor * test_mask.unsqueeze(1)
+    print(masked)

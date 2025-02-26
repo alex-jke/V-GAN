@@ -187,12 +187,16 @@ class VMMDBase:
             torch.mps.manual_seed(self.seed)
 
     def _get_data_loader(self, data: np.array):
+        num_workers = 10
+        persistent_works = True
         if self.cuda:
             return DataLoader(
-                data, batch_size=self.batch_size, drop_last=True, pin_memory=not self.cuda, shuffle=True)
+                data, batch_size=self.batch_size, drop_last=True, pin_memory=not self.cuda, shuffle=True,
+                num_workers=num_workers, persistent_workers=persistent_works)
         else:  # Uses CUDA if Available, otherwise MPS or nothing
             return DataLoader(
-                data, batch_size=self.batch_size, drop_last=True, pin_memory=self.mps, shuffle=True)
+                data, batch_size=self.batch_size, drop_last=True, pin_memory=self.mps, shuffle=True,
+                num_workers=num_workers, persistent_workers=persistent_works)
 
     def _get_noise_tensor(self, latent_size: int):
         if self.cuda:  # Need to open this if statement as the Tensor function has to be called from diferent modules depending of the device
