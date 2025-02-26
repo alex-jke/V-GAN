@@ -32,9 +32,9 @@ class V_ODM(EnsembleODM):
 
         self.odm_model = odm_model
         self.model = space.model
-        self.base_detector: Type[BaseDetector] = base_detector
         if base_detector is None:
-            self.base_detector = LUNAR
+            base_detector = LUNAR
+        self.base_detector: Type[BaseDetector] = base_detector
 
         self.base_output_path = output_path
         self.detectors: List[BaseDetector] = []
@@ -70,7 +70,7 @@ class V_ODM(EnsembleODM):
         if self.classifier_delta == 0:
             return
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.odm_model.get_subspaces(num_subspaces=self.num_subspaces),
-                                       n_jobs=4, bps_flag=False, approx_flag_global=False, verbose=True)
+                                       n_jobs=-1, bps_flag=False, approx_flag_global=False, verbose=True)
 
         self.ensemble_model.fit(self.x_train.cpu())
 

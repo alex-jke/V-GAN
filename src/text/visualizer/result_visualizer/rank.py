@@ -46,6 +46,7 @@ class RankVisualizer():
             ax.set_title(f'Group: {group}')
             ax.set_xlabel('Method')
             ax.set_ylabel('Rank')
+            ax.tick_params(axis='x', labelrotation=90)
 
         plt.tight_layout()
 

@@ -17,7 +17,7 @@ class VMMDAdapter(BaseVOdmAdapter):
                         epochs = 10_000,
                         lr = 1e-5,
                         penalty_weight = 0.1,
-                        weight_decay = 0.0,
+                        weight_decay = 10e-5,
                         generator = GeneratorSigmoidSTE,
                         dataset_specific_params = True,
                         max_batch_size = 2500):

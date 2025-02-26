@@ -24,6 +24,8 @@ def plot_subspaces(subspaces: ndarray, proba: ndarray, output_dir: Path):
         plot, ax = plt.subplots()
         ax.plot(subspace)
         ax.set_title(f"Subspace with probability {prob}")
+        if not output_dir.exists():
+            output_dir.mkdir(parents=True)
         plt.savefig(output_dir / f"subspace_{i}_{prob}.png")
-    df = pd.DataFrame({"subspace": subspaces, "probability": proba})
-    df.to_csv(output_dir / "subspaces.csv")
+    #df = pd.DataFrame({"subspace": subspaces, "probability": proba})
+    #df.to_csv(output_dir / "subspaces.csv")

@@ -187,8 +187,8 @@ class Experiment:
         """
         try:
             #model.start_timer()
-            if self.emb_model.model_name == DeepSeek1B().model_name and "VMMD + LUNAR + T" in model._get_name():
-                raise Exception("Skipping DeepSeek1B with VMMD + LUNAR + T, due to high runtime")
+            #if self.emb_model.model_name == DeepSeek1B().model_name and "VMMD + LUNAR + T" in model._get_name():
+                #raise Exception("Skipping DeepSeek1B with VMMD + LUNAR + T, due to high runtime")
             model.train()
             model.predict()
             #model.stop_timer()
@@ -323,8 +323,8 @@ if __name__ == '__main__':
                     emb_model = emb_model_cls()
                     ui.update(f"embedding model {emb_model.model_name}")
                     experiment = Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-                                            experiment_name=f"0.283_smaller", use_cached=True,
-                                            run_cachable=False, skip_error=True)
+                                            experiment_name=f"0.29_smaller", use_cached=True,
+                                            run_cachable=False, skip_error=True, runs=5)
                     experiment.run()
                     aggregate_results()
                     del emb_model
