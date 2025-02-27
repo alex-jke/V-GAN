@@ -75,7 +75,7 @@ class VMMDBase:
 
     def _plot_loss(self, path_to_directory, show=False):
         plot, _ = self._create_plot()
-        plot.savefig(path_to_directory / "train_history.pdf",
+        plot.savefig(path_to_directory / "train_history.png",
                     format="pdf", dpi=1200)
 
         if show == True:
@@ -187,8 +187,8 @@ class VMMDBase:
             torch.mps.manual_seed(self.seed)
 
     def _get_data_loader(self, data: np.array):
-        num_workers = 10
-        persistent_works = True
+        num_workers = 0
+        persistent_works = False
         if self.cuda:
             return DataLoader(
                 data, batch_size=self.batch_size, drop_last=True, pin_memory=not self.cuda, shuffle=True,

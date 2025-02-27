@@ -1,3 +1,5 @@
+from typing import List
+
 from torch import Tensor
 
 from modules.od_module import VMMD_od
@@ -15,7 +17,7 @@ class CollectiveVisualizer(Visualizer):
     """
     Wraps various visualization tools.
     """
-    def __init__(self, tokenized_data: Tensor, tokenizer: Tokenizer, vmmd_model: VMMD_od, export_path: str, text_visualization: bool = True):
+    def __init__(self, tokenized_data: Tensor | List[List[str]], tokenizer: Tokenizer | None, vmmd_model: VMMD_od, export_path: str, text_visualization: bool = True):
         self.params = {
             "model": vmmd_model,
             "tokenized_data": tokenized_data,

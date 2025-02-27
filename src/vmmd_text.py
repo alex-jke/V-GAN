@@ -54,7 +54,7 @@ class VMMD_Text(VMMDBase):
         self._set_seed()
         n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str)
 
-        x_data = embedding(x_data_str, n_dims)
+        x_data = embedding(x_data_str, n_dims).to(self.device)
 
         self._latent_size = latent_size = max(n_dims // 16, 1)
         samples = x_data.shape[0]
@@ -73,7 +73,7 @@ class VMMD_Text(VMMDBase):
 
         for epoch in range(self.epochs):
             if self.print_updates:
-                print(f'\rEpoch {epoch} of {self.epochs}', end=" | ")
+                print(f'\rEpoch {epoch} of {self.epochs}')
             generator_loss = 0
             mmd_loss = 0
 
@@ -86,7 +86,7 @@ class VMMD_Text(VMMDBase):
                 noise_tensor.normal_()
 
                 #OPTIMIZATION STEP#
-                batch = batch.to(self.device)
+                #batch = batch.to(self.device)
                 optimizer.zero_grad()
                 subspaces = generator(noise_tensor)
 

@@ -31,6 +31,15 @@ class Embedding(ABC):
         """
         pass
 
+    def get_words(self, sentence: str, seperator: str = " ") -> List[str]:
+        """
+        Gets a list of words from the sentence. Seperator is used to separate words.
+        :param sentence: The sentence to get words from.
+        :param seperator: The separator to use to separate words.
+        :return: The list of words.
+        """
+        return sentence.split(seperator)
+
     def embed_sentences(self, sentences: np.ndarray[str], padding_length: int, seperator: str = " ") -> Tensor:
         """
         Embeds a list of sentences into vectors. It splits the sentences into words using the seperator.
@@ -47,7 +56,7 @@ class Embedding(ABC):
             for sentence in sentences:
                 ui.update(f"Embedding sentence: {i}/{len(sentences)}")
                 i += 1
-                words = sentence.split(seperator)
+                words = self.get_words(sentence, seperator)
                 embedded = Tensor(self.embed_words(words))
                 if len(words) < padding_length:
                     embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - len(words)))

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import List
 
 import torch
 from matplotlib import pyplot as plt
@@ -22,9 +23,35 @@ class AlphaVisualizer(Visualizer):
         self.samples = []
         super().__init__(model, tokenized_data, tokenizer, path)
 
-    def export_html(self, sample_data: Tensor, subspaces: Tensor, folder_appendix: str, epoch: int = -1, normalize:bool = True):
-        padding_token = self.tokenizer.detokenize([self.tokenizer.padding_token])
+    def _get_strings(self, token_list: list):
+        if isinstance(token_list[0], str):
+            return token_list
+        strings = []
+        for token in token_list:
+            if token != self.tokenizer.padding_token:
+                strings.append(self.tokenizer.detokenize([token]))
+            else:
+                strings.append("_")
+
+    def _convert_to_strings(self, tokens: Tensor) -> List[List[str]]:
+        samples = []
+        for i in range(tokens.size(0)):
+            token_list = [int(token) for token in tokens[i].tolist()]
+
+            if i >= len(self.samples):
+                strings = self._get_strings(token_list)
+                self.samples.append(strings)
+                samples.append(token_list)
+        return samples
+
+    def export_html(self, sample_data: Tensor | List[List[str]], subspaces: Tensor, folder_appendix: str, epoch: int = -1, normalize:bool = True):
+        if self.tokenizer is not None:
+            padding_token = self.tokenizer.detokenize([self.tokenizer.padding_token])
         ui = ConsoleUserInterface()
+        if isinstance(sample_data, Tensor):
+            samples: List[List[str]] = self._convert_to_strings(sample_data)
+        else:
+            samples: List[List[str]] = sample_data
         # Initialize HTML content
         html_content = """
                 <!DOCTYPE html>
@@ -49,26 +76,12 @@ class AlphaVisualizer(Visualizer):
                 <body>
                 """
 
-        y_pos = 1  # Vertical position
         ui.update(f"Visualizing samples: ")
-        for i in range(sample_data.size(0)):
-            # print("Sample", i)
-            int_list = [int(number) for number in sample_data[i].tolist()]
-            # print("Original:", self.tokenizer.detokenize(int_list))
+        #for i in range(sample_data.size(0)):
+        for i in range(len(samples)):
+            sample = samples[i]
 
-            #strings = [self.tokenizer.detokenize(token) for token in int_list if token != self.tokenizer.padding_token]
-            if i >= len(self.samples):
-                strings = []
-                for token in int_list:
-                    if token != self.tokenizer.padding_token:
-                        strings.append(self.tokenizer.detokenize([token]))
-                    else:
-                        strings.append("_")
-                self.samples.append(strings)
-            else:
-                strings = self.samples[i]
-
-            sample_length = len(strings)
+            sample_length = len(sample)
 
             # Normalize the average subspace values
             values = subspaces[i][:sample_length]
@@ -80,9 +93,7 @@ class AlphaVisualizer(Visualizer):
             html_content += f"<div><strong>Sample {i + 1}:</strong></div>"
 
             # Loop through strings and their transparency values
-            for string, alpha in zip(strings, values):
-                if string == padding_token:
-                    string = "-"
+            for string, alpha in zip(sample, values):
                 red = int(VGAN_GREEN_RGB[0] * alpha)
                 green = int(VGAN_GREEN_RGB[1] * alpha)
                 blue = int(VGAN_GREEN_RGB[2] * alpha)
