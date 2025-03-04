@@ -44,3 +44,4 @@ class ValueVisualizer(Visualizer):
         if not os.path.exists(output_path.parent):
             os.makedirs(output_path.parent)
         plt.savefig(output_path)
+        plt.close()

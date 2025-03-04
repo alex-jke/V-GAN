@@ -4,12 +4,15 @@ from typing import List
 
 from numpy import ndarray
 
+from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE, GeneratorUpperSoftmax, \
+    GeneratorSoftmax, GeneratorSoftmaxSTEMBD, Generator, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid
 from text.Embedding.fast_text import FastText
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench
+from text.dataset.wikipedia_slim import WikipediaPeopleDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.v_experiment import VBaseExperiment
 from text.visualizer.collective_visualizer import CollectiveVisualizer
@@ -18,8 +21,9 @@ from vmmd_text import VMMD_Text
 
 class VMMDTextExperiment:
 
-    def __init__(self, dataset: Dataset, version: str, samples: int = -1, sequence_length: int = -1, train: bool = False, epochs: int = 2000,
-                 penalty_weight: float = 0.1):
+    def __init__(self, dataset: Dataset, version: str, samples: int = -1, sequence_length: int | None = None, train: bool = False, epochs: int = 2000,
+                 penalty_weight: float = 0.1, batch_size: int = 2000, weight_decay = 0, generator: Generator_big = GeneratorSigmoidSTE,
+                 lr: float = 10e-5, gradient_clipping: bool = False):
         self.dataset = dataset
         self.version = version
         self.samples = samples
@@ -27,20 +31,27 @@ class VMMDTextExperiment:
         self.train = train
         self.epochs = epochs
         self.penalty_weight = penalty_weight
+        self.generator = generator
         self.export_path = self._build_export_path()
-        self.emb_model = FastText()
+        self.emb_model = FastText(normalize=True)
+        self.batch_size = batch_size
+        self.weight_decay = weight_decay
+        self.lr = lr
+        self.gradient_clipping = gradient_clipping
 
     def _get_name(self) -> str:
         return "VMMD_Text"
 
     def run(self):
         model = VMMD_Text(print_updates=True, path_to_directory=self.export_path, epochs=self.epochs, weight=self.penalty_weight,
-                          sequence_length=self.sequence_length)
+                          sequence_length=self.sequence_length, batch_size=self.batch_size, weight_decay=self.weight_decay,
+                          generator=self.generator, lr=self.lr, gradient_clipping=self.gradient_clipping)
         embedding_fun = self.emb_model.embed_sentences
-        preparer = DatasetPreparer(self.dataset)
+        preparer = DatasetPreparer(self.dataset, max_samples=self.samples)
         x_train = preparer.get_training_data()
-        for epoch in model.yield_fit(x_train, embedding_fun, yield_epochs=self.epochs // 10):
+        for epoch in model.yield_fit(x_train, embedding_fun, yield_epochs=self.epochs // 20):
             self.visualize(epoch, model, x_train)
+        self.visualize(self.epochs, model, x_train)
 
     def visualize(self, epoch: int, model, sentences: ndarray):
         samples = 30
@@ -50,11 +61,12 @@ class VMMDTextExperiment:
         visualizer.visualize(epoch=epoch, samples=30)
 
     def _build_export_path(self) -> str:
-        sl_str = self.sequence_length if self.sequence_length > 0 else "(all)"
+        sl_str = self.sequence_length if self.sequence_length is not None else "(avg)"
         base_dir = os.path.join(
             os.getcwd(),
             'experiments',
             "VMMD_Text",
+            self.generator.__name__,
             f"{self.version}",
             f"{self.dataset.name}_sl{sl_str}_s{self.samples}"
         )
@@ -63,8 +75,18 @@ class VMMDTextExperiment:
         return base_dir
 
 if __name__ == '__main__':
-    datasets = [EmotionDataset(), AGNews(), IMBdDataset()] + NLP_ADBench.get_all_datasets()
+    params_sig = {"version":"0.138_sigmoid+16_latent", "train":False, "epochs":5_000, "penalty_weight":2, "samples":10_000, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-4, "gradient_clipping":False}
+    params_soft = {"version":"0.139+larger_betas(adam)+sigmoid_act+no_batchnorm", "train":False, "epochs":4_000, "penalty_weight":0, "samples":10_000,
+            "weight_decay":0, "generator": GeneratorSigmoidSoftmaxSTE, "batch_size": 1000, "lr":1e-4, "gradient_clipping":False}
+    #for params in [params_sig, params_soft]:
+    datasets = ([
+                   EmotionDataset(), AGNews(),
+                   IMBdDataset()
+                ] +
+                NLP_ADBench.get_all_datasets()[:1] +
+                NLP_ADBench.get_all_datasets()[2:]
+                + [WikipediaPeopleDataset(), ])
     for dataset in datasets:
-        experiment = VMMDTextExperiment(dataset=dataset, version="0.1", train=True, epochs=2000, sequence_length=40, penalty_weight=0.1)
+        experiment = VMMDTextExperiment(dataset=dataset, **params_sig)
         experiment.run()
 

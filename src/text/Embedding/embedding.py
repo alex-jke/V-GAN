@@ -63,5 +63,8 @@ class Embedding(ABC):
                 elif len(words) > padding_length:
                     embedded = embedded[:padding_length]
                 embeddings.append(embedded)
-            stacked =  torch.stack(embeddings)
+            try:
+                stacked =  torch.stack(embeddings)
+            except RuntimeError as e:
+                raise e
         return stacked

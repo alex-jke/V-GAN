@@ -30,6 +30,7 @@ class VMMDBase:
         self.train_history = defaultdict(list)
         self.generator_loss_key = "generator_loss"
         self.mmd_loss_key = "mmd_loss"
+        self.gradient_key = "gradient"
         self.batch_size = batch_size
         self.epochs = epochs
         self.lr = lr
@@ -55,7 +56,21 @@ class VMMDBase:
         self.cuda = torch.cuda.is_available()
         self.mps = torch.backends.mps.is_available()
 
+    def _plot_gradients(self):
+        gradients = self.train_history[self.gradient_key]
+        plt.style.use('ggplot')
+        x = np.linspace(1, len(gradients), len(gradients))
+        fig, ax = plt.subplots()
+        ax.plot(x, gradients, color=VGAN_GREEN,
+                label="Gradient norm", linewidth=2)
+        ax.legend(loc='best')
+        plt.xlabel("Epoch")
+        plt.ylabel(self.gradient_key)
+        plt.savefig(Path(self.path_to_directory) / "gradients.png")
+        plt.close()
+
     def _create_plot(self) -> pyplot:
+        self._plot_gradients()
         train_history = self.train_history
         plt.style.use('ggplot')
         generator_y = train_history[self.generator_loss_key]
@@ -76,7 +91,7 @@ class VMMDBase:
     def _plot_loss(self, path_to_directory, show=False):
         plot, _ = self._create_plot()
         plot.savefig(path_to_directory / "train_history.png",
-                    format="pdf", dpi=1200)
+                    format="png", dpi=1200)
 
         if show == True:
             print("The show option has been depricated due to lack of utility")
@@ -220,11 +235,12 @@ class VMMDBase:
                        path_to_directory/'models'/f'generator_{run_number}.pt')
             self.model_snapshot(path_to_directory, run_number, show=True)
 
-    def _log_epoch(self, generator_loss, mmd_loss, generator):
+    def _log_epoch(self, generator_loss, mmd_loss, generator, gradient):
         if self.print_updates:
-            print(f"Average loss in the epoch: {generator_loss}, mmd loss: {mmd_loss}")
+            print(f"Average loss in the epoch: {generator_loss}, mmd loss: {mmd_loss}, gradient norm: {gradient}")
 
         self.train_history[self.generator_loss_key].append(generator_loss)
         self.train_history[self.mmd_loss_key].append(mmd_loss)
+        self.train_history[self.gradient_key].append(gradient)
         self.generator = generator
 

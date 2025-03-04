@@ -1,6 +1,6 @@
 import random
 from cmath import log
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import torch
 from torch import nn, Tensor
@@ -12,11 +12,13 @@ class upper_softmax(nn.Module):
         super().__init__()  # Dummy intialization as there is no parameter to learn
 
     # This function applies a softmax to the input tensor and then sets all values to one that are larger than 1/n.
-    def forward(self, x):
-        x = torch.nn.functional.softmax(x, 1)
+    def forward(self, input):
+        x = torch.nn.functional.softmax(input, 1)
         x_less = torch.less(x, 1/x.shape[1])*x
         x_ge = torch.greater_equal(x, 1/x.shape[1])
         x = x_less + x_ge
+        x = x + (x - x.detach())
+        #x = x_ge.detach() + (x_less - x_less.detach())
         return x
 
 
@@ -32,24 +34,33 @@ class upper_lower_softmax(nn.Module):
 
 
 class Generator(nn.Module):
-    def __init__(self, latent_size):
+    def __init__(self, img_size, latent_size):
         super(Generator, self).__init__()
         self.main = nn.Sequential(
-            nn.Linear(latent_size, latent_size * 2),
-            nn.ReLU(),
-            nn.BatchNorm1d(latent_size * 2),
-            nn.Linear(latent_size * 2, latent_size),
-            nn.ReLU(),
-            nn.BatchNorm1d(latent_size),
-            nn.Linear(latent_size, latent_size // 2),
-            nn.ReLU(),
-            nn.BatchNorm1d(latent_size // 2),
-            nn.Linear(latent_size // 2, latent_size),
+            nn.Linear(img_size, img_size * 2),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(img_size * 2),
+            nn.Linear(img_size * 2, img_size),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(img_size),
+            nn.Linear(img_size, img_size // 2),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(img_size // 2),
+            nn.Linear(img_size // 2, img_size),
             upper_softmax()
         )
 
     def forward(self, input):
         return self.main(input)
+
+class ValueExtractor(nn.Module):
+    def __init__(self):
+        super(ValueExtractor, self).__init__()
+        self.value: Optional[Tensor] = None
+
+    def forward(self, input):
+        self.value = input.detach().mean(dim=0)
+        return input
 
 
 class Generator_big(nn.Module):
@@ -61,6 +72,7 @@ class Generator_big(nn.Module):
         self.increase = log(rel_size, amount_layers).real
         super(Generator_big, self).__init__()
         self.final_activation_function = activation_function
+        self.avg_mask = ValueExtractor()
 
         layers = [self.get_layer(layer) for layer in range(1, amount_layers)]
         layers += [self.get_layer(amount_layers, last=True)]
@@ -72,14 +84,15 @@ class Generator_big(nn.Module):
 
         layer = nn.Sequential(
             nn.Linear(input_size, output_size),
-            nn.LeakyReLU(0.2),
+            #nn.LeakyReLU(0.2),
+            nn.Sigmoid(),
             nn.BatchNorm1d(output_size)
         )
         last_layer = nn.Sequential(
             nn.Linear(input_size, self.img_size),
+            self.avg_mask,
             self.final_activation_function
         )
-        #todo: check that the layers are created correctly.
         return last_layer if last else layer
 
     def forward(self, input):
@@ -97,7 +110,7 @@ class BinaryStraightThrough(nn.Module):
 
     def forward(self, x):
         # Forward: Threshold to 0/1
-        x_binary = (x > self.threshold).int()
+        x_binary = (x >= self.threshold).int()
         # Backward: Pass gradients through sigmoid
         x_binary = x_binary + (x - x.detach())
         return x_binary
@@ -115,6 +128,58 @@ class GeneratorSigmoidSTE(GeneratorSigmoid):
     def forward(self, input):
         x = super().forward(input)
         return self.binarize(x)
+
+class SigmoidSoftmax(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.main = nn.Sequential(
+            nn.Sigmoid(),
+            nn.Softmax(dim=1)
+        )
+    def forward(self, input):
+        return self.main(input)
+class PowSigmoid(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.exp = 1
+
+    def forward(self, input):
+        x = torch.nn.functional.sigmoid(input)
+        return x ** self.exp
+
+class GeneratorSoftmax(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, nn.Softmax(dim=1))
+
+class GeneratorSoftmaxSTE(GeneratorSoftmax):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size)
+        self.binarize = BinaryStraightThrough(threshold=1/img_size)
+
+    def forward(self, input):
+        x = super().forward(input)
+        return self.binarize(x)
+
+class GeneratorSigmoidSoftmaxSTE(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, activation_function=SigmoidSoftmax())
+        self.binarize = BinaryStraightThrough(threshold=1 / img_size)
+
+    def forward(self, input):
+        x = super().forward(input)
+        return self.binarize(x)
+
+class GeneratorSigmoidSoftmaxSigmoid(Generator_big):
+    def __init__(self, latent_size, img_size):
+        self.exp = 1
+        super().__init__(latent_size, img_size, activation_function = SigmoidSoftmax())
+
+    def forward(self, input):
+        x = super().forward(input) * 100
+        sig = nn.functional.sigmoid(x - 100/self.img_size)
+        powed = sig ** self.exp
+        self.exp += 0.01
+        return powed
 
 # -----------------------------
 # Mini-Batch Discrimination Module
@@ -172,25 +237,22 @@ class MiniBatchDiscrimination(nn.Module):
 # New Generator with Mini-Batch Discrimination
 # -----------------------------
 
-class GeneratorSigmoidSTEMBD(GeneratorSigmoidSTE):
-    """
-    A subclass of GeneratorSigmoidSTE that integrates a mini-batch discrimination
-    module right before the final output layer. This aims to help reduce mode collapse
-    by letting the generator “sense” the diversity in the mini-batch.
-    """
-    def __init__(self, latent_size, img_size, mbd_out_features=16, mbd_kernel_dim=8):
+class GeneratorSTEMBD(nn.Module):
+    def __init__(self, generator: Generator_big, mbd_out_features, mbd_kernel_dim, binarize: BinaryStraightThrough | None = None):
         """
-        Args:
-            latent_size (int): Dimensionality of the latent space.
-            img_size (int): Dimensionality of the generated image (flattened).
-            mbd_out_features (int): Number of output features for mini-batch discrimination.
-            mbd_kernel_dim (int): Dimensionality of the kernels for mini-batch discrimination.
-        """
-        super().__init__(latent_size, img_size)
+            Args:
+                mbd_out_features (int): Number of output features for mini-batch discrimination.
+                mbd_kernel_dim (int): Dimensionality of the kernels for mini-batch discrimination.
+                generator (Generator_big): Generator model.
+                binarize (BinaryStraightThrough | None): Binarization model.
+            """
+        super(GeneratorSTEMBD, self).__init__()
+        self.binarize = binarize
+
         # In our network (built in Generator_big), the final layer is the last element in self.main.
         # It is defined as: nn.Sequential(nn.Linear(in_features, img_size), final_activation_function)
         # We extract the input size of that linear layer.
-        final_layer = self.main[-1]
+        final_layer = generator.main[-1]
         in_features = final_layer[0].in_features
 
         # Create the mini-batch discrimination module.
@@ -198,12 +260,12 @@ class GeneratorSigmoidSTEMBD(GeneratorSigmoidSTE):
 
         # Create a new final layer that accepts the concatenated features.
         self.new_final_layer = nn.Sequential(
-            nn.Linear(in_features + mbd_out_features, self.img_size),
-            self.final_activation_function
+            nn.Linear(in_features + mbd_out_features, generator.img_size),
+            generator.final_activation_function
         )
 
         # Build a feature extractor by removing the original final layer from self.main.
-        self.feature_extractor = nn.Sequential(*list(self.main.children())[:-1])
+        self.feature_extractor = nn.Sequential(*list(generator.main.children())[:-1])
 
     def forward(self, input):
         # Pass input through the feature extractor to get intermediate features.
@@ -213,7 +275,35 @@ class GeneratorSigmoidSTEMBD(GeneratorSigmoidSTE):
         # Pass the augmented features through the new final layer.
         out = self.new_final_layer(features_with_mbd)
         # Finally, apply the straight-through binarization.
-        return self.binarize(out)
+        if self.binarize is not None:
+            return self.binarize(out)
+        return out
+
+class GeneratorSigmoidSTEMBD(GeneratorSigmoid):
+    """
+    A subclass of GeneratorSTEBD that integrates a mini-batch discrimination
+    module right before the final output layer. This aims to help reduce mode collapse
+    by letting the generator “sense” the diversity in the mini-batch.
+    """
+    def __init__(self, latent_size, img_size, mbd_out_features=16, mbd_kernel_dim=8):
+        super().__init__(latent_size, img_size)
+        self.batch_discrimination = GeneratorSTEMBD(generator=self, mbd_out_features=mbd_out_features, mbd_kernel_dim=mbd_kernel_dim,
+                         binarize=BinaryStraightThrough(threshold=0.5))
+    def forward(self, input):
+        return self.batch_discrimination(input)
+
+
+class GeneratorSoftmaxSTEMBD(GeneratorSoftmax):
+
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size)
+        binarize = BinaryStraightThrough(threshold=1.0/img_size)
+        self.batch_discrimination = GeneratorSTEMBD(generator=self, mbd_out_features=1, mbd_kernel_dim=1,
+                         binarize=binarize)
+
+    def forward(self, input):
+        return self.batch_discrimination(input)
+
 
 class FakeGenerator(nn.Module):
     def __init__(self, subspaces: List[Tuple[List[int], float]]):

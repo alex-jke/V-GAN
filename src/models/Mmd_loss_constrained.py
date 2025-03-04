@@ -30,6 +30,13 @@ class RBF(nn.Module):
         self.bandwidth = L2_distances.data.sum() / (n_samples ** 2 - n_samples)
         return self.bandwidth
 
+    """def get_bandwidth(self, L2_distances):
+        # Flatten and compute median of non-zero distances
+        flat_dist = L2_distances.flatten()
+        non_zero = flat_dist[flat_dist > 0]
+        self.bandwidth = torch.median(non_zero)
+        return self.bandwidth"""
+
     def forward(self, X: torch.Tensor, Y: torch.Tensor):
         '''
         X: torch.Tensor
@@ -129,11 +136,17 @@ class MMDLossConstrained(nn.Module):
 
         # ones = torch.ones(U.shape[1]).to(self.device)
         # topk = torch.topk(U, 10, 0).values.float().mean(dim=0)
-        avg = U.float().mean(dim=0).sum() / U.shape[1]
+        mean = U.float().mean(dim=0)
+        avg = mean.sum() / U.shape[1]
+        #zero = torch.zeros_like(mean)
+        #feature_selection_penalty = (torch.less_equal(mean,zero)* 1.0).mean() if apply_penalty else 0
         # avg_u = U.float().mean(dim=0)
         # mean = torch.mean(ones - topk)
         # penalty = self.weight * (mean)
         penalty = self.weight * (avg) if apply_penalty else 0 # self.weight*(mean)
+        #u_sizes = U.float().sum(dim=1)
+        #median = u_sizes.median()
+        #penalty = self.weight * (median) if  apply_penalty else 0
 
         # middle penalty to punish the generator for generating subspaces with prob close to 0.5
         middle_matrix = (-U.float() * (U.float() - 1))
@@ -143,7 +156,8 @@ class MMDLossConstrained(nn.Module):
         mmd_loss = XX - 2 * XY + YY
         if math.isnan(mmd_loss):
             raise ValueError("mmd is nan.")
-        return mmd_loss + penalty + middle_penalty, mmd_loss
+        return (mmd_loss + penalty + middle_penalty# + feature_selection_penalty
+                , mmd_loss)
 
     def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):
         full_loss, self.mmd_loss = self.get_loss(X, Y, U, apply_penalty)

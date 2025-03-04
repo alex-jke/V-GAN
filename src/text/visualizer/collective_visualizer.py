@@ -5,6 +5,7 @@ from torch import Tensor
 from modules.od_module import VMMD_od
 from text.Embedding.tokenizer import Tokenizer
 from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
+from text.visualizer.generator_visualizer import GeneratorVisualizer
 from text.visualizer.random_alpha_visualizer import RandomAlphaVisualizer
 
 from text.visualizer.subspace.csv_subspace_visualizer import CSVSubspaceVisualizer
@@ -44,4 +45,7 @@ class CollectiveVisualizer(Visualizer):
 
         dist_subspace_vis = DistributionSubspaceVisualizer(**self.params)
         dist_subspace_vis.visualize(samples=samples, epoch=epoch)
+
+        generator_visualizer = GeneratorVisualizer(**self.params)
+        generator_visualizer.visualize(samples=samples, epoch=epoch)
 

@@ -1,9 +1,14 @@
+import warnings
 from typing import Callable, Tuple, Iterable
 
 import numpy as np
+import pandas as pd
+import torch_two_sample as tts
 import torch
+from matplotlib import pyplot as plt
 from numpy import ndarray
 from torch import Tensor
+from torch.nn.functional import normalize
 from tqdm import tqdm
 
 from VMMDBase import VMMDBase
@@ -17,16 +22,20 @@ from text.dataset_converter.dataset_preparer import DatasetPreparer
 
 
 class VMMD_Text(VMMDBase):
-    def __init__(self, sequence_length: int | None = None, **kwargs):
+    def __init__(self, sequence_length: int | None = None, seperator: str = " ", **kwargs):
         """
         Initializes the VMMD_Text model.
         :param sequence_length: The length of the sequences. If None, the average length of the sequences in the data will be used.
-        :param kwargs: Additional keyword arguments.
+        :param seperator: The separator between the words in the sequences.
+        param kwargs: Additional keyword arguments.
         """
         if 'generator' not in kwargs:
             kwargs['generator'] = GeneratorSigmoidSTE
         super().__init__(**kwargs)
         self.sequence_length = sequence_length
+        self.seperator = ' '
+        self.x_data: Tensor | None = None
+        #self.emb_fun = FastText(normalize=True).embed_sentences
 
     def fit(self, x_data: ndarray[str],
             embedding: Callable[[ndarray[str], int], Tensor]):
@@ -54,7 +63,8 @@ class VMMD_Text(VMMDBase):
         self._set_seed()
         n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str)
 
-        x_data = embedding(x_data_str, n_dims).to(self.device)
+        self.x_data = embedding(x_data_str, n_dims)
+        x_data = self.x_data.to(self.device)
 
         self._latent_size = latent_size = max(n_dims // 16, 1)
         samples = x_data.shape[0]
@@ -62,8 +72,8 @@ class VMMD_Text(VMMDBase):
 
         generator = self.get_the_networks(
             n_dims, latent_size, device=self.device)
-        optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay,
-                                     betas=(0.5, 0.9))
+        optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay#, betas=(0.5, 0.9)
+                                     )
         self.generator_optimizer = optimizer.__class__.__name__
         kernel = RBFConstrained()
         loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
@@ -76,6 +86,7 @@ class VMMD_Text(VMMDBase):
                 print(f'\rEpoch {epoch} of {self.epochs}')
             generator_loss = 0
             mmd_loss = 0
+            gradient = 0
 
             #data_loader = self._get_data_loader(x_data)
             batch_number = data_loader.__len__()
@@ -101,22 +112,90 @@ class VMMD_Text(VMMDBase):
                 self.bandwidth = loss_function.bandwidth
                 batch_loss.backward()
 
+                if self.apply_gradient_clipping:
+                    grad_list = [param.grad.norm() for param in generator.parameters()]
+                    grads = Tensor(grad_list)
+                    trimmed = grads.greater_equal(torch.ones_like(grads)).int().sum()
+                    if trimmed > 0:
+                        print(f'trimmed {trimmed} gradients')
+                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+
+                gradient += Tensor([param.grad.norm() for param in generator.parameters()]).mean() / batch_number
+
                 optimizer.step()
                 generator_loss += float(batch_loss.to(
                     'cpu').detach().numpy()) / batch_number
                 mmd_loss += float(batch_mmd_loss.to(
                     'cpu').detach().numpy()) / batch_number
 
-            self._log_epoch(generator_loss, mmd_loss, generator)
+            self._log_epoch(generator_loss, mmd_loss, generator, gradient)
             if yield_epochs is not None and epoch % yield_epochs == 0:
                 yield epoch
 
         self.generator = generator
         self._export(generator)
 
+    def check_if_myopic(self, count= 500, bandwidth: float | ndarray = 0.01):
+        x_data: Tensor = self.x_data
+        if count > x_data.shape[0]:
+            warnings.warn(f"Selected 'count': {count} is greater than the number of samples {x_data.shape[0]} in the dataset. Setting count to {x_data.shape[0]}. This might lead to unexpected results.")
+            count = x_data.shape[0]
+        results = []
+
+        #x_data = normalize(x_data, axis=0)
+        indices = torch.randperm(x_data.size(0))[:count]
+        #x_sample = torch.mps.Tensor(pd.DataFrame(x_data.mean(1)).sample(count).to_numpy()).to(self.device)
+        x_sample = x_data[indices].mean(1).to(self.device)
+
+        indices = torch.randperm(x_data.size(0))[:count]
+        ux_x_sample = x_data[indices].to(self.device)
+        u_subspaces = self.generate_subspaces(count).to(self.device)
+
+        #ux_sample = u_subspaces * torch.mps.Tensor(x_sample).to(self.device) + torch.mean(x_sample, dim=0) * (1-u_subspaces)
+        ux_sample = (ux_x_sample * u_subspaces.unsqueeze(2)).mean(1) + (ux_x_sample.mean(0) * (1 - u_subspaces.unsqueeze(2))).mean(1)
+        if type(bandwidth) == float:
+            bandwidth = [bandwidth]
+
+        if not hasattr(self, 'bandwidth'):
+            mmd_loss = MMDLossConstrained(self.weight)
+            mmd_loss.forward(
+                x_sample, ux_sample, u_subspaces * 1)
+            self.bandwidth = mmd_loss.bandwidth
+
+        bandwidth.sort()
+        for bw in bandwidth:
+            mmd = tts.MMDStatistic(count, count)
+            _, distances = mmd(x_sample, ux_sample, alphas=[
+                bw], ret_matrix=True)
+            results.append(mmd.pval(distances))
+
+        bw = self.bandwidth.item()
+        mmd = tts.MMDStatistic(count, count)
+        _, distances = mmd(x_sample, ux_sample, alphas=[
+            bw], ret_matrix=True)
+        results.append(mmd.pval(distances))
+
+        bandwidth.append("recommended bandwidth")
+        return pd.DataFrame([results], columns=bandwidth, index=["p-val"])
+
+    def _plot_loss(self, path_to_directory, show=False):
+        plot, ax = self._create_plot()
+        p_values = self.check_if_myopic(count=1000)
+        recomended_p_value = p_values["recommended bandwidth"].values[0]
+        recommended_bandwidth = self.bandwidth.item()
+
+        # add the p-value to the plot in the top right corner
+        plt.text(0.5, 0.99, f'{"recommended bandwidth"}\n({recommended_bandwidth}): {recomended_p_value}',
+                 ha='center', va='top',
+                 transform=ax.transAxes, color='black', fontsize=8)
+
+        plot.savefig(path_to_directory / "train_history.png",
+                     format="png", dpi=1200) #todo: change back to pdf
+
     def _get_average_sequence_length(self, x_data: ndarray) -> int:
         """
         Returns the average length of the sequences in the data.
         """
-        return int(np.mean([len(x) for x in x_data]))
+        sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
+        return sequence_length
 
