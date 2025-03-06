@@ -22,7 +22,7 @@ from text.dataset_converter.dataset_preparer import DatasetPreparer
 
 
 class VMMD_Text(VMMDBase):
-    def __init__(self, sequence_length: int | None = None, seperator: str = " ", **kwargs):
+    def __init__(self, pre_embed: bool = True ,sequence_length: int | None = None, seperator: str = " ", **kwargs):
         """
         Initializes the VMMD_Text model.
         :param sequence_length: The length of the sequences. If None, the average length of the sequences in the data will be used.
@@ -35,6 +35,7 @@ class VMMD_Text(VMMDBase):
         self.sequence_length = sequence_length
         self.seperator = ' '
         self.x_data: Tensor | None = None
+        self.pre_embed = pre_embed
         #self.emb_fun = FastText(normalize=True).embed_sentences
 
     def fit(self, x_data: ndarray[str],
@@ -63,11 +64,13 @@ class VMMD_Text(VMMDBase):
         self._set_seed()
         n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str)
 
-        self.x_data = embedding(x_data_str, n_dims)
-        x_data = self.x_data.to(self.device)
+        if self.pre_embed:
+            self.x_data = embedding(x_data_str, n_dims)
+            x_data = self.x_data.to(self.device)
+
 
         self._latent_size = latent_size = max(n_dims // 16, 1)
-        samples = x_data.shape[0]
+        samples = x_data_str.shape[0]
         self.batch_size = min(self.batch_size, samples)
 
         generator = self.get_the_networks(

@@ -45,6 +45,8 @@ class VMMD(VMMDBase):
         The data should be in the form: n_samples x n_features
         @param embedding: A function that transforms the data. By default, it is the identity function.
         This function is used inside the RBF kernel before calculating the distance.
+        @param yield_epochs: The number of epochs between each yield. If None, the model will not yield.
+        This is useful for monitoring the training process.
         '''
         cuda = torch.cuda.is_available()
         mps = torch.backends.mps.is_available()
@@ -72,6 +74,7 @@ class VMMD(VMMDBase):
                 print(f'\rEpoch {epoch} of {epochs}')
             generator_loss = 0
             mmd_loss = 0
+            gradient = 0
 
             # DATA LOADER#
             data_loader = self._get_data_loader(X)
@@ -105,6 +108,8 @@ class VMMD(VMMDBase):
                 if self.apply_gradient_clipping:
                     torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
 
+                gradient += torch.Tensor([param.grad.norm() for param in generator.parameters()]).mean() / batch_number
+
                 optimizer.step()
 
                 generator_loss += float(batch_loss.to(
@@ -113,7 +118,7 @@ class VMMD(VMMDBase):
                     'cpu').detach().numpy())/batch_number
                 #print("finished batch")
 
-            self._log_epoch(generator_loss, mmd_loss, generator)
+            self._log_epoch(generator_loss, mmd_loss, generator, gradient)
             if yield_epochs is not None and epoch % yield_epochs == 0:
                 yield epoch
 
