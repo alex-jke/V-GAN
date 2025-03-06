@@ -210,6 +210,28 @@ def run_all_datasets():
                                         weight_decay=0.0)
                 experiment.run()
 
+def test_embedding():
+    dataset = EmotionDataset()
+    model = DeepSeek1B()
+    generator = GeneratorSigmoidSTE
+    version = '0.46_embedding'
+    experiment = VMMDExperiment(
+        dataset=dataset,
+        model=model,
+        version=version,
+        pre_embed=False,
+        generator_class=generator,
+        epochs=100,
+        batch_size=2000,
+        samples=6000,
+        penalty_weight=1,
+        lr=1e-3,
+        yield_epochs=5,
+        train=True,
+        use_embedding=True
+    )
+    experiment.run()
+
 # === Main entry point experiments ===
 if __name__ == '__main__':
     #generators = [GeneratorUpperSoftmax, GeneratorSigmoidSTE, GeneratorSigmoid, GeneratorSpectralNorm]
@@ -218,4 +240,5 @@ if __name__ == '__main__':
         experiment = Experiment(EmotionDataset(), GPT2(), version="0.459_adam+inner_embedding", generator_class=generator, epochs=200, pre_embed=False, use_embedding=True,
                                 samples=50_000, lr=5e-5, yield_epochs=5, train=True)
         experiment.run()"""
-    run_all_datasets()
+    #run_all_datasets()
+    test_embedding()
