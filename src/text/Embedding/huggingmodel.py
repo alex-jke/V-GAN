@@ -37,6 +37,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
         self.tokenizer = self._tokenizer
         self.model = self._model.to(self.device)
+        self.model.eval()
+        for param in self.model.parameters():
+            param.requires_grad = False
         self.model_name = self._model_name
         self.padding_token = self._padding_token
         self.ui = cli.get()
@@ -119,12 +122,13 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             """
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
             ui = cli.get()
-            with torch.no_grad():#, ui.display():
+            #with torch.no_grad():#, ui.display():
+            with ui.display():
 
                 for (i, partial_review) in enumerate(data):
                     #ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
-                    embedded: Tensor = self.fully_embed_tokenized(partial_review.int()) #returns a (embedding_size, num_tokens) tensor
+                    embedded: Tensor = self.fully_embed_tokenized(partial_review) #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension
                     unsqueezed = embedded.unsqueeze(1)
                     aggregated = self.aggregateEmbeddings(embeddings = unsqueezed)

@@ -110,25 +110,23 @@ class Bert(HuggingModel):
         :param tokenized: A list of token indices.
         :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
         """
-        #key = hash(tokenized)
-        #cached = self.embedded_cache.get(key)
-        #if cached is not None:
-            #return cached
-
+        raise RuntimeError("Adapt the embedding logic as in GPT2")
         maximum_length = 512
-        with torch.no_grad():
-            tokenized = tokenized.clone().detach().to(self.device)
-            attention_mask = torch.not_equal(tokenized, self.padding_token)
-            token_vec = tokenized[attention_mask].unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
-            if len(token_vec.shape) > 1:
-                token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
-            else:
-                token_vec = token_vec[:maximum_length]
-            if (token_vec.shape[-1] == 0):
-                return torch.zeros_like(Tensor([0] * 768)).to(self.device).unsqueeze(1)
-            outputs = self.model(token_vec)
+        #with torch.no_grad():
+        #with self.ui.display():
+        #tokenized = tokenized.clone().detach().to(self.device)
+        attention_mask = torch.not_equal(tokenized, self.padding_token)
+        token_vec = tokenized[attention_mask].unsqueeze(0).to(self.device) # todo the unsqueeze causes mps out of memory
+        if len(token_vec.shape) > 1:
+            token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
+        else:
+            token_vec = token_vec[:maximum_length]
+        if (token_vec.shape[-1] == 0):
+            return torch.zeros_like(Tensor([0] * 768)).to(self.device).unsqueeze(1)
+        #with torch.no_grad():
+        outputs = self.model(token_vec)
             # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension
-            embeddings = outputs.last_hidden_state.T[:, :, 0]
+        embeddings = outputs.last_hidden_state.T[:, :, 0]
 
         #self.embedded_cache[key] = embeddings
         return embeddings

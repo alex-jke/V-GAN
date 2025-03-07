@@ -123,7 +123,8 @@ class VMMD_Text(VMMDBase):
                         print(f'trimmed {trimmed} gradients')
                     torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
 
-                gradient += Tensor([param.grad.norm() for param in generator.parameters()]).mean() / batch_number
+                gradients = [param.grad.norm() for param in generator.parameters()]
+                gradient += Tensor(gradients).mean() / batch_number
 
                 optimizer.step()
                 generator_loss += float(batch_loss.to(

@@ -212,10 +212,10 @@ def run_all_datasets():
 
 def test_embedding():
     dataset = EmotionDataset()
-    model = Bert()
+    model = GPT2()
     generator = GeneratorSigmoidSTE
-    version = '0.464_embedding_grid'
-    for lr in range(1,16, 3):
+    version = '0.468_embedding_grid+manual_one_hot'
+    for lr in range(16,1, -3):
         lr *= 1e-4
         for penalty in range(0,6):
             penalty *= 0.2
@@ -226,8 +226,8 @@ def test_embedding():
                 pre_embed=False,
                 generator_class=generator,
                 epochs=100,
-                batch_size=2000,
-                samples=6000,
+                batch_size=500,
+                samples=2000,
                 penalty_weight=penalty,
                 lr=lr,
                 yield_epochs=5,

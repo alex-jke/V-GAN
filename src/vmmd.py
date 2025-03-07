@@ -91,14 +91,14 @@ class VMMD(VMMDBase):
                     batch = batch.cuda()
                 elif mps:
                     #batch = batch.to(torch.float32).to(torch.device('mps'))  # float64 not suported with mps
-                    batch.to('mps') # For tokeniz
+                    batch = batch.to('mps') # For tokeniz
                 # SAMPLE NOISE#
                 noise_tensor.normal_()
 
                 # OPTIMIZATION STEP#
                 optimizer.zero_grad()
                 fake_subspaces = generator(noise_tensor)
-                masked_batch = fake_subspaces * batch
+                masked_batch = (fake_subspaces * batch)
                 batch_loss = loss_function(masked_batch, batch, fake_subspaces)
                 batch_mmd_loss = loss_function.mmd_loss
                 self.bandwidth = loss_function.bandwidth
@@ -108,7 +108,9 @@ class VMMD(VMMDBase):
                 if self.apply_gradient_clipping:
                     torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
 
-                gradient += torch.Tensor([param.grad.norm() for param in generator.parameters()]).mean() / batch_number
+                gradients = [param.grad.norm() for param in generator.parameters()]
+
+                gradient += torch.Tensor(gradients).mean() / batch_number
 
                 optimizer.step()
 

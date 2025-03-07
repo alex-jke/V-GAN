@@ -59,6 +59,7 @@ class VMMDTextExperiment:
         visualizer = CollectiveVisualizer(tokenized_data=sentences, tokenizer=None, vmmd_model=model,
                                           export_path=self.export_path, text_visualization=True)
         visualizer.visualize(epoch=epoch, samples=30)
+        model._export(model.generator, export_params=False)
 
     def _build_export_path(self) -> str:
         sl_str = self.sequence_length if self.sequence_length is not None else "(avg)"
@@ -75,7 +76,7 @@ class VMMDTextExperiment:
         return base_dir
 
 if __name__ == '__main__':
-    params_sig = {"version":"0.138_sigmoid+16_latent", "train":False, "epochs":5_000, "penalty_weight":2, "samples":10_000, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-4, "gradient_clipping":False}
+    params_sig = {"version":"0.139_sigmoid+16_latent", "train":False, "epochs":5_000, "penalty_weight":0.0, "samples":10_000, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-4, "gradient_clipping":False}
     params_soft = {"version":"0.139+larger_betas(adam)+sigmoid_act+no_batchnorm", "train":False, "epochs":4_000, "penalty_weight":0, "samples":10_000,
             "weight_decay":0, "generator": GeneratorSigmoidSoftmaxSTE, "batch_size": 1000, "lr":1e-4, "gradient_clipping":False}
     #for params in [params_sig, params_soft]:

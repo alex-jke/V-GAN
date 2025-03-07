@@ -48,11 +48,11 @@ class DeepSeek(HuggingModel, ABC):
         :return: A list of tensors, each containing the embeddings of the individual tokens.
             The reason for returning a list of tensors is that the number of tokens in each sample might differ, as padding tokens are removed after embedding.
         """
-        token_vec = tokenized.clone().detach().int().to(self.device)
+        token_vec = tokenized#tokenized.clone().detach().int().to(self.device)
 
         # Remove all the padding tokens, that are shared by all samples, as they do not carry any information.
         # Also, for the remaining tokens, create an attention mask.
-
+        raise RuntimeError("Adapt the embedding logic as in GPT2")
         init_attention_mask = torch.not_equal(token_vec, self.padding_token)
         attention_mask_all = init_attention_mask.any(dim=0)
         trimmed_token_vec = token_vec[:, attention_mask_all]

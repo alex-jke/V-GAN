@@ -3,6 +3,7 @@ from typing import List, Dict, Tuple
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 from transformers import GPT2Tokenizer, GPT2Model
 
@@ -25,7 +26,10 @@ class GPT2(HuggingModel):
 
     @property
     def _model(self):
-        return GPT2Model.from_pretrained("gpt2").to(self.device)
+        gpt =  GPT2Model.from_pretrained("gpt2").to(self.device)
+        #compiled_model = torch.compile(gpt)
+        #return compiled_model
+        return gpt
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
         """
@@ -69,24 +73,30 @@ class GPT2(HuggingModel):
         :param tokenized: A list of token indices.
         :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
         """
-        #todo: check if this makes sense.
-        #tokenized = tokenized.int()
-        #key = hash(tokenized)
-        #cached = self.embedded_cache.get(key)
-        #if cached is not None:
-            #return cached
         attention_mask = torch.not_equal(tokenized, self.padding_token)
+
         # Shorten tokenized sequence to only those tokens, that are not padding tokens
         filtered_tokens = tokenized[attention_mask]
 
+        # If no tokens remain, return a zero tensor with the gradients remaining.
+        if filtered_tokens.shape[0] == 0:
+            zero_tensor = torch.tensor([0]*768).to(self.device).to(dtype=torch.float32).unsqueeze(1)
+            grad_tensor = tokenized.median()
+            assert grad_tensor == 0
+            return zero_tensor + grad_tensor
         max_length = self.model.config.n_positions
         length = min(filtered_tokens.shape[0], max_length)
-        token_vec = filtered_tokens.clone().detach().to(self.device)[:length]
-        with torch.no_grad():
-            outputs = self.model(token_vec)
-            embeddings = outputs.last_hidden_state.T
+        token_vec = filtered_tokens[:length]
+        token_int = torch.round(token_vec)
 
-        #self.embedded_cache[key] = embeddings
+        # One-hot encode the vector and pass the gradient along.
+        one_hot = F.one_hot(token_int.long(), self.model.wte.weight.shape[0]).float() + (token_vec - token_vec.detach()).unsqueeze(1)
+        weight_mat = self.model.wte.weight
+        inputs_embeds = one_hot @ weight_mat
+        outputs = self.model(inputs_embeds=inputs_embeds)
+
+        embeddings = outputs.last_hidden_state.T
+
         return embeddings
 
     def tokens_to_vecs(self, token: List[int]) -> Tensor:
