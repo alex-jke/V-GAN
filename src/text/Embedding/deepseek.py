@@ -54,12 +54,14 @@ class DeepSeek(HuggingModel, ABC):
         # Also, for the remaining tokens, create an attention mask.
 
         attention_mask = torch.not_equal(token_vec, self.padding_token)
-        attention_mask_all = attention_mask.all(dim=0)
+        attention_mask_all = attention_mask.any(dim=0)
         trimmed_token_vec = token_vec[:, attention_mask_all]
         attention_mask = torch.not_equal(trimmed_token_vec, self.padding_token)
+        if not attention_mask.any():
+            return [Tensor([0]*1536).to(self.device)] * tokenized.shape[0]
 
         with torch.no_grad():
-            outputs = self.model.model(trimmed_token_vec) # not surprisingly, this takes the majority of the time.
+            outputs = self.model.model(trimmed_token_vec, attention_mask) # not surprisingly, this takes the majority of the time.
             embeddings: Tensor = outputs.last_hidden_state.to(dtype=torch.float32)
         embeddings_list = [embeddings[i] for i in range(embeddings.shape[0])]
         attention_mask_list = [attention_mask[i] for i in range(attention_mask.shape[0])]
