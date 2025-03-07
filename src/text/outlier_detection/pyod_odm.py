@@ -148,6 +148,8 @@ class TransformBaseDetector(BaseDetector):
             embedded: Tensor = transformation(x_tensor)
             standardized = embedded
             if standardize:
+                #todo: is using dimension 1 correct?
+                raise NotImplementedError("Check TODO.")
                 means = embedded.mean(1, keepdim=True)
                 stds = embedded.std(1, keepdim=True)
                 standardized = (embedded - means) / stds

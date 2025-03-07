@@ -58,7 +58,7 @@ class DeepSeek(HuggingModel, ABC):
         trimmed_token_vec = token_vec[:, attention_mask_all]
         attention_mask = torch.not_equal(trimmed_token_vec, self.padding_token)
         if not attention_mask.any():
-            return [Tensor([0] * 1536).to(self.device)] * len(tokenized)
+            return [Tensor([0]*1536).to(self.device)] * tokenized.shape[0]
 
         with torch.no_grad():
             outputs = self.model.model(trimmed_token_vec, attention_mask) # not surprisingly, this takes the majority of the time.
