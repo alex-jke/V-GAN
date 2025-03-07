@@ -58,11 +58,12 @@ class L2Norm(VectorNorm):
         #if X.dtype == torch.long:
         X = X.float()
 
-        dists = torch.cdist(X, X) #todo cdist is computing nan values
+        dists = torch.cdist(X, X, compute_mode='donot_use_mm_for_euclid_dist') #todo cdist is computing nan values
         nans = torch.isnan(dists)
         if nans.any():
-            #print(f"torch.cdist computed {nans.sum()} nan values of {nans.shape[0]*nans.shape[1]}, replacing with 0", end=" ")
+            print(f"torch.cdist computed {nans.sum()} nan values of {nans.shape[0]*nans.shape[1]}, replacing with 0", end=" ")
             #dists = torch.where(torch.isnan(X), torch.zeros_like(X), X)
+            again = torch.cdist(X, X).isnan().any()
             raise RuntimeError(f"Nans in L2 norm: {dists[nans]}")
         return dists
 

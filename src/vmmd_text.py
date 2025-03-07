@@ -44,8 +44,8 @@ class VMMD_Text(VMMDBase):
         Trains the model.
         :param x_data: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence as a string.
             This is due, to sentences having different lengths.
-        :param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentence as a string, and the subspace masks
-            as a two-dimensional Tensor. The function should return the embeddings of the sentences with and without the masks applied.
+        :param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentences as a numpy array of strings,
+        and the length to pad to or trim to. The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, n_words, n_dims).
         """
         for _ in self.yield_fit(x_data, embedding):
             pass
@@ -81,7 +81,7 @@ class VMMD_Text(VMMDBase):
         kernel = RBFConstrained()
         loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
 
-        #TODO: check if this is correct, having the data loader outside the loop.
+        #TODO: check if this is correct, having the data loader outside the loop. -> should be changed
         data_loader = self._get_data_loader(x_data)
 
         for epoch in range(self.epochs):

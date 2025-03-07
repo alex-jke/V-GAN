@@ -124,9 +124,8 @@ class Bert(HuggingModel):
                 token_vec = token_vec[:, :maximum_length] #todo: cutting off tokens for bert.
             else:
                 token_vec = token_vec[:maximum_length]
-            if token_vec.shape[1] == 0:
-                return Tensor([0]*768).to(self.device).unsqueeze(dim=1)
-
+            if (token_vec.shape[-1] == 0):
+                return torch.zeros_like(Tensor([0] * 768)).to(self.device).unsqueeze(1)
             outputs = self.model(token_vec)
             # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension
             embeddings = outputs.last_hidden_state.T[:, :, 0]

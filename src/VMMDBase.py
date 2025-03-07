@@ -92,6 +92,7 @@ class VMMDBase:
         plot, _ = self._create_plot()
         plot.savefig(path_to_directory / "train_history.png",
                     format="png", dpi=1200)
+        plot.close()
 
         if show == True:
             print("The show option has been depricated due to lack of utility")
@@ -223,16 +224,17 @@ class VMMDBase:
         else:
             return torch.Tensor(self.batch_size, latent_size)
 
-    def _export(self, generator):
+    def _export(self, generator, export_params= True):
         if not self.path_to_directory is None:
             path_to_directory = Path(self.path_to_directory)
             if operator.not_(path_to_directory.exists()):
                 os.makedirs(path_to_directory)
             if operator.not_(Path(path_to_directory/'models').exists()):
                 os.mkdir(path_to_directory / 'models')
-            run_number = int(len(os.listdir(path_to_directory/'models')))
-            torch.save(generator.state_dict(),
-                       path_to_directory/'models'/f'generator_{run_number}.pt')
+            run_number = int(len(os.listdir(path_to_directory / 'models')))
+            if export_params:
+                torch.save(generator.state_dict(),
+                           path_to_directory/'models'/f'generator_{run_number}.pt')
             self.model_snapshot(path_to_directory, run_number, show=True)
 
     def _log_epoch(self, generator_loss, mmd_loss, generator, gradient):

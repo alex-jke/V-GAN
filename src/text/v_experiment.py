@@ -58,7 +58,7 @@ class VBaseExperiment:
                  momentum: float = 0.99, weight_decay: float = 0.04,
                  version: str = "0.0", yield_epochs: int = 200, train: bool = False, pre_embed: bool = False,
                  use_embedding: bool = False, inlier_labels: list = None,
-                 gradient_clipping=False):
+                 gradient_clipping=False, seed: int | None = None):
         self.dataset = dataset
         self.model = model
         self.generator_class = generator_class
@@ -77,6 +77,7 @@ class VBaseExperiment:
         self.device = DEVICE
         self.gradient_clipping = gradient_clipping
         self.inlier_labels = inlier_labels
+        self.seed = seed
         if use_embedding and pre_embed:
             raise ValueError("Cannot pre-embed and use embedding")
         self.embedding_fun = model.get_embedding_fun(batch_first=True) if use_embedding else lambda x: x
@@ -129,6 +130,7 @@ class VExperiment(VBaseExperiment):
                                           export_path=self.export_path,
                                           text_visualization=not self.pre_embed)
         visualizer.visualize(epoch=epoch, samples=30)
+        self.v_model._export(self.v_model.generator, export_params=False)
 
     @abstractmethod
     def _get_model(self) -> VMMD_od | VGAN_od:

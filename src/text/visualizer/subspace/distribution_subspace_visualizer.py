@@ -9,7 +9,7 @@ class DistributionSubspaceVisualizer(SubspaceVisualizer):
         Visualizes the distribution of the subspaces.
         """
         subspaces = self.get_unique_subspaces()
-        output_dir = self.output_dir / "subspaces"
+        output_dir = self.output_dir / "subspace_distribution"
         if not output_dir.exists():
             output_dir.mkdir(parents=True)
         # Plot the probability distribution of the subspaces
@@ -20,5 +20,5 @@ class DistributionSubspaceVisualizer(SubspaceVisualizer):
         ax.set_ylabel("Probability")
         ax.set_title("Distribution of Subspaces")
         plt.tight_layout()
-        plt.savefig(output_dir / "distribution.png")
+        plt.savefig(output_dir / f"distribution_{epoch}.png")
         plt.close()

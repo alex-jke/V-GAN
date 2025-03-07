@@ -4,7 +4,7 @@ from typing import List, Dict, Tuple
 import numpy as np
 import torch
 from torch import Tensor
-from transformers import GPT2Tokenizer, GPT2LMHeadModel, GPT2Model
+from transformers import GPT2Tokenizer, GPT2Model
 
 from .huggingmodel import HuggingModel
 

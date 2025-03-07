@@ -59,7 +59,7 @@ class VMMDExperiment(VExperiment):
 
     def _get_model(self):
         return VMMD_od(path_to_directory=self.export_path, epochs=self.epochs,  batch_size=self.batch_size,  lr=self.lr,
-            momentum=self.momentum, weight_decay=self.weight_decay,  seed=None, penalty_weight=self.penalty_weight,
+            momentum=self.momentum, weight_decay=self.weight_decay,  seed=self.seed, penalty_weight=self.penalty_weight,
             generator=self.generator_class, print_updates=True, gradient_clipping= self.gradient_clipping
         )
 
@@ -212,25 +212,31 @@ def run_all_datasets():
 
 def test_embedding():
     dataset = EmotionDataset()
-    model = DeepSeek1B()
+    model = Bert()
     generator = GeneratorSigmoidSTE
-    version = '0.46_embedding'
-    experiment = VMMDExperiment(
-        dataset=dataset,
-        model=model,
-        version=version,
-        pre_embed=False,
-        generator_class=generator,
-        epochs=100,
-        batch_size=2000,
-        samples=6000,
-        penalty_weight=1,
-        lr=1e-3,
-        yield_epochs=5,
-        train=True,
-        use_embedding=True
-    )
-    experiment.run()
+    version = '0.464_embedding_grid'
+    for lr in range(1,16, 3):
+        lr *= 1e-4
+        for penalty in range(0,6):
+            penalty *= 0.2
+            experiment = VMMDExperiment(
+                dataset=dataset,
+                model=model,
+                version=version,
+                pre_embed=False,
+                generator_class=generator,
+                epochs=100,
+                batch_size=2000,
+                samples=6000,
+                penalty_weight=penalty,
+                lr=lr,
+                yield_epochs=5,
+                train=True,
+                use_embedding=True,
+                weight_decay=0.0,
+                seed=777
+            )
+            experiment.run()
 
 # === Main entry point experiments ===
 if __name__ == '__main__':
