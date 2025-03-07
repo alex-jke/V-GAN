@@ -185,6 +185,7 @@ class VMMD_od(VMMD):
 
         plot.savefig(path_to_directory / "train_history.png",
                      format="png", dpi=1200) #todo: change back to pdf
+        plot.close()
 
 if __name__ == "__main__":
     # mean = [1,1,0,0,0,0,0,0,2,1]

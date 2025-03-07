@@ -136,7 +136,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                         raise
                 #aggregated = self.aggregateEmbeddings(embeddings = embeddings)
             if batch_first:
-                return embeddings.T
+                transposed = embeddings.T
+                normed = torch.nn.functional.normalize(transposed, dim=1)
+                meaned = normed - normed.mean(dim=0)
+                return meaned
             ui.done()
             return embeddings
         return embedding
