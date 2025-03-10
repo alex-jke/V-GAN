@@ -106,7 +106,7 @@ class VMMD(VMMDBase):
 
                 # Apply gradient clipping (e.g., max norm of 1.0)
                 if self.apply_gradient_clipping:
-                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=2.0)
 
                 gradients = [param.grad.norm() for param in generator.parameters()]
 

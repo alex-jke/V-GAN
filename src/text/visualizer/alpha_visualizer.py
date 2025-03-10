@@ -32,6 +32,7 @@ class AlphaVisualizer(Visualizer):
                 strings.append(self.tokenizer.detokenize([token]))
             else:
                 strings.append("_")
+        return strings
 
     def _convert_to_strings(self, tokens: Tensor) -> List[List[str]]:
         samples = []
@@ -41,7 +42,7 @@ class AlphaVisualizer(Visualizer):
             if i >= len(self.samples):
                 strings = self._get_strings(token_list)
                 self.samples.append(strings)
-                samples.append(token_list)
+                samples.append(strings)
         return samples
 
     def export_html(self, sample_data: Tensor | List[List[str]], subspaces: Tensor, folder_appendix: str, epoch: int = -1, normalize:bool = True):

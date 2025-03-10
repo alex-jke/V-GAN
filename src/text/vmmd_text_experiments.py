@@ -6,6 +6,7 @@ from numpy import ndarray
 
 from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE, GeneratorUpperSoftmax, \
     GeneratorSoftmax, GeneratorSoftmaxSTEMBD, Generator, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid
+from modules.text.vmmd_text_preembed import VMMDTextPreEmbed
 from text.Embedding.fast_text import FastText
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
@@ -16,7 +17,7 @@ from text.dataset.wikipedia_slim import WikipediaPeopleDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.v_experiment import VBaseExperiment
 from text.visualizer.collective_visualizer import CollectiveVisualizer
-from vmmd_text import VMMD_Text
+from modules.text.vmmd_text_base import VMMDTextBase
 
 
 class VMMDTextExperiment:
@@ -43,9 +44,9 @@ class VMMDTextExperiment:
         return "VMMD_Text"
 
     def run(self):
-        model = VMMD_Text(print_updates=True, path_to_directory=self.export_path, epochs=self.epochs, weight=self.penalty_weight,
-                          sequence_length=self.sequence_length, batch_size=self.batch_size, weight_decay=self.weight_decay,
-                          generator=self.generator, lr=self.lr, gradient_clipping=self.gradient_clipping)
+        model = VMMDTextPreEmbed(print_updates=True, path_to_directory=self.export_path, epochs=self.epochs, weight=self.penalty_weight,
+                             sequence_length=self.sequence_length, batch_size=self.batch_size, weight_decay=self.weight_decay,
+                             generator=self.generator, lr=self.lr, gradient_clipping=self.gradient_clipping)
         embedding_fun = self.emb_model.embed_sentences
         preparer = DatasetPreparer(self.dataset, max_samples=self.samples)
         x_train = preparer.get_training_data()
