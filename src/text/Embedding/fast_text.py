@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import torch.cuda
@@ -28,7 +28,9 @@ class FastText(Embedding):
         except ValueError as e:
             raise e
 
-    def embed_words(self, words: List[str]) -> np.ndarray:
+    def embed_words(self, words: List[str], mask: Optional[Tensor]) -> np.ndarray:
+        if mask is not None:
+            raise NotImplementedError("Masking is not implemented for FastText.")
         return self.model.embeddings(words, normalize=self.normalize)
 
 

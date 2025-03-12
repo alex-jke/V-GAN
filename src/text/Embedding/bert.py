@@ -108,7 +108,7 @@ class Bert(HuggingModel):
         This method takes a list of token indices and returns the corresponding embeddings.
         The embeddings are taken from the last layer of the model.
         :param tokenized: A list of token indices.
-        :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
+        :return: A two-dimensional Tensor where each token index is an embedding. (num_tokens, embedding_size)
         """
         raise RuntimeError("Adapt the embedding logic as in GPT2")
         maximum_length = 512
@@ -126,7 +126,7 @@ class Bert(HuggingModel):
         #with torch.no_grad():
         outputs = self.model(token_vec)
             # BERT returns a 768 x num_tokens x 1 tensor, so we need to remove the last dimension
-        embeddings = outputs.last_hidden_state.T[:, :, 0]
+        embeddings = outputs.last_hidden_state.T[:, :, 0].T
 
         #self.embedded_cache[key] = embeddings
         return embeddings

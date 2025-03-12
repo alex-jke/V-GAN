@@ -12,6 +12,8 @@ from VMMDBase import VMMDBase
 from models.Generator import GeneratorSigmoidSTE
 from models.Mmd_loss_constrained import MMDLossConstrained
 from models.Mmd_loss_constrained import RBF as RBFConstrained
+import torch_two_sample as tts
+import pandas as pd
 
 
 class VMMDTextBase(VMMDBase):
@@ -27,7 +29,7 @@ class VMMDTextBase(VMMDBase):
         super().__init__(**kwargs)
         self.sequence_length = sequence_length
         self.seperator = ' '
-        self.embedding: Optional[Callable[[ndarray[str], int], Tensor]] = None
+        self.embedding: Optional[Callable[[ndarray[str], int, Optional[Tensor]], Tensor]] = None
         self.n_dims: Optional[int] = None
         self.original_data: Optional[ndarray[str]] = None
 
@@ -44,7 +46,7 @@ class VMMDTextBase(VMMDBase):
             pass
 
     @abstractmethod
-    def _get_training_data(self, x_data: ndarray[str], embedding: Callable[[ndarray[str], int], Tensor], n_dims: int) -> Tensor | ndarray[str]:
+    def _get_training_data(self, x_data: ndarray[str], embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], n_dims: int) -> Tensor | ndarray[str]:
         """
         Prepares the training data for the VMMD_Text model. Whatever is returned here is used in the _convert_batch function.
         In the end, a one-dimensional tensor needs to be returned.
@@ -55,7 +57,7 @@ class VMMDTextBase(VMMDBase):
         pass
 
     @abstractmethod
-    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int], Tensor], mask: Optional[Tensor]) -> Tensor:
+    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], mask: Optional[Tensor]) -> Tensor:
         """
         This method converts a batch into a one-dimensional tensor of shape (n_dims).
         :param batch: The batch to convert.
@@ -66,18 +68,19 @@ class VMMDTextBase(VMMDBase):
         pass
 
     def yield_fit(self, x_data_str: ndarray[str],
-                  embedding: Callable[[ndarray[str], int], Tensor],
+                  embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor],
                   yield_epochs=None) -> Iterable[int]:
         """
         Trains the model.
         :param x_data_str: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence.
             This is due, to sentences having different lengths.
-        :param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentences as a numpy array of strings,
-        and the length to pad to or trim to. The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, n_words, n_dims).
+        :param embedding: The embedding function to use. It is expected to be able to take in three parameters, the sentences as a numpy array of strings,
+        the length to pad to or trim to and an optional attention mask that can be applied to the input.
+            The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, [n_words or n_non_masked_words], n_dims).
         :param yield_epochs: The number of epochs between each print.
         """
         self._set_seed()
-        self.n_dims = n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str)
+        self.n_dims = n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str, embedding)
         self.embedding = embedding
 
         self.original_data = x_data_str
@@ -116,9 +119,13 @@ class VMMDTextBase(VMMDBase):
                 optimizer.zero_grad()
                 subspaces = generator(noise_tensor)
 
-                #embeddings = batch.mean(1)
                 embeddings = self._convert_batch(batch, embedding, None)
                 masked_embeddings = self._convert_batch(batch, embedding, subspaces)
+
+                # Set mean of the embeddings to zero. This allows masking the embeddings to zero.
+                mean = embeddings.mean(0)
+                embeddings = embeddings - mean
+                masked_embeddings = masked_embeddings - mean
 
                 masked_embeddings = masked_embeddings.to(self.device)
                 embeddings = embeddings.to(self.device)
@@ -145,7 +152,7 @@ class VMMDTextBase(VMMDBase):
                     'cpu').detach().numpy()) / batch_number
 
             self._log_epoch(generator_loss, mmd_loss, generator, gradient)
-            if yield_epochs is not None and epoch % yield_epochs == 0:
+            if yield_epochs is not None and yield_epochs > 0 and epoch % yield_epochs == 0:
                 yield epoch
 
         self.generator = generator
@@ -169,11 +176,22 @@ class VMMDTextBase(VMMDBase):
         plot.savefig(path_to_directory / "train_history.png",
                      format="png", dpi=1200) #todo: change back to pdf
 
-    def _get_average_sequence_length(self, x_data: ndarray) -> int:
+    def _get_average_sequence_length(self, x_data: ndarray, embedding: Callable[[ndarray[str], int], Tensor]) -> int:
         """
         Returns the average length of the sequences in the data.
         """
-        sequence_length = int(np.mean([len(self._sentence_to_words(x)) for x in x_data]))
+        #sequence_length = int(np.mean([embedding(np.array([x]), -1).shape[1] for x in x_data]))
+        sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
+        return sequence_length
+        unique_words = set()
+        sequence_length = 0
+        for sentence in x_data:
+            words = sentence.split(self.seperator)
+            [unique_words.add(word) for word in words]
+            sequence_length += len(words)
+
+        #sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
+        sequence_length = sequence_length // x_data.size
         return sequence_length
 
     def _sentence_to_words(self, sentence: str) -> List[str]:
@@ -181,4 +199,33 @@ class VMMDTextBase(VMMDBase):
         Returns a list of words from the sentence.
         """
         return sentence.split(self.seperator)
+
+    def _check_if_myopic(self, x_sample, ux_sample, u_subspaces, bandwidth: float | List[float] = 0.01, count=500):
+
+        results = []
+
+        if type(bandwidth) == float:
+            bandwidth = [bandwidth]
+
+        if not hasattr(self, 'bandwidth'):
+            mmd_loss = MMDLossConstrained(self.weight)
+            mmd_loss.forward(
+                x_sample, ux_sample, u_subspaces * 1)
+            self.bandwidth = mmd_loss.bandwidth
+
+        bandwidth.sort()
+        for bw in bandwidth:
+            mmd = tts.MMDStatistic(count, count)
+            _, distances = mmd(x_sample, ux_sample, alphas=[
+                bw], ret_matrix=True)
+            results.append(mmd.pval(distances))
+
+        bw = self.bandwidth.item()
+        mmd = tts.MMDStatistic(count, count)
+        _, distances = mmd(x_sample, ux_sample, alphas=[
+            bw], ret_matrix=True)
+        results.append(mmd.pval(distances))
+
+        bandwidth.append("recommended bandwidth")
+        return pd.DataFrame([results], columns=bandwidth, index=["p-val"])
 

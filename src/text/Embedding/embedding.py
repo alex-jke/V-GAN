@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 import torch
@@ -22,10 +22,11 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def embed_words(self, words: List[str]) -> np.ndarray:
+    def embed_words(self, words: List[str], mask: Optional[Tensor]) -> np.ndarray:
         """
         Embeds a list of words into vectors.
         :param words: The list of words to embed.
+        :param mask: The mask to use. If None, all words are embedded.
         :return: The embeddings of the words, as a numpy array, representing a list of vectors.
             The shape of the array should be (n_words, n_dim).
         """
@@ -40,28 +41,42 @@ class Embedding(ABC):
         """
         return sentence.split(seperator)
 
-    def embed_sentences(self, sentences: np.ndarray[str], padding_length: int, seperator: str = " ") -> Tensor:
+    def embed_sentences(self, sentences: np.ndarray[str], padding_length: int, seperator: str = " ", masks: Optional[Tensor] = None) -> Tensor:
         """
         Embeds a list of sentences into vectors. It splits the sentences into words using the seperator.
         It then embeds the words into vectors and pads them to the padding length.
         :param sentences: The list of sentences to embed as a numpy array of sentences as strings.
         :param padding_length: The length to pad the sentences to. The sentences will be padded with zero vectors.
+            If -1 is given, the sentences will not be truncated. Which does mean that torch will give a stack error,
+            if the sentences are not of the same length.
         :param seperator: The seperator to split the sentences into words.
+        :param masks: The masks to use. If None, all words are embedded.
+            The mask tensor should be of shape: (n_sentences, padding_length).
         :return: The embeddings of the sentences, as a tensor.
             The shape of the tensor should be (n_sentences, n_words, n_embedding_dim).
         """
         embeddings = []
-        i = 0
+
         with ui.display():
-            for sentence in sentences:
+            #for sentence in sentences:
+            for i in range(len(sentences)):
                 ui.update(f"Embedding sentence: {i}/{len(sentences)}")
-                i += 1
+                if i == 86 and masks is not None:
+                    print("sentence:", sentences[i])
+                sentence = sentences[i]
+                mask = masks[i] if masks is not None else None
                 words = self.get_words(sentence, seperator)
-                embedded = Tensor(self.embed_words(words))
-                if len(words) < padding_length:
-                    embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - len(words)))
-                elif len(words) > padding_length:
-                    embedded = embedded[:padding_length]
+                if len(words) > padding_length:
+                    words = words[:padding_length]
+                elif len(words) < padding_length and masks is not None:
+                    mask = mask[:len(words)]
+                embedded = self.embed_words(words, mask)
+                if embedded.shape[0] < padding_length:
+                    embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
+                #elif embedded.shape[0] > padding_length > 0:
+                    #embedded = embedded[:padding_length]
+                if embedded.shape[0] != padding_length:
+                    raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
                 embeddings.append(embedded)
             try:
                 stacked =  torch.stack(embeddings)
