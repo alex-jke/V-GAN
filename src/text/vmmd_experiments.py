@@ -214,14 +214,14 @@ def test_embedding():
     dataset = EmotionDataset()
     model = GPT2()
     generator = GeneratorSigmoidSTE
-    version = '0.4692_embedding_grid+manual_one_hot_wd+clip'
-    lr = 1e-2
+    version = '0.4694_embedding_grid+manual_one_hot_wd+larger_latent(4)'
+    lr = 3e-2
     #for lr in range(16,1, -7):
         #lr *= 1e-2
         #for penalty in [0.0, 0.2, 0.8]:#range(0,6):
 
     for clip in [True, False]:
-        for weight_decay in [0, 1e-5, 1e-3]:
+        for weight_decay in [1e-2, 1e-3]:
     #penalty *= 0.2
             experiment = VMMDExperiment(
                 dataset=dataset,

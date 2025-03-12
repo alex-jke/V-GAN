@@ -54,7 +54,7 @@ class VMMD(VMMDBase):
 
         # MODEL INTIALIZATION#
         epochs = self.epochs
-        self._latent_size = latent_size = max(int(X.shape[1] / 16), 1)
+        self._latent_size = latent_size = max(int(X.shape[1] / 4), 1)
         ndims = X.shape[1]
         train_size = X.shape[0]
         self.batch_size = min(self.batch_size, train_size)

@@ -94,7 +94,7 @@ class BaseVOdmAdapter(ABC):
             model.load_models(generator_path, ndims=features)
             self.loaded_model = True
 
-    def get_subspaces(self, num_subspaces=50):
+    def get_subspaces(self, num_subspaces=50) -> ndarray:
         """
         Returns subspace_count operator samples from the random operator. This currently being axis parallel subspaces.
         """

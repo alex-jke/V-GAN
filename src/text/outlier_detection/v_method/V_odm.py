@@ -69,7 +69,8 @@ class V_ODM(EnsembleODM):
         """
         if self.classifier_delta == 0:
             return
-        self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=self.odm_model.get_subspaces(num_subspaces=self.num_subspaces),
+        subspaces = self.odm_model.get_subspaces(num_subspaces=self.num_subspaces).astype(bool)
+        self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=subspaces,
                                        n_jobs=-1, bps_flag=False, approx_flag_global=False, verbose=True)
 
         self.ensemble_model.fit(self.x_train.cpu())
