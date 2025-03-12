@@ -1,5 +1,5 @@
 from cmath import sqrt
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 import numpy as np
 import torch
@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import GPT2Tokenizer, GPT2Model
 
-from .huggingmodel import HuggingModel
+from src.text.Embedding.huggingmodel import HuggingModel
 
 
 class GPT2(HuggingModel):
@@ -66,17 +66,19 @@ class GPT2(HuggingModel):
         embeddings = [np.array(embedding) for embedding in embeddings]
         return embeddings
 
-    def fully_embed_tokenized(self, tokenized: Tensor) -> Tensor:
+    def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         """
         This method takes a list of token indices and returns the corresponding embeddings.
         The embeddings are taken from the last layer of the model.
         :param tokenized: A list of token indices.
-        :return: A two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
+        :param mask: A mask to apply to the tokenized input. If None, no mask is applied.
+        :return: A two-dimensional Tensor where each token index is an embedding. (num_tokens, embedding_size)
         """
         attention_mask = torch.not_equal(tokenized, self.padding_token)
 
         # Shorten tokenized sequence to only those tokens, that are not padding tokens
         filtered_tokens = tokenized[attention_mask]
+        filtered_mask = mask[attention_mask] if mask is not None else torch.ones_like(filtered_tokens)
 
         # If no tokens remain, return a zero tensor with the gradients remaining.
         if filtered_tokens.shape[0] == 0:
@@ -87,15 +89,23 @@ class GPT2(HuggingModel):
         max_length = self.model.config.n_positions
         length = min(filtered_tokens.shape[0], max_length)
         token_vec = filtered_tokens[:length]
-        token_int = torch.round(token_vec)
+        trimmed_mask = filtered_mask[:length]
 
-        # One-hot encode the vector and pass the gradient along.
-        one_hot = F.one_hot(token_int.long(), self.model.wte.weight.shape[0]).float() + (token_vec - token_vec.detach()).unsqueeze(1)
-        weight_mat = self.model.wte.weight
+        # One-hot encode the vector and pass the gradient along. This is only necessary, if the tokenized tensor is of float, which means, that the mask
+        # was applied before
+        one_hot = F.one_hot(token_vec.long(), self.model.wte.weight.shape[0]).float() + (token_vec - token_vec.detach()).unsqueeze(1)
+        weight_mat = self.model.get_input_embeddings().weight
         inputs_embeds = one_hot @ weight_mat
-        outputs = self.model(inputs_embeds=inputs_embeds)
+        # Very important, that the batch dimension is added, otherwise the model will still embed, but no attention is applied
+        batched_embeddings = inputs_embeds.unsqueeze(0)
+        batched_mask = trimmed_mask.unsqueeze(0)
+        if mask is not None:
+            outputs = self.model(inputs_embeds=batched_embeddings, attention_mask=batched_mask)
+        else:
+            outputs = self.model(inputs_embeds=batched_embeddings)
 
-        embeddings = outputs.last_hidden_state.T
+        # Remove the batch dimension and return the embeddings
+        embeddings = outputs.last_hidden_state[0]
 
         return embeddings
 
@@ -118,9 +128,11 @@ if __name__ == '__main__':
     text = "Hello, world! This is a test."
     print("Original:", text)
 
-
-    tokenized = gpt2.tokenize(text)
-    print("Tokenized:", tokenized)
+    words = gpt2.embed_words(text.split(" "))
+    sentence = gpt2.embed(text)
+    print(words.equal(sentence))
+    #tokenized = gpt2.tokenize(text)
+    #print("Tokenized:", tokenized)
 
     #embedded: List[np.array] = gpt2.embed_tokenized(tokenized)
     #only print the first 100 symbols
@@ -132,5 +144,5 @@ if __name__ == '__main__':
     #detokenized = gpt2.detokenize(deemedbedded)
     #print("Detokenized actual:", detokenized)
 
-    detokenized = gpt2.detokenize(tokenized)
-    print("Detokenized should:", detokenized)
+    #detokenized = gpt2.detokenize(tokenized)
+    #print("Detokenized should:", detokenized)

@@ -8,7 +8,6 @@ import torch
 
 from models.Mmd_loss_constrained import MMDLossConstrained
 from modules.text.vmmd_text_base import VMMDTextBase
-import torch_two_sample as tts
 
 
 class VMMDTextPreEmbed(VMMDTextBase):
@@ -16,11 +15,11 @@ class VMMDTextPreEmbed(VMMDTextBase):
     An implementation of VMMDTextBase that pre-embeds the data.
     """
 
-    def _get_training_data(self, x_data: ndarray[str], embedding: Callable[[ndarray[str], int], Tensor], n_dims: int) -> Tensor | ndarray[str]:
-        self.x_data = embedding(x_data, n_dims)
+    def _get_training_data(self, x_data: ndarray[str], embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], n_dims: int) -> Tensor | ndarray[str]:
+        self.x_data = embedding(x_data, n_dims, None)
         return self.x_data.to(self.device)
 
-    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int], Tensor], mask: Optional[Tensor]) -> Tensor:
+    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], mask: Optional[Tensor]) -> Tensor:
         """
         Converts a batch to an embedding tensor.
         """
@@ -36,7 +35,6 @@ class VMMDTextPreEmbed(VMMDTextBase):
         if count > x_data.shape[0]:
             warnings.warn(f"Selected 'count': {count} is greater than the number of samples {x_data.shape[0]} in the dataset. Setting count to {x_data.shape[0]}. This might lead to unexpected results.")
             count = x_data.shape[0]
-        results = []
 
         #x_data = normalize(x_data, axis=0)
         indices = torch.randperm(x_data.size(0))[:count]
@@ -49,27 +47,5 @@ class VMMDTextPreEmbed(VMMDTextBase):
 
         #ux_sample = u_subspaces * torch.mps.Tensor(x_sample).to(self.device) + torch.mean(x_sample, dim=0) * (1-u_subspaces)
         ux_sample = (ux_x_sample * u_subspaces.unsqueeze(2)).mean(1) + (ux_x_sample.mean(0) * (1 - u_subspaces.unsqueeze(2))).mean(1)
-        if type(bandwidth) == float:
-            bandwidth = [bandwidth]
 
-        if not hasattr(self, 'bandwidth'):
-            mmd_loss = MMDLossConstrained(self.weight)
-            mmd_loss.forward(
-                x_sample, ux_sample, u_subspaces * 1)
-            self.bandwidth = mmd_loss.bandwidth
-
-        bandwidth.sort()
-        for bw in bandwidth:
-            mmd = tts.MMDStatistic(count, count)
-            _, distances = mmd(x_sample, ux_sample, alphas=[
-                bw], ret_matrix=True)
-            results.append(mmd.pval(distances))
-
-        bw = self.bandwidth.item()
-        mmd = tts.MMDStatistic(count, count)
-        _, distances = mmd(x_sample, ux_sample, alphas=[
-            bw], ret_matrix=True)
-        results.append(mmd.pval(distances))
-
-        bandwidth.append("recommended bandwidth")
-        return pd.DataFrame([results], columns=bandwidth, index=["p-val"])
+        return self._check_if_myopic(x_sample=x_sample, ux_sample=ux_sample, u_subspaces=u_subspaces, bandwidth=bandwidth)
