@@ -54,6 +54,15 @@ class LLama(HuggingModel):
         return de_batched
 
     def _get_4d_causal_mask(self, attention_mask: Tensor) -> Tensor:
+        """
+            Creates a causal 4D mask of shape `(batch_size, 1, query_length, key_value_length)` from a 2D mask of shape
+            `(batch_size, key_value_length)`, or if the input `attention_mask` is already 4D, do nothing.
+
+            Args:
+                attention_mask (`torch.Tensor`):
+                    A 2D attention mask of shape `(batch_size, key_value_length)`
+            [Taken from the model's source code. and adjusted to be able to pass the gradient]
+        """
         sequence_length = target_length = attention_mask.shape[-1]
         batch_size = attention_mask.shape[0]
         dtype = self.model.get_input_embeddings().weight.data.dtype
