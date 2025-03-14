@@ -121,6 +121,7 @@ class GPT2(HuggingModel):
         """
         tensor = torch.nn.functional.one_hot(torch.tensor(token), num_classes=self.tokenizer.vocab_size)
         return tensor
+
     def get_token_embeddings(self, dtype = torch.float32) -> Tensor:
         return self.model.transformer.wte.weight.data.to(dtype)
 

@@ -13,6 +13,7 @@ from modules.text.vmmd_text_preembed import VMMDTextPreEmbed
 from text.Embedding.embedding import Embedding
 from text.Embedding.fast_text import FastText
 from text.Embedding.gpt2 import GPT2
+from text.Embedding.llama import LLama
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
@@ -26,7 +27,7 @@ class VMMDTextExperiment:
 
     def __init__(self, dataset: Dataset, version: str, samples: int = -1, sequence_length: int | None = None, train: bool = False, epochs: int = 2000,
                  penalty_weight: float = 0.1, batch_size: int = 2000, weight_decay = 0, generator: Generator_big = GeneratorSigmoidSTE,
-                 lr: float = 10e-5, gradient_clipping: bool = False, emb_model: Embedding = FastText(normalize=True),
+                 lr: float = 10e-5, gradient_clipping: bool = False, emb_model: Embedding = FastText(normalize=True), transformer_aggregation: bool = True,
                  v_method: Type[VMMDTextBase] = VMMDTextPreEmbed, yield_epochs: Optional[int] = None ):
         self.dataset = dataset
         self.version = version
@@ -42,6 +43,7 @@ class VMMDTextExperiment:
         self.lr = lr
         self.gradient_clipping = gradient_clipping
         self.v_method: Type[VMMDTextBase] = v_method
+        self.transformer_aggregation = transformer_aggregation
         self.yield_epochs = yield_epochs
         if self.yield_epochs is None:
             self.yield_epochs = self.epochs // 20
@@ -54,7 +56,7 @@ class VMMDTextExperiment:
         model = self.v_method(print_updates=True, path_to_directory=self.export_path, epochs=self.epochs, weight=self.penalty_weight,
                              sequence_length=self.sequence_length, batch_size=self.batch_size, weight_decay=self.weight_decay,
                              generator=self.generator, lr=self.lr, gradient_clipping=self.gradient_clipping)
-        embedding_fun = self.emb_model.embed_sentences
+        embedding_fun = lambda samples, padding_length, masks: self.emb_model.embed_sentences(samples, padding_length, masks=masks, aggregate=self.transformer_aggregation)
         preparer = DatasetPreparer(self.dataset, max_samples=self.samples)
         x_train = preparer.get_training_data()
         for epoch in model.yield_fit(x_train, embedding_fun, yield_epochs=self.yield_epochs):
@@ -78,6 +80,7 @@ class VMMDTextExperiment:
             self.emb_model.__class__.__name__,
             self.generator.__name__,
             f"{self.version}",
+            f"agg_" + "t" if self.transformer_aggregation else "avg",
             f"{self.dataset.name}_sl{sl_str}_s{self.samples}"
         )
         if self.train:
@@ -100,10 +103,15 @@ if __name__ == '__main__':
     for dataset in datasets:
         experiment = VMMDTextExperiment(dataset=dataset, **params_sig)
         experiment.run()"""
-    for penalty_weight in [0.0, 0.2]:
+    """for penalty_weight in [0.0, 0.2]:
         for lr, epochs in [(0.1, 50), (5e-2, 50), (1e-2, 50)]:#, (1e-3, 200), (1e-4, 500), (1e-5, 1000)]:
             for weight_decay in [1e-3, 1e-4, 1e-5, 0]:
                 params_sig = {"version":"0.144sigmoid", "train":True, "epochs":epochs, "penalty_weight":penalty_weight, "samples":3000, "weight_decay":weight_decay, "generator": GeneratorSigmoidSTE, "lr":lr, "gradient_clipping":True,
                       "emb_model": GPT2(), "v_method": VmmdText, "batch_size": 750, "yield_epochs": 5
                       }
                 VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
+"""
+    params_sig = {"version":"0.1392", "train":False, "epochs":10, "penalty_weight":0.0, "samples":10, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-3, "gradient_clipping":True,
+                  "emb_model": LLama(), "v_method": VmmdText
+                  }
+    VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
