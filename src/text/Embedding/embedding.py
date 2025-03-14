@@ -22,11 +22,12 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def embed_words(self, words: List[str], mask: Optional[Tensor]) -> np.ndarray:
+    def embed_words(self, words: List[str], mask: Optional[Tensor], aggregate: bool) -> np.ndarray:
         """
         Embeds a list of words into vectors.
         :param words: The list of words to embed.
         :param mask: The mask to use. If None, all words are embedded.
+        :param aggregate: If True, the embeddings are aggregated to a single vector.
         :return: The embeddings of the words, as a numpy array, representing a list of vectors.
             The shape of the array should be (n_words, n_dim).
         """
@@ -41,7 +42,8 @@ class Embedding(ABC):
         """
         return sentence.split(seperator)
 
-    def embed_sentences(self, sentences: np.ndarray[str], padding_length: int, seperator: str = " ", masks: Optional[Tensor] = None) -> Tensor:
+    def embed_sentences(self, sentences: np.ndarray[str], padding_length: Optional[int], seperator: str = " ", masks: Optional[Tensor] = None,
+                        aggregate: bool = True) -> Tensor:
         """
         Embeds a list of sentences into vectors. It splits the sentences into words using the seperator.
         It then embeds the words into vectors and pads them to the padding length.
@@ -52,6 +54,8 @@ class Embedding(ABC):
         :param seperator: The seperator to split the sentences into words.
         :param masks: The masks to use. If None, all words are embedded.
             The mask tensor should be of shape: (n_sentences, padding_length).
+        :param aggregate: If True, the embeddings are aggregated to a single tensor.
+            If False, the embeddings are returned as a list of tensors.
         :return: The embeddings of the sentences, as a tensor.
             The shape of the tensor should be (n_sentences, n_words, n_embedding_dim).
         """
@@ -70,13 +74,14 @@ class Embedding(ABC):
                     words = words[:padding_length]
                 elif len(words) < padding_length and masks is not None:
                     mask = mask[:len(words)]
-                embedded = self.embed_words(words, mask)
-                if embedded.shape[0] < padding_length:
-                    embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
-                #elif embedded.shape[0] > padding_length > 0:
-                    #embedded = embedded[:padding_length]
-                if embedded.shape[0] != padding_length:
-                    raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
+                embedded = self.embed_words(words, mask, aggregate)
+                if not aggregate:
+                    if embedded.shape[0] < padding_length:
+                        embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
+                    #elif embedded.shape[0] > padding_length > 0:
+                        #embedded = embedded[:padding_length]
+                    if embedded.shape[0] != padding_length:
+                        raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
                 embeddings.append(embedded)
             try:
                 stacked =  torch.stack(embeddings)

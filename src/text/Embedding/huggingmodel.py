@@ -114,11 +114,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             word_embeddings = torch.concat((word_embeddings, word_embedding), dim=0)
         return word_embeddings
 
-    def embed_words(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
-        #return [self.embed(data=word) for word in words]
-        sentence = " ".join(words)
-        #if mask is None:
-            #return self.embed(sentence, None)
+    def embed_words(self, words: List[str], mask: Optional[Tensor] = None, aggregate:bool = False) -> Tensor:
+        if aggregate:
+            raise NotImplementedError
         tokenized = [self.tokenize(word) for word in words]
         if mask is None:
             mask = torch.ones(len(words)).to(self.device)
@@ -133,6 +131,13 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     @abstractmethod
     def embed_tokenized(self, tokenized: Tensor) -> Tensor:
+        """
+        This method takes a list of token indices and returns the
+         corresponding embeddings for the first layer of the transformer.
+         That is without any context.
+        :param tokenized: A tensor of token indices of shape (num_tokens).
+        :return: A two-dimensional Tensor where each token index is an embedding. (num_tokens, embedding_size)
+        """
         pass
 
     @abstractmethod

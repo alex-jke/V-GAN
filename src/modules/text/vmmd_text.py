@@ -29,7 +29,7 @@ class VmmdText(VMMDTextBase):
         :return: The embeddings of the batch, as a tensor of shape (n_samples, n_tokens, n_embedding_dim).
         """
         #if masks is None:
-        return embedding(batch, self._n_dims, masks=masks) #TODO: fix, that it complains.
+        return embedding(batch, self._n_dims, masks)
 
     def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor],
                        mask: Optional[Tensor]) -> Tensor:
