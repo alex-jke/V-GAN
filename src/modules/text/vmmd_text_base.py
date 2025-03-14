@@ -15,6 +15,8 @@ from models.Mmd_loss_constrained import RBF as RBFConstrained
 import torch_two_sample as tts
 import pandas as pd
 
+from text.UI.cli import ConsoleUserInterface
+
 
 class VMMDTextBase(VMMDBase):
     def __init__(self, sequence_length: int | None = None, seperator: str = " ", **kwargs):
@@ -97,63 +99,65 @@ class VMMDTextBase(VMMDBase):
         self.generator_optimizer = optimizer.__class__.__name__
         kernel = RBFConstrained()
         loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
+        ui = ConsoleUserInterface()
+        with ui.display():
+            for epoch in range(self.epochs):
+                ui.update("Epoch: %d" % epoch)
+                data_loader = self._get_data_loader(x_data)
+                if self.print_updates:
+                    print(f'\rEpoch {epoch} of {self.epochs}')
+                generator_loss = 0
+                mmd_loss = 0
+                gradient = 0
 
-        for epoch in range(self.epochs):
-            data_loader = self._get_data_loader(x_data)
-            if self.print_updates:
-                print(f'\rEpoch {epoch} of {self.epochs}')
-            generator_loss = 0
-            mmd_loss = 0
-            gradient = 0
+                #data_loader = self._get_data_loader(x_data)
+                batch_number = data_loader.__len__()
 
-            #data_loader = self._get_data_loader(x_data)
-            batch_number = data_loader.__len__()
+                noise_tensor = self._get_noise_tensor(latent_size)
 
-            noise_tensor = self._get_noise_tensor(latent_size)
+                for batch in tqdm(data_loader, leave=False):
+                    noise_tensor.normal_()
 
-            for batch in tqdm(data_loader, leave=False):
-                noise_tensor.normal_()
+                    #OPTIMIZATION STEP#
+                    #batch = batch.to(self.device)
+                    optimizer.zero_grad()
+                    subspaces = generator(noise_tensor)
 
-                #OPTIMIZATION STEP#
-                #batch = batch.to(self.device)
-                optimizer.zero_grad()
-                subspaces = generator(noise_tensor)
+                    embeddings = self._convert_batch(batch, embedding, None)
+                    masked_embeddings = self._convert_batch(batch, embedding, subspaces)
 
-                embeddings = self._convert_batch(batch, embedding, None)
-                masked_embeddings = self._convert_batch(batch, embedding, subspaces)
+                    # Set mean of the embeddings to zero. This allows masking the embeddings to zero.
+                    mean = embeddings.mean(0)
+                    embeddings = embeddings - mean
+                    masked_embeddings = masked_embeddings - mean
 
-                # Set mean of the embeddings to zero. This allows masking the embeddings to zero.
-                mean = embeddings.mean(0)
-                embeddings = embeddings - mean
-                masked_embeddings = masked_embeddings - mean
+                    masked_embeddings = masked_embeddings.to(self.device)
+                    embeddings = embeddings.to(self.device)
+                    batch_loss = loss_function(embeddings, masked_embeddings, subspaces)
+                    batch_mmd_loss = loss_function.mmd_loss
+                    self.bandwidth = loss_function.bandwidth
+                    batch_loss.backward()
 
-                masked_embeddings = masked_embeddings.to(self.device)
-                embeddings = embeddings.to(self.device)
-                batch_loss = loss_function(embeddings, masked_embeddings, subspaces)
-                batch_mmd_loss = loss_function.mmd_loss
-                self.bandwidth = loss_function.bandwidth
-                batch_loss.backward()
+                    if self.apply_gradient_clipping:
+                        grad_list = [param.grad.norm() for param in generator.parameters()]
+                        grads = Tensor(grad_list)
+                        trimmed = grads.greater_equal(torch.ones_like(grads)).int().sum()
+                        if trimmed > 0:
+                            print(f'trimmed {trimmed} gradients')
+                        torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
 
-                if self.apply_gradient_clipping:
-                    grad_list = [param.grad.norm() for param in generator.parameters()]
-                    grads = Tensor(grad_list)
-                    trimmed = grads.greater_equal(torch.ones_like(grads)).int().sum()
-                    if trimmed > 0:
-                        print(f'trimmed {trimmed} gradients')
-                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+                    gradients = [param.grad.norm() for param in generator.parameters()]
+                    gradient += Tensor(gradients).mean() / batch_number
 
-                gradients = [param.grad.norm() for param in generator.parameters()]
-                gradient += Tensor(gradients).mean() / batch_number
+                    optimizer.step()
+                    generator_loss += float(batch_loss.to(
+                        'cpu').detach().numpy()) / batch_number
+                    mmd_loss += float(batch_mmd_loss.to(
+                        'cpu').detach().numpy()) / batch_number
 
-                optimizer.step()
-                generator_loss += float(batch_loss.to(
-                    'cpu').detach().numpy()) / batch_number
-                mmd_loss += float(batch_mmd_loss.to(
-                    'cpu').detach().numpy()) / batch_number
-
-            self._log_epoch(generator_loss, mmd_loss, generator, gradient)
-            if yield_epochs is not None and yield_epochs > 0 and epoch % yield_epochs == 0:
-                yield epoch
+                self._log_epoch(generator_loss, mmd_loss, generator, gradient)
+                if yield_epochs is not None and yield_epochs > 0 and epoch % yield_epochs == 0:
+                    yield epoch
 
         self.generator = generator
         self._export(generator)
@@ -164,17 +168,19 @@ class VMMDTextBase(VMMDBase):
 
     def _plot_loss(self, path_to_directory, show=False):
         plot, ax = self._create_plot()
-        p_values = self.check_if_myopic(count=1000)
+
+        """p_values = self.check_if_myopic(count=1000)
         recomended_p_value = p_values["recommended bandwidth"].values[0]
         recommended_bandwidth = self.bandwidth.item()
 
         # add the p-value to the plot in the top right corner
         plt.text(0.5, 0.99, f'{"recommended bandwidth"}\n({recommended_bandwidth}): {recomended_p_value}',
                  ha='center', va='top',
-                 transform=ax.transAxes, color='black', fontsize=8)
+                 transform=ax.transAxes, color='black', fontsize=8)"""
 
         plot.savefig(path_to_directory / "train_history.png",
                      format="png", dpi=1200) #todo: change back to pdf
+        plot.close()
 
     def _get_average_sequence_length(self, x_data: ndarray, embedding: Callable[[ndarray[str], int], Tensor]) -> int:
         """

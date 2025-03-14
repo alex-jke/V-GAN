@@ -57,29 +57,27 @@ class Embedding(ABC):
         """
         embeddings = []
 
-        with ui.display():
+        #with ui.display():
             #for sentence in sentences:
-            for i in range(len(sentences)):
-                ui.update(f"Embedding sentence: {i}/{len(sentences)}")
-                if i == 86 and masks is not None:
-                    print("sentence:", sentences[i])
-                sentence = sentences[i]
-                mask = masks[i] if masks is not None else None
-                words = self.get_words(sentence, seperator)
-                if len(words) > padding_length:
-                    words = words[:padding_length]
-                elif len(words) < padding_length and masks is not None:
-                    mask = mask[:len(words)]
-                embedded = self.embed_words(words, mask)
-                if embedded.shape[0] < padding_length:
-                    embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
-                #elif embedded.shape[0] > padding_length > 0:
-                    #embedded = embedded[:padding_length]
-                if embedded.shape[0] != padding_length:
-                    raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
-                embeddings.append(embedded)
-            try:
-                stacked =  torch.stack(embeddings)
-            except RuntimeError as e:
-                raise e
+        for i in range(len(sentences)):
+            #ui.update(f"Embedding sentence: {i}/{len(sentences)}")
+            sentence = sentences[i]
+            mask = masks[i] if masks is not None else None
+            words = self.get_words(sentence, seperator)
+            if len(words) > padding_length:
+                words = words[:padding_length]
+            elif len(words) < padding_length and masks is not None:
+                mask = mask[:len(words)]
+            embedded = self.embed_words(words, mask)
+            if embedded.shape[0] < padding_length:
+                embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
+            #elif embedded.shape[0] > padding_length > 0:
+                #embedded = embedded[:padding_length]
+            if embedded.shape[0] != padding_length:
+                raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
+            embeddings.append(embedded)
+        try:
+            stacked =  torch.stack(embeddings)
+        except RuntimeError as e:
+            raise e
         return stacked

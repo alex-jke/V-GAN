@@ -57,7 +57,13 @@ class VmmdText(VMMDTextBase):
 
         # ux_sample = u_subspaces * torch.mps.Tensor(x_sample).to(self.device) + torch.mean(x_sample, dim=0) * (1-u_subspaces)
         #ux_sample = (ux_x_sample * u_subspaces.unsqueeze(2)).mean(1) + (ux_x_sample.mean(0) * (1 - u_subspaces.unsqueeze(2))).mean(1)
-        ux_sample = self._convert_batch(ux_x_sample, self.embedding, u_subspaces) + F.normalize(self._embed(ux_x_sample, self.embedding, 1 - u_subspaces).mean(0).mean(1))
+        ux_subspaces = self._convert_batch(ux_x_sample, self.embedding, u_subspaces)
+        ux_1_subspaces = F.normalize(self._embed(ux_x_sample, self.embedding, 1 - u_subspaces))
+        ux_1_subspaces_mean0 = ux_1_subspaces.mean(0)
+        ux_1_subspaces_mean01 = ux_1_subspaces_mean0.mean(0)
+        ux_1_subspaces_mean01_exp = ux_1_subspaces_mean01.expand_as(ux_subspaces)
+        #ux_1_subspaces = F.normalize(self._embed(ux_x_sample, self.embedding, 1 - u_subspaces)).mean(0).mean(0).unsqueeze(0).expand_as(ux_subspaces)
+        ux_sample = ux_subspaces + ux_1_subspaces_mean01_exp
 
         return self._check_if_myopic(x_sample=x_sample, ux_sample=ux_sample, u_subspaces=u_subspaces,
                                      bandwidth=bandwidth)

@@ -74,22 +74,25 @@ class GPT2(HuggingModel):
         :param mask: A mask to apply to the tokenized input. If None, no mask is applied.
         :return: A two-dimensional Tensor where each token index is an embedding. (num_tokens, embedding_size)
         """
-        attention_mask = torch.not_equal(tokenized, self.padding_token)
+        #attention_mask = torch.not_equal(tokenized, self.padding_token)
 
         # Shorten tokenized sequence to only those tokens, that are not padding tokens
-        filtered_tokens = tokenized[attention_mask]
-        filtered_mask = mask[attention_mask] if mask is not None else torch.ones_like(filtered_tokens)
+        #filtered_tokens = tokenized[attention_mask]
+        #filtered_mask = mask[attention_mask] if mask is not None else torch.ones_like(filtered_tokens)
 
         # If no tokens remain, return a zero tensor with the gradients remaining.
-        if filtered_tokens.shape[0] == 0:
-            zero_tensor = torch.tensor([0]*768).to(self.device).to(dtype=torch.float32).unsqueeze(1)
-            grad_tensor = tokenized.median()
-            assert grad_tensor == 0
-            return zero_tensor + grad_tensor
+        #if filtered_tokens.shape[0] == 0:
+            #zero_tensor = torch.tensor([0]*768).to(self.device).to(dtype=torch.float32).unsqueeze(1)
+            #grad_tensor = tokenized.median()
+            #assert grad_tensor == 0
+            #return zero_tensor + grad_tensor
         max_length = self.model.config.n_positions
-        length = min(filtered_tokens.shape[0], max_length)
-        token_vec = filtered_tokens[:length]
-        trimmed_mask = filtered_mask[:length]
+        #length = min(filtered_tokens.shape[0], max_length)
+        length = min(max_length, tokenized.size(0))
+        #token_vec = filtered_tokens[:length]
+        token_vec = tokenized[:length]
+        #trimmed_mask = filtered_mask[:length]
+        trimmed_mask = mask[:length] if mask is not None else torch.ones_like(token_vec)
 
         # One-hot encode the vector and pass the gradient along. This is only necessary, if the tokenized tensor is of float, which means, that the mask
         # was applied before
