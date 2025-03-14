@@ -32,9 +32,9 @@ class LLama(HuggingModel):
     def embed_tokenized(self, tokenized: Tensor) -> Tensor:
         max_length = self._tokenizer.model_max_length
         token_vec = tokenized[:max_length]
-        input_embeds_mat = self.model.get_input_embeddings().weight
-        one_hot = F.one_hot(token_vec.long(), input_embeds_mat.shape[0]).float() + (
-                    token_vec - token_vec.detach()).unsqueeze(1)
+        input_embeds_mat = self.model.get_input_embeddings().weight.data
+        one_hot = (F.one_hot(token_vec.long(), input_embeds_mat.shape[0]).float() + (
+                    token_vec - token_vec.detach()).unsqueeze(1)).to(input_embeds_mat.dtype)
         inputs_embeds = one_hot @ input_embeds_mat
         return inputs_embeds
 

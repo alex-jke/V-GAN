@@ -63,6 +63,7 @@ class Embedding(ABC):
 
         #for sentence in sentences:
         for i in range(len(sentences)):
+            print("|", end="")
             sentence = sentences[i]
             mask = masks[i] if masks is not None else None
             words = self.get_words(sentence, seperator)
