@@ -17,6 +17,7 @@ class LLama(HuggingModel):
 
     @property
     def _tokenizer(self):
+        print("Tokenizer loaded")
         tokenizer = AutoTokenizer.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True)
         return tokenizer
 
@@ -26,6 +27,7 @@ class LLama(HuggingModel):
 
     @property
     def _model(self):
+        print("Model loaded")
         model = AutoModel.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True, torch_dtype=torch.float16)
         return model
 

@@ -113,6 +113,6 @@ if __name__ == '__main__':
                 VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
     """
     params_sig = {"version":"0.145", "train":True, "epochs":100, "penalty_weight":0.0, "samples":2000, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-3, "gradient_clipping":True,
-                  "emb_model": DeepSeek1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5, "batch_size": 500
+                  "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5, "batch_size": 10
                   }
     VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()

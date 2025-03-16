@@ -150,7 +150,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         :param tokenized: A tensor of token indices of shape (num_tokens).
         :return: A two-dimensional Tensor where each token index is an embedding. (num_tokens, embedding_size)
         """
-        max_length = self._tokenizer.model_max_length
+        max_length = self.tokenizer.model_max_length
         token_vec = tokenized[:max_length]
         input_embeds_mat = self.model.get_input_embeddings().weight.data
         one_hot = (F.one_hot(token_vec.long(), input_embeds_mat.shape[0]).float() + (
