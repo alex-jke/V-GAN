@@ -111,7 +111,7 @@ if __name__ == '__main__':
                       }
                 VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
     """
-    params_sig = {"version":"0.144", "train":False, "epochs":10, "penalty_weight":0.0, "samples":10, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-3, "gradient_clipping":True,
+    params_sig = {"version":"0.144", "train":True, "epochs":10, "penalty_weight":0.0, "samples":10, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-3, "gradient_clipping":True,
                   "emb_model": LLama(), "v_method": VmmdText
                   }
     VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
