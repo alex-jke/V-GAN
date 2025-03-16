@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from numpy import ndarray
 from torch import Tensor
+import torch.nn.functional as F
 
 from .embedding import Embedding
 from .tokenizer import Tokenizer
@@ -114,9 +115,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             word_embeddings = torch.concat((word_embeddings, word_embedding), dim=0)
         return word_embeddings
 
-    def embed_words(self, words: List[str], mask: Optional[Tensor] = None, aggregate:bool = False) -> Tensor:
-        if aggregate:
-            raise NotImplementedError
+    def _embed_words_full(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
         tokenized = [self.tokenize(word) for word in words]
         if mask is None:
             mask = torch.ones(len(words)).to(self.device)
@@ -129,7 +128,20 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         masked = aggregated * mask.unsqueeze(1).expand_as(aggregated)
         return masked
 
-    @abstractmethod
+    def _embed_words_last(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
+        classification_added_words = words + ["I", "am", "feeling"]
+        added_mask = Tensor([1, 1, 1]).to(self.device) if mask is not None else None
+        classification_added_mask = torch.concat((mask, added_mask)) if mask is not None else None
+        masked = self._embed_words_full(classification_added_words, classification_added_mask)
+        last_entry = masked[-1]
+        expanded = last_entry.unsqueeze(0)
+        return expanded
+
+    def embed_words(self, words: List[str], mask: Optional[Tensor] = None, aggregate: bool = True) -> Tensor:
+        if aggregate:
+            return self._embed_words_last(words, mask)
+        return self._embed_words_full(words, mask)
+
     def embed_tokenized(self, tokenized: Tensor) -> Tensor:
         """
         This method takes a list of token indices and returns the
@@ -138,7 +150,13 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         :param tokenized: A tensor of token indices of shape (num_tokens).
         :return: A two-dimensional Tensor where each token index is an embedding. (num_tokens, embedding_size)
         """
-        pass
+        max_length = self._tokenizer.model_max_length
+        token_vec = tokenized[:max_length]
+        input_embeds_mat = self.model.get_input_embeddings().weight.data
+        one_hot = (F.one_hot(token_vec.long(), input_embeds_mat.shape[0]).float() + (
+                    token_vec - token_vec.detach()).unsqueeze(1)).to(input_embeds_mat.dtype)
+        inputs_embeds = one_hot @ input_embeds_mat
+        return inputs_embeds
 
     @abstractmethod
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
