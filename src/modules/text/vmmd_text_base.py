@@ -159,13 +159,16 @@ class VMMDTextBase(VMMDBase):
 
                     batch_loss.backward()
 
+
+
                     if self.apply_gradient_clipping:
                         grad_list = [param.grad.norm() for param in generator.parameters()]
                         grads = Tensor(grad_list)
+                        grad_before_clipping = grads.mean()
                         trimmed = grads.greater_equal(torch.ones_like(grads)).int().sum()
-                        if trimmed > 0:
-                            print(f'trimmed {trimmed} gradients')
                         torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+                        if trimmed > 0:
+                            print(f'trimmed {trimmed} gradients from {grad_before_clipping}')
 
                     gradients = [param.grad.norm() for param in generator.parameters()]
                     gradient += Tensor(gradients).mean() / batch_number

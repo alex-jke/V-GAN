@@ -1,8 +1,9 @@
 from abc import ABC
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, Optional
 
 import numpy as np
 import torch
+from statsmodels.tools.tools import unsqueeze
 from torch import Tensor, LongTensor
 from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2ForCausalLM
 
@@ -38,39 +39,44 @@ class DeepSeek(HuggingModel, ABC):
         self.embedded_cache: Dict[int, Tensor] = {}
         self.ui = cli.get()
 
-    def embed_tokenized(self, tokenized: List[int]) -> List[np.ndarray]:
-        raise NotImplementedError
-
-    def fully_embed_tokenized(self, tokenized: Tensor) -> List[Tensor]:
+    def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         """
         Embeds the tokenized input and returns the embeddings of the individual tokens.
-        :param tokenized: The tokenized input. A tensor of shape (batch_size, sequence_length).
-        :return: A list of tensors, each containing the embeddings of the individual tokens.
-            The reason for returning a list of tensors is that the number of tokens in each sample might differ, as padding tokens are removed after embedding.
+        :param tokenized: The tokenized input. A tensor of shape (sequence_length).
+        :return: A Tensor of shape (sequence_length, embedding_size).
         """
-        token_vec = tokenized#tokenized.clone().detach().int().to(self.device)
+        #token_vec = tokenized.unsqueeze(0)#tokenized.clone().detach().int().to(self.device)
 
         # Remove all the padding tokens, that are shared by all samples, as they do not carry any information.
         # Also, for the remaining tokens, create an attention mask.
-        raise RuntimeError("Adapt the embedding logic as in GPT2")
-        init_attention_mask = torch.not_equal(token_vec, self.padding_token)
-        attention_mask_all = init_attention_mask.any(dim=0)
-        trimmed_token_vec = token_vec[:, attention_mask_all]
-        attention_mask = torch.not_equal(trimmed_token_vec, self.padding_token)
-        if not attention_mask.any():
-            return [Tensor([0]*1536).to(self.device)] * tokenized.shape[0]
+        #raise RuntimeError("Adapt the embedding logic as in GPT2")
+        #init_attention_mask = torch.not_equal(token_vec, self.padding_token)
+        #attention_mask_all = init_attention_mask.any(dim=0)
+        #trimmed_token_vec = token_vec[:, attention_mask_all]
+        #attention_mask = torch.not_equal(trimmed_token_vec, self.padding_token)
+        #if not attention_mask.any():
+            #return [Tensor([0]*1536).to(self.device)] * tokenized.shape[0]
 
-        with torch.no_grad():
-            outputs = self.model.model(trimmed_token_vec, attention_mask) # not surprisingly, this takes the majority of the time.
-            embeddings: Tensor = outputs.last_hidden_state#.to(dtype=torch.float32)
-        embeddings_list = [embeddings[i] for i in range(embeddings.shape[0])]
-        attention_mask_list = [attention_mask[i] for i in range(attention_mask.shape[0])]
+        #with torch.no_grad():
+        #outputs = self.model.model(trimmed_token_vec, attention_mask) # not surprisingly, this takes the majority of the time.
+        unsqueezed_mask = mask.unsqueeze(0)
+        inputs_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
+        if mask is not None:
+            outputs = self.model.model(inputs_embeds=inputs_embeds, attention_mask=unsqueezed_mask)
+        else:
+            outputs = self.model.model(inputs_embeds=inputs_embeds)
+        #embeddings: Tensor = outputs.last_hidden_state#.to(dtype=torch.float32)
+        embeddings = outputs[0]
+        de_batched = embeddings[0]
+        return de_batched
+        #embeddings_list = [embeddings[i] for i in range(embeddings.shape[0])]
+        #attention_mask_list = [attention_mask[i] for i in range(attention_mask.shape[0])]
 
         # Cut out the embeddings of the padding tokens, as they might interfere with the aggregation.
-        attention_mask_list = [attention_mask.unsqueeze(1).expand(embeddings.shape[1], embeddings.shape[2]) for attention_mask in attention_mask_list]
-        embeddings_list = [embeddings[attention_mask] for embeddings, attention_mask in zip(embeddings_list, attention_mask_list)]
-        embeddings_list = [embedding.view(-1, embeddings.shape[2])  for embedding in embeddings_list]
-        return embeddings_list
+        #attention_mask_list = [attention_mask.unsqueeze(1).expand(embeddings.shape[1], embeddings.shape[2]) for attention_mask in attention_mask_list]
+        #embeddings_list = [embeddings[attention_mask] for embeddings, attention_mask in zip(embeddings_list, attention_mask_list)]
+        ##embeddings_list = [embedding.view(-1, embeddings.shape[2])  for embedding in embeddings_list]
+        #return embeddings_list
 
     def aggregateEmbeddings(self, embeddings: List[Tensor]):
         #print(f"Aggregated {embeddings[0].shape[0]} embeddings")
@@ -78,7 +84,7 @@ class DeepSeek(HuggingModel, ABC):
         stacked = torch.stack(aggregated)
         return stacked
 
-    def get_embedding_fun(self, chunk_size = 10, batch_first=False) -> Callable[[Tensor], Tensor]:
+    """def get_embedding_fun(self, chunk_size = 10, batch_first=False) -> Callable[[Tensor], Tensor]:
 
         def embedding(tensor: Tensor) -> Tensor:
             chunks = torch.split(tensor, chunk_size, dim=0)
@@ -92,7 +98,7 @@ class DeepSeek(HuggingModel, ABC):
             if batch_first:
                 return aggregated
             return aggregated.T
-        return embedding
+        return embedding"""
 
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:

@@ -10,6 +10,7 @@ from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftma
     GeneratorSoftmax, GeneratorSoftmaxSTEMBD, Generator, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid
 from modules.text.vmmd_text import VmmdText
 from modules.text.vmmd_text_preembed import VMMDTextPreEmbed
+from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.embedding import Embedding
 from text.Embedding.fast_text import FastText
 from text.Embedding.gpt2 import GPT2
@@ -27,7 +28,7 @@ class VMMDTextExperiment:
 
     def __init__(self, dataset: Dataset, version: str, samples: int = -1, sequence_length: int | None = None, train: bool = False, epochs: int = 2000,
                  penalty_weight: float = 0.1, batch_size: int = 2000, weight_decay = 0, generator: Generator_big = GeneratorSigmoidSTE,
-                 lr: float = 10e-5, gradient_clipping: bool = False, emb_model: Embedding = FastText(normalize=True), transformer_aggregation: bool = True,
+                 lr: float = 10e-5, gradient_clipping: bool = False, emb_model: Embedding = FastText(normalize=True), transformer_aggregation: bool = False,
                  v_method: Type[VMMDTextBase] = VMMDTextPreEmbed, yield_epochs: Optional[int] = None ):
         self.dataset = dataset
         self.version = version
@@ -111,7 +112,7 @@ if __name__ == '__main__':
                       }
                 VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
     """
-    params_sig = {"version":"0.144", "train":True, "epochs":10, "penalty_weight":0.0, "samples":10, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-3, "gradient_clipping":True,
-                  "emb_model": LLama(), "v_method": VmmdText
+    params_sig = {"version":"0.145", "train":True, "epochs":100, "penalty_weight":0.0, "samples":2000, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-3, "gradient_clipping":True,
+                  "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5, "batch_size": 10
                   }
     VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
