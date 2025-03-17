@@ -1,4 +1,7 @@
+import os
+import warnings
 from abc import abstractmethod
+from pathlib import Path
 from typing import Callable, Iterable, Optional, List
 
 import numpy as np
@@ -14,6 +17,7 @@ from models.Mmd_loss_constrained import MMDLossConstrained
 from models.Mmd_loss_constrained import RBF as RBFConstrained
 import torch_two_sample as tts
 import pandas as pd
+from torchviz import make_dot
 
 from text.UI.cli import ConsoleUserInterface
 
@@ -34,6 +38,7 @@ class VMMDTextBase(VMMDBase):
         self.embedding: Optional[Callable[[ndarray[str], int, Optional[Tensor]], Tensor]] = None
         self.n_dims: Optional[int] = None
         self.original_data: Optional[ndarray[str]] = None
+        self.fallback = False
 
     def fit(self, x_data: ndarray[str],
             embedding: Callable[[ndarray[str], int], Tensor]):
@@ -136,6 +141,22 @@ class VMMDTextBase(VMMDBase):
                     batch_loss = loss_function(embeddings, masked_embeddings, subspaces)
                     batch_mmd_loss = loss_function.mmd_loss
                     self.bandwidth = loss_function.bandwidth
+                    #if self.device.type == 'mps' and not self.fallback:
+                        #try: # MPS does not support backward on the loss
+                            #batch_loss.backward()
+                        #except NotImplementedError:
+                            # Set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1`
+                            # to enable MPS fallback.
+                            #print("MPS does not support backward on the loss. Falling back to CPU and skipping this batch.")
+                            #self.fallback = True
+                            #continue
+
+                    #if self.fallback:
+                    #batch_loss = batch_loss.cpu()
+                    #diagraph = make_dot(batch_loss, params=dict(generator.named_parameters()))
+                    #diagraph.render(Path(self.path_to_directory) / "computational_graph.png", format="png")
+                    #diagraph.render(filename="comp_graph.gv", directory=self.path_to_directory, format="svg" ,engine="dot")
+
                     batch_loss.backward()
 
                     if self.apply_gradient_clipping:
