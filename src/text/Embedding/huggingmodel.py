@@ -119,6 +119,8 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         tokenized = [self.tokenize(word) for word in words]
         if mask is None:
             mask = torch.ones(len(words)).to(self.device)
+        else:
+            pass
         expanded_mask = self._convert_word_to_token_mask(tokenized, mask)
         #embeddings = self.embed(sentence, expanded_mask)
         tokenized_tensor = torch.concat(tokenized, dim=0).to(self.device).float()

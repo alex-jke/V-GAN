@@ -62,12 +62,13 @@ class Embedding(ABC):
         embeddings = []
 
         #for sentence in sentences:
-        print("Embedding sentences...")
+        #print("Embedding sentences...")
         ui = ConsoleUserInterface()
-        with ui.display():
+        #with ui.display():
+        if True:
             for i in range(len(sentences)):
                 #print("|", end="")
-                ui.update(f"Embedding sentence {i + 1}/{len(sentences)}")
+                #ui.update(f"Embedding sentence {i + 1}/{len(sentences)}")
                 sentence = sentences[i]
                 mask = masks[i] if masks is not None else None
                 words = self.get_words(sentence, seperator)

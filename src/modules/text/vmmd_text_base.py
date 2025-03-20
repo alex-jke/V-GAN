@@ -127,9 +127,9 @@ class VMMDTextBase(VMMDBase):
                     masked_embeddings = self._convert_batch(batch, embedding, subspaces)
 
                     # Set mean of the embeddings to zero. This allows masking the embeddings to zero.
-                    mean = embeddings.mean(0)
-                    embeddings = embeddings - mean
-                    masked_embeddings = masked_embeddings - mean
+                    #mean = embeddings.mean(0)
+                    #embeddings = embeddings - mean
+                    #masked_embeddings = masked_embeddings - mean
 
                     masked_embeddings = masked_embeddings.to(self.device)
                     embeddings = embeddings.to(self.device)
@@ -149,7 +149,8 @@ class VMMDTextBase(VMMDBase):
                         if trimmed > 0:
                             print(f'trimmed {trimmed} gradients from {grad_before_clipping}')
 
-                    gradients = [param.grad.norm() for param in generator.parameters()]
+                    parameters = generator.parameters()
+                    gradients = [param.grad.norm() for param in parameters]
                     gradient += Tensor(gradients).mean() / batch_number
 
                     optimizer.step()
@@ -172,7 +173,7 @@ class VMMDTextBase(VMMDBase):
     def _plot_loss(self, path_to_directory, show=False):
         plot, ax = self._create_plot()
 
-        p_values = self.check_if_myopic(count=1000)
+        p_values = self.check_if_myopic(count=self.batch_size)
         recomended_p_value = p_values["recommended bandwidth"].values[0]
         recommended_bandwidth = self.bandwidth.item()
 

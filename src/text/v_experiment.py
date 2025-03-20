@@ -10,7 +10,7 @@ from torch import Tensor
 
 # === Imports from your modules ===
 from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE, \
-    GeneratorSpectralNorm, GeneratorSigmoidSTEMBD
+    GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm
 from modules.od_module import VMMD_od, VGAN_od
 from text.Embedding.bert import Bert
 from text.Embedding.gpt2 import GPT2
