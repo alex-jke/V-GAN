@@ -14,12 +14,13 @@ class upper_softmax(nn.Module):
     # This function applies a softmax to the input tensor and then sets all values to one that are larger than 1/n.
     def forward(self, input):
         x = torch.nn.functional.softmax(input, 1)
-        x_less = torch.less(x, 1/x.shape[1])*x
+        x_less = torch.less(x, 1/x.shape[1]) * x
         x_ge = torch.greater_equal(x, 1/x.shape[1])
-        x = x_less + x_ge
-        x = x + (x - x.detach())
+        x_upper_softmax = x_less + x_ge
+        #x = x_upper_softmax + (x - x.detach())
         #x = x_ge.detach() + (x_less - x_less.detach())
-        return x
+        #return x
+        return x_upper_softmax
 
 
 class upper_lower_softmax(nn.Module):
@@ -331,7 +332,7 @@ class FakeGenerator(nn.Module):
         return subspaces
 
 
-class GeneratorSpectralNorm(GeneratorSigmoidSTE):
+class GeneratorSoftmaxSTESpectralNorm(GeneratorSoftmaxSTE):
 
     def get_layer(self, layer_num: int, last=False):
         input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
@@ -341,11 +342,13 @@ class GeneratorSpectralNorm(GeneratorSigmoidSTE):
             nn.utils.spectral_norm(
                 nn.Linear(input_size, output_size)
             ),
+            #nn.Sigmoid(),
             nn.LeakyReLU(0.2),
-            nn.BatchNorm1d(output_size)
+            #nn.BatchNorm1d(output_size)
         )
         last_layer = nn.Sequential(
             nn.Linear(input_size, self.img_size),
+            self.avg_mask,
             self.final_activation_function
         )
         return last_layer if last else layer

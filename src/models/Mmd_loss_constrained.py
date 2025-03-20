@@ -143,20 +143,21 @@ class MMDLossConstrained(nn.Module):
         # avg_u = U.float().mean(dim=0)
         # mean = torch.mean(ones - topk)
         # penalty = self.weight * (mean)
-        penalty = self.weight * (avg) if apply_penalty else 0 # self.weight*(mean)
+        #penalty = self.weight * (avg) if apply_penalty else 0 # self.weight*(mean)
+        penalty = self.weight * torch.exp(avg) if apply_penalty else 0  # self.weight*(mean)
         #u_sizes = U.float().sum(dim=1)
         #median = u_sizes.median()
         #penalty = self.weight * (median) if  apply_penalty else 0
 
         # middle penalty to punish the generator for generating subspaces with prob close to 0.5
-        middle_matrix = (-U.float() * (U.float() - 1))
-        middle_penalty = middle_matrix.mean(dim=0).sum() / U.shape[1] if apply_penalty else 0
-        middle_penalty *= self.middle_penalty
+        #middle_matrix = (-U.float() * (U.float() - 1))
+        #middle_penalty = middle_matrix.mean(dim=0).sum() / U.shape[1] if apply_penalty else 0
+        #middle_penalty *= self.middle_penalty
 
         mmd_loss = XX - 2 * XY + YY
         if math.isnan(mmd_loss):
             raise ValueError("mmd is nan.")
-        return (mmd_loss + penalty + middle_penalty# + feature_selection_penalty
+        return (mmd_loss + penalty# + middle_penalty# + feature_selection_penalty
                 , mmd_loss)
 
     def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):

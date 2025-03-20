@@ -37,9 +37,9 @@ class LLama(HuggingModel):
         if mask is not None:
             causal_mask = self._get_4d_causal_mask(mask)
             input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
-            #normal_outputs = self.model(inputs_embeds=input_embeds, attention_mask=mask, output_attentions=True)
             torch.backends.cuda.enable_mem_efficient_sdp(False)
             torch.backends.cuda.enable_flash_sdp(False)
+            #outputs = self.model(inputs_embeds=input_embeds, attention_mask=mask, output_attentions=True)
             outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask)
             #if not torch.allclose(outputs[0], causal_output[0]):
                 #expected = [o for o_list_list in (outputs[0].tolist()) for o_list in o_list_list for o in o_list]

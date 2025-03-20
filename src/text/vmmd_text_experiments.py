@@ -7,7 +7,8 @@ from transformers import GPT2Model
 
 from VMMDBase import VMMDBase
 from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE, GeneratorUpperSoftmax, \
-    GeneratorSoftmax, GeneratorSoftmaxSTEMBD, Generator, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid
+    GeneratorSoftmax, GeneratorSoftmaxSTEMBD, Generator, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, \
+    GeneratorSoftmaxSTESpectralNorm
 from modules.text.vmmd_text import VmmdText
 from modules.text.vmmd_text_preembed import VMMDTextPreEmbed
 from text.Embedding.deepseek import DeepSeek1B
@@ -49,6 +50,8 @@ class VMMDTextExperiment:
         if self.yield_epochs is None:
             self.yield_epochs = self.epochs // 20
         self.export_path = self._build_export_path()
+        if dataset.name != EmotionDataset().name:
+            raise NotImplementedError("Remove hardcoded postfix.")
 
     def _get_name(self) -> str:
         return "VMMD_Text"
@@ -88,6 +91,27 @@ class VMMDTextExperiment:
             base_dir += "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
         return base_dir
 
+def softmax_experiment():
+    params = {"version": "0.149+exp_penalty", "train": True, "epochs": 50, "penalty_weight": 0,
+     "samples": 5000,
+     "weight_decay": 0 , "generator": GeneratorSoftmaxSTE, "lr": 0.1,
+     "gradient_clipping": False,
+     "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
+     "batch_size": 250
+     }
+    VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
+
+def softmax_spectral_norm_experiment():
+    params = {"version": "0.149+no_bn+leaky_relu", "train": True, "epochs": 200, "penalty_weight": 0,
+     "samples": 500,
+     "weight_decay": 0.0 , "generator": GeneratorSoftmaxSTESpectralNorm, "lr": 0.01,
+     "gradient_clipping": False,
+     "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
+     "batch_size": 250
+     }
+    VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
+
+
 if __name__ == '__main__':
     """
     params_sig = {"version":"0.139_sigmoid+16_latent", "train":False, "epochs":5_000, "penalty_weight":0.0, "samples":10_000, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-4, "gradient_clipping":False}
@@ -112,7 +136,54 @@ if __name__ == '__main__':
                       }
                 VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
     """
-    params_sig = {"version":"0.145", "train":True, "epochs":100, "penalty_weight":0.0, "samples":2000, "weight_decay":0, "generator": GeneratorSigmoidSTE, "lr":5e-3, "gradient_clipping":True,
-                  "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5, "batch_size": 10
-                  }
-    VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()
+    """for gradient_clipping in [False, True]:
+        for penalty_weight in [0.2, 0.5]:
+            for lr, epochs in [(0.1, 50), (1e-2, 100), (1e-3, 200)]:  # , (1e-3, 200), (1e-4, 500), (1e-5, 1000)]:
+                for weight_decay in [1e-3, 1e-4, 1e-5, 0]:
+                    params_sig = {"version":"0.146_grid", "train":True, "epochs":epochs, "penalty_weight":penalty_weight, "samples":5000, "weight_decay":weight_decay, "generator": GeneratorSigmoidSTE, "lr":lr, "gradient_clipping":gradient_clipping,
+                                  "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5, "batch_size": 250
+                                  }
+                    VMMDTextExperiment(dataset=EmotionDataset(), **params_sig).run()"""
+    """params_softmax = {"version": "0.148", "train": True, "epochs": 100, "penalty_weight": 0.0, "samples": 5000,
+     "weight_decay": 1e-5, "generator": GeneratorUpperSoftmax, "lr": 1e-3, "gradient_clipping": False,
+     "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5, "batch_size": 250
+     }"""
+    """for gradient_clipping in [False, True]:
+        for penalty_weight in [100, 2, 0.5]:
+            for lr, epochs in [(0.1, 50), (1e-2, 100), (1e-3, 200), (1e-4, 500), (1e-5, 1000)]:
+                params_sigmoid = {"version": "0.148+exp_penalty", "train": True, "epochs": epochs, "penalty_weight": penalty_weight, "samples": 500,
+                 "weight_decay": 1e-5, "generator": GeneratorSigmoidSTE, "lr": lr, "gradient_clipping": gradient_clipping,
+                 "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 1, "batch_size": 250
+                 }
+                #params = [params_softmax, params_sigmoid]
+                #for params in params:
+                VMMDTextExperiment(dataset=EmotionDataset(), **params_sigmoid).run()"""
+
+    """params_sigmoid = {"version": "0.148+exp_penalty", "train": True, "epochs": 200, "penalty_weight": 50_000,
+                      "samples": 5000,
+                      "weight_decay": 0.0, "generator": GeneratorSigmoidSTE, "lr": 0.1,
+                      "gradient_clipping": False,
+                      "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 10,
+                      "batch_size": 250
+                      }"""
+    """params_sigmoid = {"version": "0.148+exp_penalty", "train": True, "epochs": 50, "penalty_weight": 0,
+                      "samples": 500,
+                      "weight_decay": 1e-5, "generator": GeneratorSoftmax, "lr": 0.1,
+                      "gradient_clipping": False,
+                      "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 1,
+                      "batch_size": 250
+                      }"""
+    # params = [params_softmax, params_sigmoid]
+    # for params in params:
+    #for penalty_weight in [50_000, 200_000, 1_000_000, 40_000]:
+        #for lr in [0.1, 1e-2, 1e-3]:
+            #params_sigmoid = {"version": "0.149+exp_penalty", "train": True, "epochs": 200, "penalty_weight": penalty_weight,
+            #                  "samples": 5000,
+            #                  "weight_decay": 0.0, "generator": GeneratorSigmoidSTE, "lr": lr,
+            #                  "gradient_clipping": False,
+            #                  "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 10,
+            #                  "batch_size": 250
+            #                  }
+            #VMMDTextExperiment(dataset=EmotionDataset(), **params_sigmoid).run()
+    #softmax_experiment()
+    softmax_spectral_norm_experiment()
