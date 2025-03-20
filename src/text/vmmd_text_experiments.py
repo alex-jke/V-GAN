@@ -15,7 +15,7 @@ from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.embedding import Embedding
 from text.Embedding.fast_text import FastText
 from text.Embedding.gpt2 import GPT2
-from text.Embedding.llama import LLama
+from text.Embedding.llama import LLama1B
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
@@ -96,9 +96,9 @@ def softmax_experiment():
      "samples": 5000,
      "weight_decay": 0 , "generator": GeneratorSoftmaxSTE, "lr": 0.1,
      "gradient_clipping": False,
-     "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
+     "emb_model": LLama1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
      "batch_size": 250
-     }
+              }
     VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
 
 def softmax_spectral_norm_experiment():
@@ -106,9 +106,9 @@ def softmax_spectral_norm_experiment():
      "samples": 500,
      "weight_decay": 0.0 , "generator": GeneratorSoftmaxSTESpectralNorm, "lr": 0.01,
      "gradient_clipping": False,
-     "emb_model": LLama(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
+     "emb_model": LLama1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
      "batch_size": 250
-     }
+              }
     VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
 
 

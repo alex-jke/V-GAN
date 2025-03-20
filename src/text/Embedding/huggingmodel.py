@@ -44,6 +44,12 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         self.model_name = self._model_name
         self.padding_token = self._padding_token
         self.ui = cli.get()
+        self.prefix_mask: Optional[Tensor] = None
+        self.postfix_mask: Optional[Tensor] = None
+        self.prefix = ["text",":", "I", "am", "happy", "because", "it", "is", "sunny", ".", "feeling", ":", "not", "sadness","\n",
+                                 "text", ":", "I", "feel", "sad", "because", "I", "have", "no", "friends", ".", "feeling", ":", "sadness""\n",
+                                 "text", ":"]
+        self.postfix = [".", "feeling",":"]
 
     def tokenize(self, data: str) -> Tensor: #List[int]:
         tokenized = self.tokenizer(data, return_tensors='pt')
@@ -130,10 +136,23 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         masked = aggregated * mask.unsqueeze(1).expand_as(aggregated)
         return masked
 
+    def get_prefix_mask(self) -> Tensor:
+        if self.prefix_mask is None:
+            self.prefix_mask = torch.ones(len(self.prefix)).to(self.device)
+        return self.prefix_mask
+
+    def get_postfix_mask(self) -> Tensor:
+        if self.postfix_mask is None:
+            self.postfix_mask = torch.ones(len(self.postfix)).to(self.device)
+        return self.postfix_mask
+
     def _embed_words_last(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
-        classification_added_words = words + ["I", "am", "feeling"]
-        added_mask = Tensor([1, 1, 1]).to(self.device) if mask is not None else None
-        classification_added_mask = torch.concat((mask, added_mask)) if mask is not None else None
+
+        classification_added_words = self.prefix + words + self.postfix
+        #added_mask = Tensor([1, 1, 1]).to(self.device) if mask is not None else None
+        prefix_mask = self.get_prefix_mask()
+        postfix_mask = self.get_postfix_mask()
+        classification_added_mask = torch.concat((prefix_mask, mask, postfix_mask)) if mask is not None else None
         masked = self._embed_words_full(classification_added_words, classification_added_mask)
         last_entry = masked[-1]
         expanded = last_entry.unsqueeze(0)

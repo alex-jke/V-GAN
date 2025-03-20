@@ -1,3 +1,4 @@
+from abc import abstractmethod, ABC
 from typing import List, Optional
 
 import numpy as np
@@ -10,7 +11,7 @@ from transformers import LlamaModel
 from text.Embedding.huggingmodel import HuggingModel
 
 
-class LLama(HuggingModel):
+class LLama(HuggingModel, ABC):
     @property
     def _model_name(self):
         return self.get_model_name()
@@ -28,7 +29,8 @@ class LLama(HuggingModel):
     @property
     def _model(self):
         print("Model loaded")
-        model = AutoModel.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True, torch_dtype=torch.float16)
+        model = AutoModel.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True, torch_dtype=torch.float16,
+                                          attn_implementation="eager")
         return model
 
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
@@ -95,5 +97,14 @@ class LLama(HuggingModel):
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
         raise NotImplementedError
 
+    @abstractmethod
+    def get_model_name(self)->str:
+        pass
+
+class LLama1B(LLama):
     def get_model_name(self)->str:
         return "Llama-3.2-1B"
+
+class LLama3B(LLama):
+    def get_model_name(self)->str:
+        return "Llama-3.2-3B"
