@@ -42,7 +42,7 @@ class LLama(HuggingModel, ABC):
             torch.backends.cuda.enable_mem_efficient_sdp(False)
             torch.backends.cuda.enable_flash_sdp(False)
             #outputs = self.model(inputs_embeds=input_embeds, attention_mask=mask, output_attentions=True)
-            outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask)
+            outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask, use_cache=False)
             #if not torch.allclose(outputs[0], causal_output[0]):
                 #expected = [o for o_list_list in (outputs[0].tolist()) for o_list in o_list_list for o in o_list]
                 #actual = [co for co_list_list in causal_output[0].tolist() for co_list in co_list_list for co in co_list]

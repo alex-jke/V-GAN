@@ -2,7 +2,7 @@ import math
 from abc import ABC, abstractmethod
 
 import torch
-from torch import nn
+from torch import nn, Tensor
 
 from models.norm import VectorNorm, FrobeniusNorm, MatrixNorm, L2Norm
 
@@ -118,6 +118,15 @@ class MMDLossConstrained(nn.Module):
         if self.middle_penalty is None:
             self.middle_penalty = 0.0
 
+    def diversity_loss(self, M, tau=0.1):
+        # M: shape (n, d) with entries in [0,1]
+        diff = M.unsqueeze(1) - M.unsqueeze(0)  # (n, n, d)
+        dist = torch.sum(diff ** 2, dim=-1)  # (n, n) squared distances
+        sim = torch.exp(-dist / tau)  # similarity: high if rows are similar
+        # Zero out self-similarity
+        sim = sim - torch.diag_embed(sim.diagonal(0))
+        return sim.mean()  # Lower loss => higher diversity
+
     def get_loss(self, X, Y, U, apply_penalty = True):
         #K = self.kernel(torch.vstack([X, Y]))
         K = self.kernel(X, Y)
@@ -144,7 +153,8 @@ class MMDLossConstrained(nn.Module):
         # mean = torch.mean(ones - topk)
         # penalty = self.weight * (mean)
         #penalty = self.weight * (avg) if apply_penalty else 0 # self.weight*(mean)
-        penalty = self.weight * torch.exp(avg) if apply_penalty else 0  # self.weight*(mean)
+        penalty = 0#self.weight * torch.exp(avg) if apply_penalty else 0  # self.weight*(mean)
+        diversity_loss = self.diversity_loss(U.float()) * self.weight if apply_penalty else 0
         #u_sizes = U.float().sum(dim=1)
         #median = u_sizes.median()
         #penalty = self.weight * (median) if  apply_penalty else 0
@@ -157,9 +167,17 @@ class MMDLossConstrained(nn.Module):
         mmd_loss = XX - 2 * XY + YY
         if math.isnan(mmd_loss):
             raise ValueError("mmd is nan.")
-        return (mmd_loss + penalty# + middle_penalty# + feature_selection_penalty
+        return (mmd_loss +
+                penalty +
+                diversity_loss# + middle_penalty# + feature_selection_penalty
                 , mmd_loss)
 
     def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):
         full_loss, self.mmd_loss = self.get_loss(X, Y, U, apply_penalty)
         return full_loss
+
+if __name__ == '__main__':
+    mmd = MMDLossConstrained(1)
+    test_tensor = Tensor([[1.,1.], [0., 1.], [1., 0.]])
+    div_loss = mmd.diversity_loss(test_tensor)
+    print(div_loss)

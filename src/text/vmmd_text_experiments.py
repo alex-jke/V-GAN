@@ -8,7 +8,7 @@ from transformers import GPT2Model
 from VMMDBase import VMMDBase
 from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE, GeneratorUpperSoftmax, \
     GeneratorSoftmax, GeneratorSoftmaxSTEMBD, Generator, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, \
-    GeneratorSoftmaxSTESpectralNorm
+    GeneratorSoftmaxSTESpectralNorm, GeneratorSpectralSigmoidSTE
 from modules.text.vmmd_text import VmmdText
 from modules.text.vmmd_text_preembed import VMMDTextPreEmbed
 from text.Embedding.deepseek import DeepSeek1B
@@ -92,22 +92,46 @@ class VMMDTextExperiment:
         return base_dir
 
 def softmax_experiment():
-    params = {"version": "0.149+exp_penalty", "train": True, "epochs": 50, "penalty_weight": 0,
-     "samples": 5000,
+    params = {"version": "0.15+exp_penalty", "train": True, "epochs": 50, "penalty_weight": 0,
+     "samples": 500,
      "weight_decay": 0 , "generator": GeneratorSoftmaxSTE, "lr": 0.1,
      "gradient_clipping": False,
      "emb_model": LLama1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
-     "batch_size": 250
+     "batch_size": 100
               }
     VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
 
 def softmax_spectral_norm_experiment():
-    params = {"version": "0.149+no_bn+leaky_relu", "train": True, "epochs": 200, "penalty_weight": 0,
+    params = {"version": "0.15+no_bn+leaky_relu", "train": True, "epochs": 200, "penalty_weight": 0,
      "samples": 500,
      "weight_decay": 0.0 , "generator": GeneratorSoftmaxSTESpectralNorm, "lr": 0.01,
      "gradient_clipping": False,
      "emb_model": LLama1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 5,
-     "batch_size": 250
+     "batch_size": 100
+              }
+    VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
+
+def sigmoid_experiment():
+    #for ta in [True, False]:
+        #for pw in [0.1]:
+            #for gc in [True, False]:
+                #for epochs, lr in [(50, 0.1), (100, 1e-2), (200, 1e-3)]:
+    params = {"version": "0.15+exp_penalty+DyT+ReLU", "train": True, "epochs": 200, "penalty_weight": 500,
+                      "samples": 500,
+                      "weight_decay": 0.0, "generator": GeneratorSigmoidSTE, "lr": 0.05,
+                      "gradient_clipping": False,
+                      "emb_model": LLama1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 1,
+                      "batch_size": 100
+                      }
+    VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
+
+def spectral_sigmoid_experiment():
+    params = {"version": "0.151+only_div_penalty+DyT+ReLU", "train": True, "epochs": 2000, "penalty_weight": 10000.0,
+              "samples": 500,
+              "weight_decay": 0.0, "generator": GeneratorSpectralSigmoidSTE, "lr": 1e-2,
+              "gradient_clipping": False,
+              "emb_model": LLama1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 200,
+              "batch_size": 100
               }
     VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
 
@@ -186,4 +210,6 @@ if __name__ == '__main__':
             #                  }
             #VMMDTextExperiment(dataset=EmotionDataset(), **params_sigmoid).run()
     #softmax_experiment()
-    softmax_spectral_norm_experiment()
+    #softmax_spectral_norm_experiment()
+    #sigmoid_experiment()
+    spectral_sigmoid_experiment()

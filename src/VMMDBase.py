@@ -76,17 +76,33 @@ class VMMDBase:
         generator_y = train_history[self.generator_loss_key]
         mmd_y = train_history[self.mmd_loss_key]
         x = np.linspace(1, len(generator_y), len(generator_y))
-        fig, ax = plt.subplots()
-        ax.plot(x, generator_y, color=VGAN_GREEN,
-                label="Generator loss", linewidth=2)
-        ax.plot(x, mmd_y, color=COMPLIMENTARY,
-                label="MMD loss", linewidth=2)
 
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        ax.legend(loc="upper right")
+        # Create figure and primary axis for generator loss
+        fig, ax1 = plt.subplots()
 
-        return plt, ax
+        # Plot generator loss on primary y-axis
+        color1 = VGAN_GREEN
+        ax1.plot(x, generator_y, color=color1, label="Generator loss", linewidth=2)
+        ax1.set_xlabel("Epoch")
+        ax1.set_ylabel("Generator Loss", color=color1)
+        ax1.tick_params(axis='y', labelcolor=color1)
+
+        # Create secondary y-axis for MMD loss
+        ax2 = ax1.twinx()
+        color2 = COMPLIMENTARY
+        ax2.plot(x, mmd_y, color=color2, label="MMD loss", linewidth=2)
+        ax2.set_ylabel("MMD Loss", color=color2)
+        ax2.tick_params(axis='y', labelcolor=color2)
+
+        # Create a combined legend that shows both lines
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
+
+        # Adjust layout to prevent overlap of labels
+        fig.tight_layout()
+
+        return plt, ax1
 
     def _plot_loss(self, path_to_directory, show=False):
         plot, _ = self._create_plot()

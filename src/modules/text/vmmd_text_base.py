@@ -93,7 +93,7 @@ class VMMDTextBase(VMMDBase):
         self.original_data = x_data_str
         x_data = self._get_training_data(x_data_str, embedding, n_dims)
 
-        self._latent_size = latent_size = max(n_dims // 16, 1)
+        self._latent_size = latent_size = max(n_dims // 4, 1)
         samples = x_data_str.shape[0]
         self.batch_size = min(self.batch_size, samples)
 
@@ -127,6 +127,9 @@ class VMMDTextBase(VMMDBase):
                     #batch = batch.to(self.device)
                     optimizer.zero_grad()
                     subspaces = generator(noise_tensor)
+
+                    #embeddings = Tensor([[1., 1.], [1.,1.]]).to(self.device)#self._convert_batch(batch, embedding, None)
+                    #masked_embeddings = Tensor([[1.,0.], [0., 1.]]).to(self.device)#self._convert_batch(batch, embedding, subspaces)
 
                     embeddings = self._convert_batch(batch, embedding, None)
                     masked_embeddings = self._convert_batch(batch, embedding, subspaces)
@@ -167,8 +170,8 @@ class VMMDTextBase(VMMDBase):
                         grad_before_clipping = grads.mean()
                         trimmed = grads.greater_equal(torch.ones_like(grads)).int().sum()
                         torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
-                        if trimmed > 0:
-                            print(f'trimmed {trimmed} gradients from {grad_before_clipping}')
+                        #if trimmed > 0:
+                            #print(f'trimmed {trimmed} gradients from {grad_before_clipping}')
 
                     parameters = generator.parameters()
                     gradients = [param.grad.norm() for param in parameters]

@@ -33,6 +33,29 @@ class upper_lower_softmax(nn.Module):
         x = x*selected + (~selected)*1e-08
         return x
 
+class DyT(nn.Module):
+    """
+    A dynamic hyperbolic tangent function that can learn the scaling factor.
+    See paper: https://arxiv.org/pdf/2503.10622
+    Name: Transformers without Normalization
+    """
+    def __init__(self, size: int, init_alpha=0.5):
+        super().__init__()
+        self.tanh = nn.Tanh()
+        self.alpha = nn.Parameter(torch.tensor(init_alpha))
+        self.gamma = nn.Parameter(torch.ones(size))
+        self.beta = nn.Parameter(torch.zeros(size))
+
+    def forward(self, x):
+        """
+        Calculates the output of the dynamic hyperbolic tangent function.
+        Uses the formula:  γ * tanh(α * x) + β
+        :param x: The input tensor.
+        :return: The output tensor.
+        """
+        tanh =  self.tanh(self.alpha * x)
+        return self.gamma * tanh + self.beta
+
 
 class Generator(nn.Module):
     def __init__(self, img_size, latent_size):
@@ -85,9 +108,10 @@ class Generator_big(nn.Module):
 
         layer = nn.Sequential(
             nn.Linear(input_size, output_size),
-            #nn.LeakyReLU(0.2),
-            nn.Sigmoid(),
-            nn.BatchNorm1d(output_size)
+            nn.LeakyReLU(0.2),
+            #nn.Sigmoid(),
+            #nn.BatchNorm1d(output_size)
+            DyT(output_size)
         )
         last_layer = nn.Sequential(
             nn.Linear(input_size, self.img_size),
@@ -120,7 +144,6 @@ class GeneratorSigmoid(Generator_big):
     def __init__(self, latent_size, img_size):
         super().__init__(latent_size, img_size, nn.Sigmoid())
 
-
 class GeneratorSigmoidSTE(GeneratorSigmoid):
     def __init__(self, latent_size, img_size):
         super().__init__(latent_size, img_size)
@@ -129,6 +152,25 @@ class GeneratorSigmoidSTE(GeneratorSigmoid):
     def forward(self, input):
         x = super().forward(input)
         return self.binarize(x)
+
+class GeneratorSpectralSigmoidSTE(GeneratorSigmoidSTE):
+    def get_layer(self, layer_num: int, last=False):
+        input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+        output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+
+        layer = nn.Sequential(
+            nn.utils.spectral_norm(
+                nn.Linear(input_size, output_size)
+            ),
+            DyT(output_size),
+            nn.LeakyReLU(0.2),
+        )
+        last_layer = nn.Sequential(
+            nn.Linear(input_size, self.img_size),
+            self.avg_mask,
+            self.final_activation_function
+        )
+        return last_layer if last else layer
 
 class SigmoidSoftmax(nn.Module):
     def __init__(self):
@@ -344,7 +386,7 @@ class GeneratorSoftmaxSTESpectralNorm(GeneratorSoftmaxSTE):
             ),
             #nn.Sigmoid(),
             nn.LeakyReLU(0.2),
-            #nn.BatchNorm1d(output_size)
+            nn.BatchNorm1d(output_size)
         )
         last_layer = nn.Sequential(
             nn.Linear(input_size, self.img_size),

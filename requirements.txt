@@ -90,4 +90,5 @@ zipp==3.17.0
 kagglehub
 datasets
 staticvectors
+torchviz
 
