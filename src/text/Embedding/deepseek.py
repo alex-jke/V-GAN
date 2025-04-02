@@ -38,6 +38,8 @@ class DeepSeek(HuggingModel, ABC):
         super().__init__()
         self.embedded_cache: Dict[int, Tensor] = {}
         self.ui = cli.get()
+        torch.backends.cuda.enable_mem_efficient_sdp(False)
+        torch.backends.cuda.enable_flash_sdp(False)
 
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         """
@@ -62,7 +64,11 @@ class DeepSeek(HuggingModel, ABC):
         unsqueezed_mask = mask.unsqueeze(0)
         inputs_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
         if mask is not None:
-            outputs = self.model.model(inputs_embeds=inputs_embeds, attention_mask=unsqueezed_mask)
+            causal_mask = self._get_4d_causal_mask(unsqueezed_mask)
+            inputs_embeds = inputs_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
+            outputs = self.model.model(inputs_embeds=inputs_embeds, attention_mask=causal_mask)
+            #outputs = self.model.model(inputs_embeds=inputs_embeds, attention_mask=unsqueezed_mask)
+            #assert torch.equal(outputs_causal[0], outputs[0])
         else:
             outputs = self.model.model(inputs_embeds=inputs_embeds)
         #embeddings: Tensor = outputs.last_hidden_state#.to(dtype=torch.float32)

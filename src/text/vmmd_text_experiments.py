@@ -130,7 +130,7 @@ def spectral_sigmoid_experiment():
               "samples": 500,
               "weight_decay": 0.0, "generator": GeneratorSpectralSigmoidSTE, "lr": 1e-2,
               "gradient_clipping": False,
-              "emb_model": LLama1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 200,
+              "emb_model": DeepSeek1B(), "v_method": VmmdText, "transformer_aggregation": True, "yield_epochs": 200,
               "batch_size": 100
               }
     VMMDTextExperiment(dataset=EmotionDataset(), **params).run()
