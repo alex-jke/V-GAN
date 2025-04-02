@@ -34,7 +34,7 @@ class VMMDTextBase(VMMDBase):
             kwargs['generator'] = GeneratorSigmoidSTE
         super().__init__(**kwargs)
         self.sequence_length = sequence_length
-        self.seperator = ' '
+        self.seperator = seperator
         self.embedding: Optional[Callable[[ndarray[str], int, Optional[Tensor]], Tensor]] = None
         self.n_dims: Optional[int] = None
         self.original_data: Optional[ndarray[str]] = None
@@ -216,16 +216,6 @@ class VMMDTextBase(VMMDBase):
         """
         #sequence_length = int(np.mean([embedding(np.array([x]), -1).shape[1] for x in x_data]))
         sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
-        return sequence_length
-        unique_words = set()
-        sequence_length = 0
-        for sentence in x_data:
-            words = sentence.split(self.seperator)
-            [unique_words.add(word) for word in words]
-            sequence_length += len(words)
-
-        #sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
-        sequence_length = sequence_length // x_data.size
         return sequence_length
 
     def _sentence_to_words(self, sentence: str) -> List[str]:

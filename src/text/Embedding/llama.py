@@ -29,6 +29,7 @@ class LLama(HuggingModel, ABC):
     @property
     def _model(self):
         print("Model loaded")
+        # TODO: switching the model to run on bfloat16 causes infinite gradient norms.
         model = AutoModel.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True, torch_dtype=torch.float16,
                                           attn_implementation="eager")
         return model

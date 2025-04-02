@@ -163,6 +163,7 @@ class GeneratorSpectralSigmoidSTE(GeneratorSigmoidSTE):
                 nn.Linear(input_size, output_size)
             ),
             DyT(output_size),
+            #nn.BatchNorm1d(output_size),
             nn.LeakyReLU(0.2),
         )
         last_layer = nn.Sequential(

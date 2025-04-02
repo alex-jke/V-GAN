@@ -29,7 +29,8 @@ class DeepSeek(HuggingModel, ABC):
         else:
             _model = AutoModelForCausalLM.from_pretrained(
                 pretrained_model_name_or_path=f"deepseek-ai/{self._model_name}", trust_remote_code=True,
-                #torch_dtype=torch.bfloat16
+                #torch_dtype=torch.bfloat16,
+                attn_implementation="eager"
             ).to(self.device)
 
         return _model
@@ -38,8 +39,6 @@ class DeepSeek(HuggingModel, ABC):
         super().__init__()
         self.embedded_cache: Dict[int, Tensor] = {}
         self.ui = cli.get()
-        torch.backends.cuda.enable_mem_efficient_sdp(False)
-        torch.backends.cuda.enable_flash_sdp(False)
 
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         """
@@ -66,6 +65,8 @@ class DeepSeek(HuggingModel, ABC):
         if mask is not None:
             causal_mask = self._get_4d_causal_mask(unsqueezed_mask)
             inputs_embeds = inputs_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
+            torch.backends.cuda.enable_mem_efficient_sdp(False)
+            torch.backends.cuda.enable_flash_sdp(False)
             outputs = self.model.model(inputs_embeds=inputs_embeds, attention_mask=causal_mask)
             #outputs = self.model.model(inputs_embeds=inputs_embeds, attention_mask=unsqueezed_mask)
             #assert torch.equal(outputs_causal[0], outputs[0])

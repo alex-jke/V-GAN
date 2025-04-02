@@ -45,6 +45,7 @@ class VMMDBase:
         self.path_to_directory = path_to_directory
         self.generator_optimizer = None
         self.weight = weight
+  
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
