@@ -6,7 +6,7 @@ from pytorch_lightning.utilities import grad_norm
 from torch import Tensor
 import pytorch_lightning as pl
 from models.Generator import GeneratorSigmoidSTE
-from models.Mmd_loss_constrained import MMDLossConstrained, RBF as RBFConstrained
+from models.Mmd_loss_constrained import MMDLossConstrained, RBF as RBFConstrained, MixtureRQLinear
 from VMMDBase import VMMDBase
 from modules.text.vmmd_lightning import VMMDLightningBase
 
@@ -25,7 +25,7 @@ class VMMDTextLightningBase(VMMDLightningBase):
         # Create generator network using base class method.
         self.generator = self.get_the_networks(self.n_dims, self._latent_size)
         # Create loss function.
-        kernel = RBFConstrained()
+        kernel = MixtureRQLinear()#RBFConstrained()
         self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel)
 
     def forward(self, x: Tensor) -> Tensor:
@@ -45,6 +45,7 @@ class VMMDTextLightningBase(VMMDLightningBase):
         else:
             norm = avg_norm / len(norms)
         self.log(self.gradient_key, norm, prog_bar=True)
+        self.log_dict(norms)
 
     def training_step(self, batch, batch_idx):
         # Assume batch is a numpy array of sentences or similar.
@@ -54,7 +55,6 @@ class VMMDTextLightningBase(VMMDLightningBase):
         subspaces = self.generator(noise_tensor)
 
         # Convert the batch to embeddings.
-        # 'self.embedding' should be set externally.
         embeddings = self._convert_batch(batch, self.embedding, None)
         masked_embeddings = self._convert_batch(batch, self.embedding, subspaces)
 
@@ -73,12 +73,6 @@ class VMMDTextLightningBase(VMMDLightningBase):
             weight_decay=self.hparams.get("weight_decay", 0)
         )
         return optimizer
-        """optimizer = deepspeed.ops.adam.DeepSpeedCPUAdam(
-            self.generator.parameters(),
-            lr=self.hparams.get("lr", 1e-3),
-            weight_decay=self.hparams.get("weight_decay", 0)
-        )
-        return optimizer"""
 
     # The following methods remain abstract or utility; implement as needed:
     def _convert_batch(self, batch, embedding, mask) -> Tensor:

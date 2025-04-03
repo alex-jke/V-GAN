@@ -17,6 +17,7 @@ from matplotlib import pyplot
 from colors import VGAN_GREEN, COMPLIMENTARY
 from models.Generator import Generator, Generator_big
 from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.llama import LLama1B
 
 
 class VMMDLightningBase(pl.LightningModule):
@@ -43,7 +44,6 @@ class VMMDLightningBase(pl.LightningModule):
         self.generator_optimizer = None
         self.emb_model = emb_model
         self.embedding = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length, masks=masks, aggregate=True)
-
 
         self.weight = weight
         self.print_updates = print_updates

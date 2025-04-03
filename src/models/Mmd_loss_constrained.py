@@ -9,6 +9,88 @@ from models.norm import VectorNorm, FrobeniusNorm, MatrixNorm, L2Norm
 SHAPE_LEN_VECTOR = 2
 SHAPE_LEN_MATRIX = 3
 
+class RationalQuadratic(nn.Module):
+    def __init__(self, alpha=0.5):
+        """
+        Rational Quadratic Kernel.
+
+        Args:
+            alpha (float): Shape parameter. Controls the tail behavior of the kernel.
+                           Higher values make the kernel behave more like the RBF kernel.
+        """
+        super().__init__()
+        self.alpha = alpha
+
+    def get_bandwidth(self, L2_distances):
+        n_samples = L2_distances.shape[0]
+        self.bandwidth = L2_distances.data.sum() / (n_samples ** 2 - n_samples)
+        return L2_distances.data.sum() / (n_samples ** 2 - n_samples)
+
+    def forward(self, X):
+        """
+        Compute the Rational Quadratic Kernel matrix.
+
+        Args:
+            X (torch.Tensor): Input tensor of shape (n_samples, n_features).
+
+        Returns:
+            torch.Tensor: Kernel matrix of shape (n_samples, n_samples).
+        """
+        self.bandwidth = self.get_bandwidth(X)
+        L2_distances = torch.cdist(X, X) ** 2
+        return (1 + L2_distances / (2 * self.alpha)) ** (-self.alpha)
+
+
+class MixtureRQLinear(nn.Module):
+
+    def get_bandwidth(self, L2_distances):
+        n_samples = L2_distances.shape[0]
+        self.bandwidth = L2_distances.data.sum() / (n_samples ** 2 - n_samples)
+        return L2_distances.data.sum() / (n_samples ** 2 - n_samples)
+
+    def __init__(self, alphas=None, linear_weight=1.0):
+        """
+        Mixture of Rational Quadratic Kernels with a Linear Kernel.
+
+        Args:
+            alphas (list of float): List of alpha values for the RQ kernels.
+                                   Each alpha corresponds to a different RQ kernel.
+            linear_weight (float): Weight for the linear kernel.
+        """
+        super().__init__()
+        if alphas is None:
+            alphas = [0.2, 0.5, 1.0, 2.0, 5]
+        self.alphas = alphas
+        self.linear_weight = linear_weight
+
+    def forward(self, X: torch.Tensor, Y: torch.Tensor):
+        """
+        Compute the mixture of RQ kernels and linear kernel.
+
+        Args:
+            X (torch.Tensor): Input tensor of shape (n_samples, n_features).
+            Y (torch.Tensor): Input tensor of shape (n_samples, n_features).
+
+        Returns:
+            torch.Tensor: Combined kernel matrix of shape (n_samples, n_samples).
+        """
+        stacked = torch.vstack([X, Y])
+        L2_distances = torch.cdist(stacked, stacked) ** 2
+        self.bandwidth = self.get_bandwidth(L2_distances)
+
+        rq_kernels = []
+        for alpha in self.alphas:
+            rq_kernel = (1 + L2_distances / (2 * alpha)) ** (-alpha)
+            rq_kernels.append(rq_kernel)
+
+        rq_mixture = torch.sum(torch.stack(rq_kernels), dim=0)
+
+        linear_kernel = torch.matmul(stacked, stacked.T)
+
+        combined_kernel = rq_mixture + self.linear_weight * linear_kernel
+
+        return combined_kernel
+
 class RBF(nn.Module):
 
     def __init__(self, n_kernels=5, mul_factor=2.0, bandwidth=None, embedding = lambda x: x,
@@ -131,7 +213,7 @@ class MMDLossConstrained(nn.Module):
         #K = self.kernel(torch.vstack([X, Y]))
         K = self.kernel(X, Y)
         self.bandwidth = self.kernel.bandwidth
-        self.bandwidth_multipliers = self.kernel.bandwidth_multipliers
+        #self.bandwidth_multipliers = self.kernel.bandwidth_multipliers
         X_size = X.shape[0]
         XX = K[:X_size, :X_size].mean()
         XY = K[:X_size, X_size:].mean()

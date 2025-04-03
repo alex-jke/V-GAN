@@ -110,8 +110,8 @@ class Generator_big(nn.Module):
             nn.Linear(input_size, output_size),
             nn.LeakyReLU(0.2),
             #nn.Sigmoid(),
-            #nn.BatchNorm1d(output_size)
-            DyT(output_size)
+            nn.BatchNorm1d(output_size)
+            #DyT(output_size)
         )
         last_layer = nn.Sequential(
             nn.Linear(input_size, self.img_size),
@@ -135,8 +135,8 @@ class BinaryStraightThrough(nn.Module):
 
     def forward(self, x):
         # Forward: Threshold to 0/1
-        x_binary = (x >= self.threshold).int()
-        # Backward: Pass gradients through sigmoid
+        x_binary = (x > self.threshold).int()
+        # Backward: Pass gradients through threshold
         x_binary = x_binary + (x - x.detach())
         return x_binary
 

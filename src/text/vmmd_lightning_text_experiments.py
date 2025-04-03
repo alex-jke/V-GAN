@@ -8,7 +8,7 @@ from pytorch_lightning import Trainer, Callback
 from pytorch_lightning.strategies import DeepSpeedStrategy
 from torch.utils.data import DataLoader, TensorDataset
 
-from models.Generator import GeneratorSpectralSigmoidSTE
+from models.Generator import GeneratorSpectralSigmoidSTE, GeneratorSigmoidSTE, GeneratorSoftmaxSTE
 from modules.text.vmmd_text import VMMDTextLightning
 from text.Embedding.llama import LLama1B
 from text.dataset.emotions import EmotionDataset
@@ -66,25 +66,13 @@ class VisualizationCallback(Callback):
                 text_visualization=True
             )
             visualizer.visualize(epoch=epoch, samples=self.samples)
-            pl_module._export(pl_module.generator, export_params=False, export_path=self.export_path)
+            pl_module._export(pl_module.generator, export_params=epoch == trainer.max_epochs - 1, export_path=self.export_path)
 
-if __name__ == "__main__":
-
-    emb_model = LLama1B()
-    generator = GeneratorSpectralSigmoidSTE
-    version = "0.02"
-    samples = 2000
-    yield_epochs = 1
-    epochs = 25
-    batch_size = 100
-
-    embedding_fun = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length, masks=masks, aggregate=True)
-
+def train():
     # Instantiate your model (pass required hyperparameters)
-    model = VMMDTextLightning(emb_model=emb_model, sequence_length=17, lr=1e-4, weight_decay=0, weight=1.0)
+    model = VMMDTextLightning(emb_model=emb_model, sequence_length=17, lr=lr, weight_decay=weight_decay, weight=penalty_weight)
 
     # Create a DataLoader or a LightningDataModule for your training data.
-    dataset = EmotionDataset()
     preparer = DatasetPreparer(dataset, max_samples=samples)
     _x_train = preparer.get_training_data()
     x_train = model.get_training_data(_x_train)
@@ -103,13 +91,35 @@ if __name__ == "__main__":
                       default_root_dir=exp_path,
                       log_every_n_steps=1,
                       accelerator="gpu",
-                      #strategy="deepspeed_stage_2_offload"
-                      #strategy="ddp"
-                      #strategy=DeepSpeedStrategy(offload_optimizer=True)
+                      # strategy="deepspeed_stage_2_offload"
+                      # strategy="ddp"
+                      # strategy=DeepSpeedStrategy(offload_optimizer=True)
                       )
-    #trainer = Trainer(accelerator="gpu", devices=4, strategy="deepspeed_stage_3_offload", precision=16)
+    # trainer = Trainer(accelerator="gpu", devices=4, strategy="deepspeed_stage_3_offload", precision=16)
 
     # Train the model
     trainer.fit(model, train_dataloaders=data_loader)
+
+if __name__ == "__main__":
+
+    emb_model = LLama1B()
+    dataset = EmotionDataset()
+    generator = GeneratorSoftmaxSTE
+    version = "0.03_MixtureRQ+bn+grid"
+    sampless = [3000, 5000, 10_000]
+    yield_epochs = 1
+    batch_size = 100
+    penalty_weights = [0.0, .1, .5, 1.0]
+    lrs = [1e-1, 1e-2, 1e-3]
+    epochss = [10, 25, 75]
+    weight_decays = [0.0, 1e-5, 0.1]
+
+    embedding_fun = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length, masks=masks, aggregate=True)
+    for samples in sampless:
+        for weight_decay in weight_decays:
+            for penalty_weight in penalty_weights:
+                for epochs, lr in zip(epochss, lrs):
+                    train()
+
 
 
