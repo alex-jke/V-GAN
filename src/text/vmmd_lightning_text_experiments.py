@@ -101,7 +101,7 @@ class VMMDLightningTextExperiment:
         sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
         return sequence_length
 
-    def _prepare_data(self, model: VMMDTextLightningBase) -> ndarray[str]:
+    def _prepare_data(self) -> ndarray[str]:
         """
         Prepare the data for training.
         :param model: The VMMDTextLightningBase model to use.
@@ -111,13 +111,11 @@ class VMMDLightningTextExperiment:
         preparer = DatasetPreparer(self.dataset, max_samples=self.samples)
         _x_train = preparer.get_training_data()
 
-        embedding_fun = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length,
-                                                                                         masks=masks, aggregate=True)
         # Get the average sentence length from the dataset.
         if self.sequence_length is None:
             self.sequence_length = self._get_average_sentence_length(_x_train)
-        x_train = model.get_training_data(_x_train, embedding_fun, _x_train)
-        return x_train
+
+        return _x_train
 
     def _prepare_vmmd_model(self):
         """
@@ -142,9 +140,13 @@ class VMMDLightningTextExperiment:
         :return: None
         """
         # Instantiate the model with the provided hyperparameters.
+        _x_train = self._prepare_data()
         model = self._prepare_vmmd_model()
+        embedding_fun = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length,
+                                                                                         masks=masks,
+                                                                                         aggregate=self.transformer_aggregation)
+        x_train = model.get_training_data(_x_train, embedding_fun, _x_train)
 
-        x_train = self._prepare_data(model)
         data_loader = DataLoader(x_train, batch_size=self.batch_size, drop_last=True, pin_memory=True,
             shuffle=True, num_workers=10, persistent_workers=True)
 
@@ -173,10 +175,10 @@ if __name__ == "__main__":
     emb_model = LLama1B()
     dataset = EmotionDataset()
     generator = GeneratorSoftmaxSTE
-    version = "0.03_MixtureRQ+bn+grid"
-    sampless = [300]
+    version = "0.03_MixtureRQ+bn"
+    sampless = [3000]
     yield_epochs = 1
-    batch_size = 10
+    batch_size = 100
     penalty_weights = [0.0]
     lrs = [1e-2]
     epochss = [25]

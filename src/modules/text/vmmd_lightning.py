@@ -180,6 +180,10 @@ class VMMDLightningBase(pl.LightningModule):
                 torch.save(generator.state_dict(), models_dir / f'generator_{run_number}.pt')
             self.model_snapshot(path_to_directory)
 
+    def device(self) -> torch.device:
+        return torch.device('cuda' if torch.cuda.is_available()
+                            else ("mps" if torch.backends.mps.is_available() else "cpu"))
+
     # The following methods must be implemented in subclasses:
     def training_step(self, batch, batch_idx):
         raise NotImplementedError("Define training_step in subclass.")

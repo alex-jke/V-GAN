@@ -2,7 +2,7 @@ from typing import Optional
 
 from pytorch_lightning import Callback, Trainer
 
-from modules.text.vmmd_text_base import VMMDTextBase
+from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
@@ -32,10 +32,11 @@ class VisualizationCallback(Callback):
         self.samples = samples
         self.yield_epochs = yield_epochs
 
-    def on_train_epoch_end(self, trainer: Trainer, pl_module: VMMDTextBase):
+    def on_train_epoch_end(self, trainer: Trainer, pl_module: VMMDTextLightningBase):
 
-        if not isinstance(pl_module, VMMDTextBase):
-            raise ValueError("The model must be an instance of VMMDTextBase.")
+        if not isinstance(pl_module, VMMDTextLightningBase):
+            raise ValueError(f"The model must be an instance of VMMDTextBase."
+                             f"Expected VMMDTextBase but got {type(pl_module).__name__}")
 
         if self.yield_epochs is None:
             self.yield_epochs = max(1, trainer.max_epochs // 10)
