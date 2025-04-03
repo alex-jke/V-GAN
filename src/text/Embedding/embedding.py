@@ -6,10 +6,18 @@ import torch
 from torch import Tensor
 
 from text.UI.cli import ConsoleUserInterface
+from text.dataset.aggregatable import Aggregatable
 from text.dataset.dataset import Dataset
 ui = ConsoleUserInterface()
 
 class Embedding(ABC):
+
+    def __init__(self):
+        """
+        Initializes the embedding model.
+        """
+        self.prefix: Optional[List[str]] = None
+        self.suffix: Optional[List[str]] = None
 
     @abstractmethod
     def embed(self, data: str) -> np.ndarray:
@@ -28,6 +36,9 @@ class Embedding(ABC):
         :param words: The list of words to embed.
         :param mask: The mask to use. If None, all words are embedded.
         :param aggregate: If True, the embeddings are aggregated to a single vector.
+            For static embeddings, this is the mean of the embeddings.
+            For dynamic embeddings, such as transformers, this is the last hidden state of the
+            last suffix token.
         :return: The embeddings of the words, as a numpy array, representing a list of vectors.
             The shape of the array should be (n_words, n_dim).
         """
@@ -43,7 +54,7 @@ class Embedding(ABC):
         return sentence.split(seperator)
 
     def embed_sentences(self, sentences: np.ndarray[str], padding_length: Optional[int], seperator: str = " ", masks: Optional[Tensor] = None,
-                        aggregate: bool = True) -> Tensor:
+                        aggregate: bool = True, dataset: Optional[Aggregatable] = None) -> Tensor:
         """
         Embeds a list of sentences into vectors. It splits the sentences into words using the seperator.
         It then embeds the words into vectors and pads them to the padding length.
@@ -55,15 +66,25 @@ class Embedding(ABC):
         :param masks: The masks to use. If None, all words are embedded.
             The mask tensor should be of shape: (n_sentences, padding_length).
         :param aggregate: If True, the embeddings are aggregated to a single tensor.
+            This is the mean of the embeddings for static embeddings.
+            For dynamic embeddings, such as transformers, this is the last hidden state of the
+            last suffix token.
             If False, the embeddings are returned as a list of tensors.
+        :param dataset: The dataset to use as an aggregatable dataset.
+            It provides a prefix and suffix to the sentences to allow in-context learning.
+            Only used if aggregate is True.
         :return: The embeddings of the sentences, as a tensor.
             The shape of the tensor should be (n_sentences, n_words, n_embedding_dim).
         """
-        embeddings = []
 
-        #for sentence in sentences:
-        #print("Embedding sentences...")
-        ui = ConsoleUserInterface()
+        if aggregate and dataset is None:
+            raise ValueError("If aggregate is True, dataset must be provided.")
+
+        if aggregate:
+            self.prefix = dataset.prefix()
+            self.suffix = dataset.suffix()
+
+        embeddings = []
         #with ui.display():
         for i in range(len(sentences)):
             #print("|", end="")

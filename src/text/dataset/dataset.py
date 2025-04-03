@@ -7,6 +7,8 @@ import numpy as np
 from pandas import Series
 from sklearn.model_selection import train_test_split
 
+from text.dataset.aggregatable import Aggregatable
+
 
 class Dataset(ABC):
 
@@ -106,3 +108,8 @@ class Dataset(ABC):
         :return: A string representing the y-axis label.
         """
         pass
+
+class AggregatableDataset(Dataset, Aggregatable, ABC):
+    """
+    A dataset that can be aggregated.
+    """

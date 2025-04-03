@@ -3,14 +3,12 @@ from typing import List, Callable, Optional
 
 import numpy as np
 import torch
-from numpy import ndarray
 from torch import Tensor
 import torch.nn.functional as F
 
 from .embedding import Embedding
 from .tokenizer import Tokenizer
 from ..UI import cli
-from ..UI.cli import ConsoleUserInterface
 
 
 class HuggingModel(Tokenizer, Embedding, ABC):
@@ -33,6 +31,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
 
     def __init__(self):
+        super().__init__()
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
         print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
@@ -45,11 +44,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         self.padding_token = self._padding_token
         self.ui = cli.get()
         self.prefix_mask: Optional[Tensor] = None
-        self.postfix_mask: Optional[Tensor] = None
-        self.prefix = ["text",":", "I", "am", "happy", "because", "it", "is", "sunny", ".", "feeling", ":", "not", "sadness","\n",
-                                 "text", ":", "I", "feel", "sad", "because", "I", "have", "no", "friends", ".", "feeling", ":", "sadness""\n",
-                                 "text", ":"]
-        self.postfix = [".", "feeling",":"]
+        self.suffix_mask: Optional[Tensor] = None
 
     def tokenize(self, data: str) -> Tensor: #List[int]:
         tokenized = self.tokenizer(data, return_tensors='pt')
@@ -141,18 +136,18 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             self.prefix_mask = torch.ones(len(self.prefix)).to(self.device)
         return self.prefix_mask
 
-    def get_postfix_mask(self) -> Tensor:
-        if self.postfix_mask is None:
-            self.postfix_mask = torch.ones(len(self.postfix)).to(self.device)
-        return self.postfix_mask
+    def get_suffix_mask(self) -> Tensor:
+        if self.suffix_mask is None:
+            self.suffix_mask = torch.ones(len(self.suffix)).to(self.device)
+        return self.suffix_mask
 
     def _embed_words_last(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
 
-        classification_added_words = self.prefix + words + self.postfix
+        classification_added_words = self.prefix + words + self.suffix
         #added_mask = Tensor([1, 1, 1]).to(self.device) if mask is not None else None
         prefix_mask = self.get_prefix_mask()
-        postfix_mask = self.get_postfix_mask()
-        classification_added_mask = torch.concat((prefix_mask, mask, postfix_mask)) if mask is not None else None
+        suffix_mask = self.get_suffix_mask()
+        classification_added_mask = torch.concat((prefix_mask, mask, suffix_mask)) if mask is not None else None
         masked = self._embed_words_full(classification_added_words, classification_added_mask)
         last_entry = masked[-1]
         expanded = last_entry.unsqueeze(0)

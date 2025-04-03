@@ -1,10 +1,25 @@
+from typing import List
+
 import kagglehub
 import pandas as pd
 
-from text.dataset.dataset import Dataset
+from text.dataset.aggregatable import Aggregatable
+from text.dataset.dataset import Dataset, AggregatableDataset
 
 
-class EmotionDataset(Dataset):
+class EmotionDataset(AggregatableDataset):
+
+    def prefix(self) -> List[str]:
+
+        return ["text", ":", "I", "am", "happy", "because", "it", "is", "sunny", ".", "feeling", ":", "not",
+                   "sadness", "\n",
+                   "text", ":", "I", "feel", "sad", "because", "I", "have", "no", "friends", ".", "feeling", ":",
+                   "sadness""\n",
+                   "text", ":"]
+
+    def suffix(self) -> List[str]:
+        return [".", "feeling", ":"]
+
     def get_possible_labels(self) -> list:
         # Six categories: sadness (0), joy (1), love (2), anger (3), fear (4), and surprise (5).
         return [0, 1, 2, 3, 4, 5]
