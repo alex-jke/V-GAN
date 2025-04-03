@@ -1,4 +1,5 @@
 import inspect
+from typing import Optional
 
 import torch
 from collections import defaultdict
@@ -241,7 +242,9 @@ class VMMDBase:
         else:
             return torch.Tensor(self.batch_size, latent_size)
 
-    def _export(self, generator, export_params= True):
+    def _export(self, generator, export_params= True, export_path: Optional[str] = None):
+        if self.path_to_directory is None:
+            self.path_to_directory = export_path
         if not self.path_to_directory is None:
             path_to_directory = Path(self.path_to_directory)
             if operator.not_(path_to_directory.exists()):

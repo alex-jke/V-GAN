@@ -155,7 +155,7 @@ class VMMDLightningBase(pl.LightningModule):
 
     def _get_noise_tensor(self, latent_size: int):
         if torch.cuda.is_available():
-            return torch.FloatTensor(self.batch_size, latent_size).to(self.device())
+            return torch.FloatTensor(self.batch_size, latent_size).to("cuda")
         elif torch.backends.mps.is_available():
             return torch.FloatTensor(self.batch_size, latent_size).to(torch.device('mps'))
         else:
@@ -179,10 +179,6 @@ class VMMDLightningBase(pl.LightningModule):
             if export_params:
                 torch.save(generator.state_dict(), models_dir / f'generator_{run_number}.pt')
             self.model_snapshot(path_to_directory)
-
-    def device(self):
-        # Let Lightning manage device placement
-        return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # The following methods must be implemented in subclasses:
     def training_step(self, batch, batch_idx):

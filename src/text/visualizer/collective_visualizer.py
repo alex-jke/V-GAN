@@ -3,6 +3,7 @@ from typing import List
 from torch import Tensor
 
 from modules.od_module import VMMD_od
+from modules.text.vmmd_text_base import VMMDTextBase
 from text.Embedding.tokenizer import Tokenizer
 from text.visualizer.average_alpha_visualizer import AverageAlphaVisualizer
 from text.visualizer.generator_visualizer import GeneratorVisualizer
@@ -18,7 +19,7 @@ class CollectiveVisualizer(Visualizer):
     """
     Wraps various visualization tools.
     """
-    def __init__(self, tokenized_data: Tensor | List[List[str]], tokenizer: Tokenizer | None, vmmd_model: VMMD_od, export_path: str, text_visualization: bool = True):
+    def __init__(self, tokenized_data: Tensor | List[List[str]], tokenizer: Tokenizer | None, vmmd_model: VMMD_od | VMMDTextBase, export_path: str, text_visualization: bool = True):
         self.params = {
             "model": vmmd_model,
             "tokenized_data": tokenized_data,

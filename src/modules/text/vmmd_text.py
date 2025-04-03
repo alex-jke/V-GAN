@@ -73,7 +73,7 @@ class VMMDTextLightning(VMMDTextLightningBase):
     """
     An implementation of VMMDTextBase that embeds the data each epoch.
     """
-    def get_training_data(self, x_data: ndarray[str]) -> Tensor | ndarray[str]:
+    def get_training_data(self, x_data: ndarray[str], embedding, n_dims) -> Tensor | ndarray[str]:
         return x_data
 
     def _embed(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], masks: Optional[Tensor]) -> Tensor:

@@ -1,6 +1,6 @@
 import warnings
+from abc import abstractmethod
 
-import deepspeed
 import torch
 from pytorch_lightning.utilities import grad_norm
 from torch import Tensor
@@ -34,7 +34,6 @@ class VMMDTextLightningBase(VMMDLightningBase):
 
     def on_before_optimizer_step(self, optimizer):
         # Compute the 2-norm for each layer
-        # If using mixed precision, the gradients are already unscaled here
         norms = grad_norm(self.generator, norm_type=2)
         avg_norm = 0
         for _, norm in norms.items():
@@ -75,6 +74,7 @@ class VMMDTextLightningBase(VMMDLightningBase):
         return optimizer
 
     # The following methods remain abstract or utility; implement as needed:
+    @abstractmethod
     def _convert_batch(self, batch, embedding, mask) -> Tensor:
         """
         Convert a batch to a tensor.
@@ -82,13 +82,15 @@ class VMMDTextLightningBase(VMMDLightningBase):
         """
         raise NotImplementedError
 
-    def _get_training_data(self, x_data, embedding, n_dims):
+    @abstractmethod
+    def get_training_data(self, x_data, embedding, n_dims):
         """
         Prepare training data.
         Must be implemented.
         """
         raise NotImplementedError
 
+    @abstractmethod
     def check_if_myopic(self, count=500, bandwidth: float | Tensor = 0.01):
         """
         Custom evaluation method.
