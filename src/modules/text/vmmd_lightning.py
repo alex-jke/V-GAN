@@ -15,15 +15,14 @@ import pytorch_lightning as pl
 from matplotlib import pyplot
 
 from colors import VGAN_GREEN, COMPLIMENTARY
-from models.Generator import Generator, Generator_big
+from models.Generator import Generator, Generator_big, GeneratorSigmoidSTE
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.llama import LLama1B
 
 
 class VMMDLightningBase(pl.LightningModule):
     def __init__(self,
-                 #embedding: Optional[Callable[[np.ndarray[str], int, Optional[Tensor]], Tensor]],
-                 emb_model: HuggingModel,
+                 embedding: Optional[Callable[[np.ndarray[str], int, Optional[Tensor]], Tensor]],
                  batch_size=500, epochs=500, lr=1e-4, momentum=0.99, seed=777,
                  weight_decay=1e-4, path_to_directory=None, weight=0, generator=None,
                  print_updates=False, gradient_clipping=False):
@@ -38,13 +37,11 @@ class VMMDLightningBase(pl.LightningModule):
         self.lr = lr
         self.momentum = momentum
         self.seed = seed if seed is not None else np.random.randint(10, 10000, 1)
-        self.provided_generator = generator if generator is not None else Generator_big
+        self.provided_generator = generator if generator is not None else GeneratorSigmoidSTE
         self.weight_decay = weight_decay
         self.path_to_directory = path_to_directory
         self.generator_optimizer = None
-        self.emb_model = emb_model
-        self.embedding = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length, masks=masks, aggregate=True)
-
+        self.embedding = embedding
         self.weight = weight
         self.print_updates = print_updates
         self.apply_gradient_clipping = gradient_clipping

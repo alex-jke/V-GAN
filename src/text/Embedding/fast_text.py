@@ -28,10 +28,13 @@ class FastText(Embedding):
         except ValueError as e:
             raise e
 
-    def embed_words(self, words: List[str], mask: Optional[Tensor]) -> np.ndarray:
+    def embed_words(self, words: List[str], mask: Optional[Tensor], aggregate: bool = False) -> np.ndarray:
         if mask is not None:
             raise NotImplementedError("Masking is not implemented for FastText.")
-        return self.model.embeddings(words, normalize=self.normalize)
+        embeddings =  self.model.embeddings(words, normalize=self.normalize)
+        if aggregate:
+            return embeddings.mean(0)
+        return embeddings
 
 
 if __name__ == '__main__':

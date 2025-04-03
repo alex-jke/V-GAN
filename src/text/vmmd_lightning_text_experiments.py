@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from typing import List, Type, Optional
+from typing import List, Type, Optional, Callable
 
 import numpy as np
 import torch
@@ -15,7 +15,7 @@ from modules.text.vmmd_text_base import VMMDTextBase
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.llama import LLama1B
-from text.dataset.dataset import Dataset
+from text.dataset.dataset import Dataset, AggregatableDataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.visualizer.collective_visualizer import CollectiveVisualizer
@@ -33,7 +33,7 @@ class VMMDLightningTextExperiment:
                  vmmd_model: Type[VMMDTextLightningBase],
                  generator: Type[Generator_big],
                  version: str,
-                 dataset: Dataset,
+                 dataset: AggregatableDataset,
                  samples: int,
                  yield_epochs: int,
                  lr: float,
@@ -117,16 +117,17 @@ class VMMDLightningTextExperiment:
 
         return _x_train
 
-    def _prepare_vmmd_model(self):
+    def _prepare_vmmd_model(self, embedding_fun: Callable) -> VMMDTextLightningBase:
         """
         Prepare the VMMD model for training.
         """
         return self.vmmd_model(
-            emb_model=self.emb_model,
+            embedding=embedding_fun,
             sequence_length=self.sequence_length,
             lr=self.lr,
             weight_decay=self.weight_decay,
-            weight=self.penalty_weight
+            weight=self.penalty_weight,
+            generator=self.generator,
         )
 
 
@@ -141,10 +142,12 @@ class VMMDLightningTextExperiment:
         """
         # Instantiate the model with the provided hyperparameters.
         _x_train = self._prepare_data()
-        model = self._prepare_vmmd_model()
+
         embedding_fun = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length,
                                                                                          masks=masks,
-                                                                                         aggregate=self.transformer_aggregation)
+                                                                                         aggregate=self.transformer_aggregation,
+                                                                                         dataset=self.dataset)
+        model = self._prepare_vmmd_model(embedding_fun)
         x_train = model.get_training_data(_x_train, embedding_fun, _x_train)
 
         data_loader = DataLoader(x_train, batch_size=self.batch_size, drop_last=True, pin_memory=True,
@@ -176,9 +179,9 @@ if __name__ == "__main__":
     dataset = EmotionDataset()
     generator = GeneratorSoftmaxSTE
     version = "0.03_MixtureRQ+bn"
-    sampless = [3000]
+    sampless = [300]
     yield_epochs = 1
-    batch_size = 100
+    batch_size = 10
     penalty_weights = [0.0]
     lrs = [1e-2]
     epochss = [25]
