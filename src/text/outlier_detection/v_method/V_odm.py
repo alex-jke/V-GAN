@@ -30,7 +30,7 @@ class V_ODM(EnsembleODM):
         # but the probability is low.
         self.num_subspaces = 50
 
-        self.odm_model = odm_model
+        self.odm_model: BaseVOdmAdapter = odm_model
         self.model = space.model
         if base_detector is None:
             base_detector = LUNAR

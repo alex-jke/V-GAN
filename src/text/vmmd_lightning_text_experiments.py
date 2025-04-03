@@ -6,8 +6,8 @@ import numpy as np
 import torch
 from numpy import ndarray
 from pytorch_lightning import Trainer, Callback
-from pytorch_lightning.strategies import DeepSpeedStrategy
-from torch.utils.data import DataLoader, TensorDataset
+from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
+from torch.utils.data import DataLoader
 
 from models.Generator import GeneratorSpectralSigmoidSTE, GeneratorSigmoidSTE, GeneratorSoftmaxSTE, Generator_big
 from modules.text.vmmd_text import VMMDTextLightning
@@ -71,7 +71,7 @@ class VMMDLightningTextExperiment:
             self.generator.__name__,
             f"{self.version}",
             f"agg_{'t' if self.transformer_aggregation else 'avg'}",
-            f"{self.dataset.name}_sl(avg)_s{self.samples}"
+            f"{self.dataset.name}_sl{self.sequence_length}_s{self.samples}"
         )
         if self.train_flag:
             base_dir += "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -162,12 +162,25 @@ class VMMDLightningTextExperiment:
             samples=30
         )
 
+        tensorboard_logger = TensorBoardLogger(
+            save_dir=self.export_path,
+            name="tensorboard_logs"
+        )
+        print("TensorBoard Logs at: ", self.export_path + "/tensorboard_logs")
+
+        csv_logger = CSVLogger(
+            save_dir=self.export_path,
+            name="lightning_logs",
+            version=0
+        )
+
         trainer = Trainer(
             max_epochs=self.epochs,
             callbacks=[vis_cb],
             default_root_dir=self.export_path,
             log_every_n_steps=1, # Log every step, as the visualizer loads the csv file created by the logger.
-            accelerator="gpu"
+            accelerator="gpu",
+            logger=[tensorboard_logger, csv_logger],
         )
         # Start training.
         trainer.fit(model, train_dataloaders=data_loader)
@@ -178,10 +191,10 @@ if __name__ == "__main__":
     emb_model = LLama1B()
     dataset = EmotionDataset()
     generator = GeneratorSoftmaxSTE
-    version = "0.03_MixtureRQ+bn"
-    sampless = [300]
+    version = "0.04_MixtureRQ+bn"
+    sampless = [3000]
     yield_epochs = 1
-    batch_size = 10
+    batch_size = 100
     penalty_weights = [0.0]
     lrs = [1e-2]
     epochss = [25]
@@ -209,3 +222,5 @@ if __name__ == "__main__":
 
 
 
+#python -m tensorboard.main --logdir=
+#/home/i40/jenkea/PycharmProjects/V-GAN/src/text/experiments/VMMDTextLightning/LLama1B/GeneratorSoftmaxSTE/0.04_MixtureRQ+bn/agg_t/Emotions_slNone_s3000_20250403-131421/tensorboard_logs

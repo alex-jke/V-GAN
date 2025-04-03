@@ -46,6 +46,11 @@ class VMMDTextLightningBase(VMMDLightningBase):
         self.log(self.gradient_key, norm, prog_bar=True)
         self.log_dict(norms)
 
+    def on_after_backward(self):
+        for name, param in self.named_parameters():
+            self.logger.experiment.add_histogram(f"gradients/{name}", param.grad, self.global_step)
+            self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
+
     def training_step(self, batch, batch_idx):
         # Assume batch is a numpy array of sentences or similar.
         # Prepare noise and subspaces.
