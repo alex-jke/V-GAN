@@ -156,7 +156,7 @@ class VMMDLightningTextExperiment:
             export_path=self.export_path,
             dataset=self.dataset,
             yield_epochs=self.yield_epochs,
-            samples=self.samples
+            samples=30
         )
 
         trainer = Trainer(
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     penalty_weights = [0.0]
     lrs = [1e-2]
     epochss = [25]
-    weight_decays = [1e-5]
+    weight_decays = [0.04]
 
     for samples in sampless:
         for weight_decay in weight_decays:
