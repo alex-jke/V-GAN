@@ -1,6 +1,7 @@
 import warnings
 from abc import abstractmethod
 
+import numpy as np
 import torch
 from pytorch_lightning.utilities import grad_norm
 from torch import Tensor
@@ -30,10 +31,6 @@ class VMMDTextLightningBase(VMMDLightningBase):
         #self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel)
         self.loss_function = MSELoss(weight=self.hparams.get("weight", 1.0))
 
-    def forward(self, x: Tensor) -> Tensor:
-        # Optionally define forward pass (e.g., for inference)
-        return self.generator(x)
-
     def on_before_optimizer_step(self, optimizer):
         # Compute the 2-norm for each layer
         norms = grad_norm(self.generator, norm_type=2)
@@ -49,6 +46,7 @@ class VMMDTextLightningBase(VMMDLightningBase):
         self.log_dict(norms)
 
     def on_after_backward(self):
+        # Log gradients
         for name, param in self.named_parameters():
             self.logger.experiment.add_histogram(f"gradients/{name}", param.grad, self.global_step)
             self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
@@ -104,3 +102,14 @@ class VMMDTextLightningBase(VMMDLightningBase):
         Must be implemented.
         """
         raise NotImplementedError
+
+    @staticmethod
+    def get_average_sentence_length(x_data: np.ndarray[str], seperator = " ") -> int:
+        """
+        Calculate the average sentence length in the dataset.
+        :param x_data: A numpy array of sentences.
+        :param seperator: The separator used to split sentences into words.
+        :return: The average sentence length, as an integer.
+        """
+        sequence_length = int(np.mean([len(x.split(seperator)) for x in x_data]))
+        return sequence_length

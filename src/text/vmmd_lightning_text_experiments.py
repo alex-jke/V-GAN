@@ -92,15 +92,6 @@ class VMMDLightningTextExperiment:
         visualizer.visualize(epoch=epoch, samples=samples)
         model._export(model.generator, export_params=False)
 
-    def _get_average_sentence_length(self, x_data: ndarray[str]) -> int:
-        """
-        Calculate the average sentence length in the dataset.
-        :param x_data: A numpy array of sentences.
-        :return: The average sentence length, as an integer.
-        """
-        sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
-        return sequence_length
-
     def _prepare_data(self) -> ndarray[str]:
         """
         Prepare the data for training.
@@ -113,7 +104,7 @@ class VMMDLightningTextExperiment:
 
         # Get the average sentence length from the dataset.
         if self.sequence_length is None:
-            self.sequence_length = self._get_average_sentence_length(_x_train)
+            self.sequence_length = VMMDTextLightningBase.get_average_sentence_length(_x_train)
 
         return _x_train
 

@@ -15,6 +15,7 @@ from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.llama import LLama1B
 from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.ag_news import AGNews
@@ -293,7 +294,7 @@ def aggregate_results():
     aggregator.run_aggregation()
 
 if __name__ == '__main__':
-    datasets = [
+    """datasets = [
                    AGNews(),
                    EmotionDataset(),
                    IMBdDataset(),
@@ -334,4 +335,11 @@ if __name__ == '__main__':
                         memory_used_before = torch.cuda.memory_allocated()
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
-                        print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")
+                        print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
+    dataset = EmotionDataset()
+    emb_model = LLama1B()
+    train_size = 5_000
+    test_size = 1_000
+    Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
+               experiment_name=f"0.3", use_cached=False,
+               run_cachable=False, skip_error=False, runs=5).run()

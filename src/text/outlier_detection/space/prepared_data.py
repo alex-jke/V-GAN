@@ -1,23 +1,37 @@
+from typing import Optional
+
+from numpy import ndarray
 from torch import Tensor
+
+from text.dataset.aggregatable import Aggregatable
+
 
 class PreparedData:
     """
     This class is a simple container for the prepared data.
     """
-    def __init__(self, x_train: Tensor, y_train: Tensor, x_test: Tensor, y_test: Tensor, space: str):
+    def __init__(self, x_train: Tensor | ndarray[str], y_train: Tensor | ndarray[str], x_test: Tensor | ndarray[str],
+                 y_test: Tensor | ndarray[str], space: str,
+                 aggregetable: Optional[Aggregatable]):
         """
-        Initializes the PreparedData object.
+        Initializes the PreparedData object. The x and y data are the training and testing data. If provided as tensors,
+        they should be of shape (batch_size, dim_features) for x and (batch_size) for y. If provided as ndarrays of strings,
+        they should be of shape (batch_size) for x and (batch_size) for y. In that case, the data nd array is expected to
+        contain the sentences to be embedded. The space is the name of the space in which the data is prepared.
         :param x_train: The training data as a torch Tensor of shape (batch_size, dim_features).
         :param y_train: The training labels as a torch Tensor of shape (batch_size).
         :param x_test: The test data as a torch Tensor of shape (batch_size, dim_features).
         :param y_test: The test labels as a torch Tensor of shape (batch_size).
         :param space: The space in which the data is prepared.
+        :param aggregetable: An optional object that contains prefixes and postfixes, which can be used for training and
+            testing.
         """
         self.x_train = x_train
         self.y_train = y_train
         self.x_test = x_test
         self.y_test = y_test
         self.space = space
+        self.aggregetable = aggregetable
         self._validate_data()
 
     def _validate_data(self):

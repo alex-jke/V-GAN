@@ -19,7 +19,7 @@ class BaseVOdmAdapter(ABC):
     used for outlier detection. The model is created in the init_model method.
     """
     def __init__(self):
-        self.model: VMMD_od | VGAN_od | None = None
+        self.model: VMMD_od | VGAN_od | VMMDTextLightningBase | None = None
         self.loaded_model = False
         self.data: PreparedData | None= None
         self.space: Space | None = None
