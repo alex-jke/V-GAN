@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 from models.Generator import GeneratorSigmoidSTE
 from models.Mmd_loss_constrained import MMDLossConstrained, RBF as RBFConstrained, MixtureRQLinear
 from VMMDBase import VMMDBase
+from models.mse_loss import MSELoss
 from modules.text.vmmd_lightning import VMMDLightningBase
 
 
@@ -26,7 +27,8 @@ class VMMDTextLightningBase(VMMDLightningBase):
         self.generator = self.get_the_networks(self.n_dims, self._latent_size)
         # Create loss function.
         kernel = MixtureRQLinear()#RBFConstrained()
-        self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel)
+        #self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel)
+        self.loss_function = MSELoss(weight=self.hparams.get("weight", 1.0))
 
     def forward(self, x: Tensor) -> Tensor:
         # Optionally define forward pass (e.g., for inference)

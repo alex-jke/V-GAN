@@ -200,7 +200,8 @@ class MMDLossConstrained(nn.Module):
         if self.middle_penalty is None:
             self.middle_penalty = 0.0
 
-    def diversity_loss(self, M, tau=0.1):
+    @staticmethod
+    def diversity_loss(M, tau=0.1):
         # M: shape (n, d) with entries in [0,1]
         diff = M.unsqueeze(1) - M.unsqueeze(0)  # (n, n, d)
         dist = torch.sum(diff ** 2, dim=-1)  # (n, n) squared distances

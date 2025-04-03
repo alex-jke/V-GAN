@@ -5,6 +5,7 @@ from typing import Tuple
 from numpy import ndarray
 
 from modules.od_module import VGAN_od, VMMD_od
+from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
@@ -69,7 +70,7 @@ class BaseVOdmAdapter(ABC):
         self.visualize_results()
 
     @abstractmethod
-    def _init_model(self, data: PreparedData, space: Space) -> VMMD_od | VGAN_od:
+    def _init_model(self, data: PreparedData, space: Space) -> VMMD_od | VGAN_od | VMMDTextLightningBase:
         """
         Private method that should be implemented by the subclass. This method should initialize the model used for
         outlier detection.
