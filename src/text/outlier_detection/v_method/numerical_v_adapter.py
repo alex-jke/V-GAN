@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 
 from numpy import ndarray
 
-from modules.od_module import VGAN_od, VMMD_od
+from modules.od_module import VGAN_od, VMMD_od, ODModule
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
+from text.outlier_detection.base_v_adapter import BaseVAdapter
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
@@ -13,13 +14,13 @@ from text.visualizer.collective_visualizer import CollectiveVisualizer
 from text.visualizer.od import od_subspace_visualizer
 
 
-class BaseVOdmAdapter(ABC):
+class NumericalVOdmAdapter(BaseVAdapter):
     """
-    Base class for all V_ODM adapters. This class is used to create the vmmd or vgan model
+    Base class for all V_ODM adapters, that work with numerical data. This class is used to create the vmmd or vgan model
     used for outlier detection. The model is created in the init_model method.
     """
     def __init__(self):
-        self.model: VMMD_od | VGAN_od | None = None
+        self.model: Optional[ODModule] = None
         self.loaded_model = False
         self.data: PreparedData | None= None
         self.space: Space | None = None
@@ -29,12 +30,8 @@ class BaseVOdmAdapter(ABC):
         self.proba: ndarray | None = None
 
     def _init_subspaces(self, num_subspaces: int):
-        self.model.approx_subspace_dist(add_leftover_features=False, subspace_count=1000)
-        subspaces = self.model.subspaces
-        proba = self.model.proba
-
         # Select the num_subspaces most probable subspaces
-        self.subspaces, self.proba = self._get_top_subspaces(num_subspaces, proba, subspaces)
+        self.subspaces, self.proba = self._get_top_subspaces(self.model, num_subspaces)
 
     def init_model(self, data: PreparedData, base_path: Path, space: Space):
         """
@@ -105,24 +102,6 @@ class BaseVOdmAdapter(ABC):
             self._init_subspaces(num_subspaces)
 
         return self.subspaces
-
-    @staticmethod
-    def _get_top_subspaces(num_subspaces: int, proba: ndarray, subspaces: ndarray) -> Tuple[ndarray, ndarray]:
-        """
-        Returns the num_subspaces most probable subspaces, with their probabilities.
-        """
-        amount = min(num_subspaces, len(proba))
-        idx = proba.argsort()[-amount:][::-1]
-        top_subspaces = subspaces[idx]
-        top_proba = proba[idx]
-
-        # Ignore Subspaces contributing less than 0.2% to the model if the rest of the subspaces make up at least 80%
-        threshold = 0.002
-        if top_proba[top_proba > threshold].sum() > 0.8:
-            top_subspaces = top_subspaces[top_proba > threshold]
-            top_proba = top_proba[top_proba > threshold]
-
-        return top_subspaces, top_proba
 
     def get_subspace_probabilities(self, num_subspaces=50):
         """

@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
+from text.outlier_detection.v_method.numerical_v_adapter import NumericalVOdmAdapter
 
 
 class BaseVOdmAdapterTest(unittest.TestCase):
@@ -16,7 +16,7 @@ class BaseVOdmAdapterTest(unittest.TestCase):
         expected_top_subspaces = np.array(['D', 'E', 'B'])
         expected_top_proba = np.array([0.9, 0.4, 0.3])
 
-        result_subspaces, result_proba = BaseVOdmAdapter._get_top_subspaces(3, proba, subspaces)
+        result_subspaces, result_proba = NumericalVOdmAdapter._get_top_subspaces(3, proba, subspaces)
 
         # Check if the results are as expected.
         self.assertTrue(np.array_equal(expected_top_subspaces, result_subspaces))
@@ -31,7 +31,7 @@ class BaseVOdmAdapterTest(unittest.TestCase):
         expected_top_subspaces = np.array(['D', 'E', 'B', "C", "A"])
         expected_top_proba = np.array([0.9, 0.4, 0.3, 0.2, 0.1])
 
-        result_subspaces, result_proba = BaseVOdmAdapter._get_top_subspaces(50, proba, subspaces)
+        result_subspaces, result_proba = NumericalVOdmAdapter._get_top_subspaces(50, proba, subspaces)
 
         # Check if the results are as expected.
         self.assertTrue(np.array_equal(expected_top_subspaces, result_subspaces))

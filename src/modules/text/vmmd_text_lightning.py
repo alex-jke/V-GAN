@@ -1,7 +1,9 @@
 import warnings
 from abc import abstractmethod
+from typing import Optional
 
 import torch
+from numpy import ndarray
 from pytorch_lightning.utilities import grad_norm
 from torch import Tensor
 import pytorch_lightning as pl
@@ -9,10 +11,11 @@ from models.Generator import GeneratorSigmoidSTE
 from models.Mmd_loss_constrained import MMDLossConstrained, RBF as RBFConstrained, MixtureRQLinear
 from VMMDBase import VMMDBase
 from models.mse_loss import MSELoss
+from modules.od_module import ODModule
 from modules.text.vmmd_lightning import VMMDLightningBase
 
 
-class VMMDTextLightningBase(VMMDLightningBase):
+class VMMDTextLightningBase(VMMDLightningBase, ODModule):
     def __init__(self, sequence_length: int, seperator: str = " ", **kwargs):
         # Assume necessary hyperparameters (e.g., lr, weight_decay, weight, epochs) are in kwargs.
         if 'generator' not in kwargs:
@@ -98,7 +101,7 @@ class VMMDTextLightningBase(VMMDLightningBase):
         raise NotImplementedError
 
     @abstractmethod
-    def check_if_myopic(self, count=500, bandwidth: float | Tensor = 0.01):
+    def check_if_myopic(self, x_data: Optional[ndarray], count=500, bandwidth: float | Tensor = 0.01):
         """
         Custom evaluation method.
         Must be implemented.

@@ -22,19 +22,23 @@ class DatasetPreparer:
         :param labels: The labels to filter for. If left empty, the first label of the dataset is used.
         :return: The training data of the dataset.
         """
-        return self.get_training_data_with_labels(labels)[0]
+        return self.get_data_with_labels(labels, train=True)[0]
 
-    def get_training_data_with_labels(self, training_labels: list = None) -> Tuple[ndarray[str], ndarray[str]]:
+    def get_data_with_labels(self, labels: list = None, train: bool = True) -> Tuple[ndarray[str], ndarray[str]]:
         """
         Returns the training data of the dataset as an .
-        :param training_labels: The labels to filter for. If left empty, the first label of the dataset is used.
+        :param labels: The labels to filter for. If left empty, the first label of the dataset is used for training data
+            and all labels are used for testing data.
         :return: A tuple of:
                     - The filtered training data of the dataset as a ndarray of strings.
                     - The labels of the training data as a ndarray of strings.
         """
-        if training_labels is None:
-            training_labels = [self.dataset.get_possible_labels()[0]]
-        data, labels = self.dataset.get_training_data(training_labels)
+        if labels is None:
+            labels = [self.dataset.get_possible_labels()[0]] if train else self.dataset.get_possible_labels()
+        if train:
+            data, labels = self.dataset.get_training_data(labels)
+        else:
+            data, labels = self.dataset.get_testing_data(labels)
 
         if self.max_samples > 0:
             data = data[:self.max_samples]

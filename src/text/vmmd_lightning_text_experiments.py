@@ -41,6 +41,8 @@ class VMMDLightningTextExperiment:
                  penalty_weight: float,
                  batch_size: int,
                  epochs: int,
+                 export_path: Optional[str] = None,
+                 export: Optional[bool] = True,
                  sequence_length: Optional[int] = None,
                  transformer_aggregation: bool = True,
                  train_flag: bool = True):
@@ -60,7 +62,10 @@ class VMMDLightningTextExperiment:
         self.train_flag = train_flag
         self.vmmd_model = vmmd_model
         self.seperator = " "
-        self.export_path = self.build_export_path()
+        self.export_path = export_path
+        self.export = export
+        if self.export_path is None and export:
+            self.export_path = self.build_export_path()
 
     def build_export_path(self) -> str:
         base_dir = os.path.join(
@@ -131,19 +136,19 @@ class VMMDLightningTextExperiment:
         )
 
 
-    def run(self):
+    def run(self)  -> VMMDTextLightningBase:
         """
         Run the VMMD experiment, including training and visualization.
         The parameters for the experiment are set in the constructor.
         The training data is prepared using the DatasetPreparer class.
         The model is trained using PyTorch Lightning.
         The visualization is done using the CollectiveVisualizer class.
-        :return: None
+        :return: The trained VMMD model.
         """
         # Instantiate the model with the provided hyperparameters.
         _x_train = self._prepare_data()
 
-        embedding_fun = lambda samples, padding_length, masks: emb_model.embed_sentences(samples, padding_length,
+        embedding_fun = lambda samples, padding_length, masks: self.emb_model.embed_sentences(samples, padding_length,
                                                                                          masks=masks,
                                                                                          aggregate=self.transformer_aggregation,
                                                                                          dataset=self.dataset)
@@ -174,16 +179,19 @@ class VMMDLightningTextExperiment:
             version=0
         )
 
+        loggers = [tensorboard_logger, csv_logger] if self.export else []
+
         trainer = Trainer(
             max_epochs=self.epochs,
             callbacks=[vis_cb],
             default_root_dir=self.export_path,
             log_every_n_steps=1, # Log every step, as the visualizer loads the csv file created by the logger.
             accelerator="gpu",
-            logger=[tensorboard_logger, csv_logger],
+            logger=loggers,
         )
         # Start training.
         trainer.fit(model, train_dataloaders=data_loader)
+        return model
 
 
 if __name__ == "__main__":

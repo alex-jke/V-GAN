@@ -1,12 +1,12 @@
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.v_method.V_odm import V_ODM
-from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
+from text.outlier_detection.v_method.numerical_v_adapter import NumericalVOdmAdapter
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 
 
 class EnsembleV_ODM(V_ODM):
     def __init__(self, dataset, space: Space,
-                 use_cached=False, base_detector=None, output_path = None, odm_model: BaseVOdmAdapter = VMMDAdapter()):
+                 use_cached=False, base_detector=None, output_path = None, odm_model: NumericalVOdmAdapter = VMMDAdapter()):
         super().__init__(dataset,
                          use_cached=use_cached, subspace_distance_lambda = 0.0, base_detector=base_detector,
                          output_path=output_path, odm_model=odm_model, space=space)

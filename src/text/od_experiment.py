@@ -15,6 +15,7 @@ from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.llama import LLama1B
 from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.ag_news import AGNews
@@ -29,11 +30,13 @@ from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.token_space import TokenSpace
+from text.outlier_detection.space.word_space import WordSpace
 from text.outlier_detection.trivial_odm import TrivialODM
 from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
 from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
+from text.outlier_detection.word_based_v_method.text_v_odm import TextVOdm
 from text.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer.rank import RankVisualizer
 from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
@@ -293,7 +296,7 @@ def aggregate_results():
     aggregator.run_aggregation()
 
 if __name__ == '__main__':
-    datasets = [
+    """datasets = [
                    AGNews(),
                    EmotionDataset(),
                    IMBdDataset(),
@@ -334,4 +337,14 @@ if __name__ == '__main__':
                         memory_used_before = torch.cuda.memory_allocated()
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
-                        print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")
+                        print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
+    test_samples = 10
+    train_samples = 10
+    dataset = EmotionDataset()
+    emb_model = LLama1B()
+    space = WordSpace(emb_model, train_samples, test_samples)
+    path = Path(os.getcwd()) / 'results' / "outlier_detection" / "test"
+    v_model = TextVOdm(dataset, space, use_cached=False, output_path=str(path))
+    exp = Experiment(dataset, emb_model, skip_error=False,
+                        experiment_name="test", models=[v_model], use_cached=False)
+    exp.run()

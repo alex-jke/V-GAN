@@ -4,7 +4,7 @@ from pathlib import Path
 
 from torch import Tensor
 
-from modules.od_module import VGAN_od
+from modules.od_module import ODModule
 from VMMDBase import VMMDBase
 from text.Embedding.tokenizer import Tokenizer
 
@@ -18,7 +18,7 @@ class Visualizer(ABC):
         self.set_params(model, tokenized_data, tokenizer, path)
         self.vgan_color = "#72AD44"
 
-    def set_params(self, model: VGAN_od | VMMDBase, tokenized_data: Tensor, tokenizer: Tokenizer, path: str):
+    def set_params(self, model: ODModule, tokenized_data: Tensor, tokenizer: Tokenizer, path: str):
         self.num_subspaces = 500
         # Tensor is of the shape (num_subspaces, sequence_length)
         self.model = model
