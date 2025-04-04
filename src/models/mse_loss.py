@@ -21,8 +21,9 @@ class MSELoss(nn.Module):
         :param Y: The second tensor.
         :return: The MSE loss between X and Y.
         """
-        mse = nn.MSELoss()(X, Y)
+        # Summing to increase the numerical stability, as mean led to 0.
+        mse = (X - Y).pow(2).mean(0).sum()
         self.mmd_loss = mse
-        diversity = MMDLossConstrained.diversity_loss(U) * self.weight
+        diversity = MMDLossConstrained.diversity_loss(U) * self.weight * 10
         regularization = U.mean() * self.weight
         return mse + diversity + regularization

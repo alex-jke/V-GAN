@@ -14,7 +14,7 @@ from modules.text.vmmd_text import VMMDTextLightning
 from modules.text.vmmd_text_base import VMMDTextBase
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.huggingmodel import HuggingModel
-from text.Embedding.llama import LLama1B
+from text.Embedding.llama import LLama1B, LLama3B
 from text.dataset.dataset import Dataset, AggregatableDataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
@@ -133,6 +133,7 @@ class VMMDLightningTextExperiment:
             weight_decay=self.weight_decay,
             weight=self.penalty_weight,
             generator=self.generator,
+            seed=777
         )
 
 
@@ -196,15 +197,15 @@ class VMMDLightningTextExperiment:
 
 if __name__ == "__main__":
 
-    emb_model = LLama1B()
+    emb_model = LLama3B()
     dataset = EmotionDataset()
-    generator = GeneratorSoftmaxSTE
-    version = "0.04_MixtureRQ+bn"
+    generator = GeneratorSigmoidSTE
+    version = "0.054_MSE"
     sampless = [3000]
     yield_epochs = 1
-    batch_size = 100
-    penalty_weights = [0.0]
-    lrs = [1e-2]
+    batch_size = 10
+    penalty_weights = [10.]
+    lrs = [1e-3]
     epochss = [25]
     weight_decays = [0.04]
 
@@ -231,4 +232,4 @@ if __name__ == "__main__":
 
 
 #python -m tensorboard.main --logdir=
-#/home/i40/jenkea/PycharmProjects/V-GAN/src/text/experiments/VMMDTextLightning/LLama1B/GeneratorSoftmaxSTE/0.04_MixtureRQ+bn/agg_t/Emotions_slNone_s3000_20250403-131421/tensorboard_logs
+#/home/i40/jenkea/PycharmProjects/V-GAN/src/text/experiments/VMMDTextLightning/LLama1B/GeneratorSigmoidSTE/0.05+MSE/agg_t/Emotions_slNone_s3000_20250403-195136/tensorboard_logs
