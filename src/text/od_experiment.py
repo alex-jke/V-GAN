@@ -30,6 +30,7 @@ from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.token_space import TokenSpace
+from text.outlier_detection.space.word_space import WordSpace
 from text.outlier_detection.trivial_odm import TrivialODM
 from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
@@ -338,8 +339,9 @@ if __name__ == '__main__':
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
     dataset = EmotionDataset()
     emb_model = LLama1B()
-    train_size = 5_000
-    test_size = 1_000
+    train_size = 1000
+    test_size = 250
+    space = WordSpace(emb_model, train_size, test_size)
     Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
                experiment_name=f"0.3", use_cached=False,
                run_cachable=False, skip_error=False, runs=5).run()

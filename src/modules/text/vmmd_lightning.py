@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+from lightning_fabric import seed_everything
 from torch import Tensor
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
@@ -46,6 +47,7 @@ class VMMDLightningBase(pl.LightningModule):
         self.print_updates = print_updates
         self.apply_gradient_clipping = gradient_clipping
         self._latent_size = None
+        seed_everything(self.seed)
         torch.set_float32_matmul_precision('high')
 
     def _plot_gradients(self):
@@ -119,13 +121,6 @@ class VMMDLightningBase(pl.LightningModule):
         if round:
             u = (u >= 0.5).int()
         return u.detach()
-
-    def _set_seed(self):
-        torch.manual_seed(self.seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed(self.seed)
-        elif torch.backends.mps.is_available():
-            torch.mps.manual_seed(self.seed)
 
     def _get_data_loader(self, data: np.array):
         num_workers = 0
