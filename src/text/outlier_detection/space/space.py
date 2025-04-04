@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
 
-from numpy import ndarray
-from torch import Tensor
-
 from text.Embedding.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
 from text.outlier_detection.space.prepared_data import PreparedData
@@ -45,12 +42,5 @@ class Space(ABC):
     def name(self):
         """
         Returns the name of the space.
-        """
-        pass
-
-    @abstractmethod
-    def get_n_dims(self, x_train: Tensor | ndarray) -> int:
-        """
-        Returns the number of dimensions of the space used as features.
         """
         pass

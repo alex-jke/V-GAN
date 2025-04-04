@@ -52,9 +52,3 @@ class EmbeddingSpace(Space):
         normalized = torch.nn.functional.normalize(standardized, p=2, dim=1)
         return normalized
 
-    def get_n_dims(self, x_train: Tensor) -> int:
-        """
-        Returns the number of dimensions of the space used as features.
-        """
-        return x_train.shape[1]
-

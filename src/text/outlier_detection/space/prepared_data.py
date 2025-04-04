@@ -12,7 +12,7 @@ class PreparedData:
     """
     def __init__(self, x_train: Tensor | ndarray[str], y_train: Tensor | ndarray[str], x_test: Tensor | ndarray[str],
                  y_test: Tensor | ndarray[str], space: str,
-                 aggregetable: Optional[Aggregatable] = None):
+                 aggregetable: Optional[Aggregatable]):
         """
         Initializes the PreparedData object. The x and y data are the training and testing data. If provided as tensors,
         they should be of shape (batch_size, dim_features) for x and (batch_size) for y. If provided as ndarrays of strings,
