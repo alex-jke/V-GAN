@@ -130,7 +130,9 @@ class VMMDLightningBase(pl.LightningModule):
         noise_tensor = torch.Tensor(nsubs, self._latent_size).to('cpu')
         torch.manual_seed(self.seed)
         noise_tensor.normal_()
-        u = self.generator(noise_tensor.to(self.device()))
+        self.generator = self.generator.to(self.device())
+        noise_tensor = noise_tensor.to(self.device())
+        u = self.generator(noise_tensor)
         if round:
             u = (u >= 0.5).int()
         return u.detach()
