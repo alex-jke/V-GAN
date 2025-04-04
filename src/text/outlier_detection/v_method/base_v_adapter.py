@@ -46,7 +46,8 @@ class BaseVOdmAdapter(ABC):
         if base_path is not None:
             self.output_path = base_path / self.get_name() / self.space.name
         self.model = self._init_model(data, space)
-        self._load_model(self.output_path, data.x_train.shape[1], self.model)
+        features = space.get_n_dims(self.data.x_train)
+        self._load_model(self.output_path, features, self.model)
         self.initialized = True
 
     def train(self, print_epochs: int = 300):

@@ -1,3 +1,6 @@
+from numpy import ndarray
+
+from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.dataset.dataset import Dataset, AggregatableDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.outlier_detection.space.prepared_data import PreparedData
@@ -18,3 +21,9 @@ class WordSpace(Space):
     @property
     def name(self):
         return "Word"
+
+    def get_n_dims(self, x_train: ndarray) -> int:
+        """
+        Returns the number of dimensions of the space used as features.
+        """
+        return VMMDTextLightningBase.get_average_sentence_length(x_train)

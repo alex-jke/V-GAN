@@ -30,10 +30,12 @@ from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.pyod_odm import LOF, LUNAR, ECOD, FeatureBagging
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.token_space import TokenSpace
+from text.outlier_detection.space.word_space import WordSpace
 from text.outlier_detection.trivial_odm import TrivialODM
 from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
 from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
+from text.outlier_detection.v_method.lightning_v_adapter import LightningVAdapterText
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer.rank import RankVisualizer
@@ -338,8 +340,13 @@ if __name__ == '__main__':
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
     dataset = EmotionDataset()
     emb_model = LLama1B()
-    train_size = 5_000
-    test_size = 1_000
+    train_size = 10
+    test_size = 100
+    space = WordSpace(model=emb_model, train_size=train_size, test_size=test_size)
+    v_adapter = LightningVAdapterText()
+    v_odm = V_ODM(dataset=dataset, space=space, base_detector=pyod_LUNAR,
+                   output_path=Path(os.getcwd()) / 'results' / "outlier_detection" / "test" / dataset.name / emb_model.model_name,
+                   odm_model=v_adapter)
     Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
                experiment_name=f"0.3", use_cached=False,
-               run_cachable=False, skip_error=False, runs=5).run()
+               run_cachable=False, skip_error=False, runs=2, models=[v_odm]).run()

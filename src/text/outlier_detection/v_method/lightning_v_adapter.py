@@ -50,10 +50,11 @@ class LightningVAdapterText(BaseVOdmAdapter):
                                                                                                 dataset=data.aggregetable) # todo: figure out how to pass the dataset
         avg_length = VMMDTextLightningBase.get_average_sentence_length(data.x_train)
         return VMMDTextLightning(embedding=embedding_fun,
-                                 sequence_length=avg_length)
+                                 sequence_length=avg_length,
+                                 epochs=1, batch_size=10)
 
     def get_name(self) -> str:
         """
         Returns the name of the model.
         """
-        pass
+        return "VMMD_Lightning"

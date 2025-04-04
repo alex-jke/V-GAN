@@ -115,10 +115,25 @@ class VMMDLightningBase(pl.LightningModule):
         noise_tensor = torch.Tensor(nsubs, self._latent_size).to('cpu')
         torch.manual_seed(self.seed)
         noise_tensor.normal_()
-        u = self.generator(noise_tensor.to(self.device()))
+        noise_tensor = noise_tensor.to(self.device())
+        self.generator = self.generator.to(self.device())
+        u = self.generator(noise_tensor)
         if round:
             u = (u >= 0.5).int()
         return u.detach()
+
+    # todo: refactor all the code duplications
+    def approx_subspace_dist(self, subspace_count=500, add_leftover_features=False):
+        u = self.generate_subspaces(subspace_count)
+        unique_subspaces, proba = np.unique(
+            np.array(u.to('cpu')), axis=0, return_counts=True)
+        if (unique_subspaces.sum(axis=0) < 1).sum() != 0 and add_leftover_features:
+            unique_subspaces = np.append(
+                unique_subspaces, [unique_subspaces.sum(axis=0) < 1], axis=0)
+            proba = np.append(proba / proba.sum(), 1)
+
+        self.subspaces = unique_subspaces
+        self.proba = proba / proba.sum()
 
     def _set_seed(self):
         torch.manual_seed(self.seed)

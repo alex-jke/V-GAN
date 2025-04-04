@@ -64,3 +64,9 @@ class TokenSpace(Space):
         filtered_data = data[:length]
         tokenized = self.model.tokenize_batch(filtered_data.tolist())
         return tokenized
+
+    def get_n_dims(self, x_train: Tensor) -> int:
+        """
+        Returns the number of dimensions of the space used as features.
+        """
+        return x_train.shape[1]
