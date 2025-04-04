@@ -50,21 +50,21 @@ class LOF(BasePyODM):
         return pyod_LOF()
 
     def _get_name(self):
-        return f"LOF"
+        return f"LOF" + f" + {self.get_space()}"
 
 class LUNAR(BasePyODM):
     def _get_model(self):
         return pyod_LUNAR()
 
     def _get_name(self):
-        return f"LUNAR"
+        return f"LUNAR" + f" + {self.get_space()}"
 
 class ECOD(BasePyODM):
     def _get_model(self):
         return pyod_ECOD()
 
     def _get_name(self):
-        return f"ECOD"
+        return f"ECOD" + f" + {self.get_space()}"
 
 class FeatureBagging(PyODM):
 
@@ -149,7 +149,7 @@ class TransformBaseDetector(BaseDetector):
             standardized = embedded
             if standardize:
                 #todo: is using dimension 1 correct?
-                raise NotImplementedError("Check TODO.")
+                #raise NotImplementedError("Check TODO.")
                 means = embedded.mean(1, keepdim=True)
                 stds = embedded.std(1, keepdim=True)
                 standardized = (embedded - means) / stds

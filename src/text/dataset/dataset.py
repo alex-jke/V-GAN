@@ -33,7 +33,7 @@ class Dataset(ABC):
             return self.x_train, self.y_train
         return self._get_filtered_data(self.x_train, self.y_train, filter_labels)
 
-    def get_testing_data(self, filter_labels: list | None) -> Tuple[Series, Series]:
+    def get_testing_data(self, filter_labels: list | None = None) -> Tuple[Series, Series]:
         """
         Returns the testing data of the dataset.
         :param filter_labels: The labels to filter for. If left empty, all labels are returned.

@@ -23,7 +23,7 @@ from text.Embedding.llama import LLama1B
 
 class VMMDLightningBase(pl.LightningModule):
     def __init__(self,
-                 embedding: Optional[Callable[[np.ndarray[str], int, Optional[Tensor]], Tensor]],
+                 embedding: Optional[Callable[[np.ndarray[str], int, Optional[Tensor]], Tensor]] = None,
                  batch_size=500, epochs=500, lr=1e-4, momentum=0.99, seed=777,
                  weight_decay=1e-4, path_to_directory=None, weight=0, generator=None,
                  print_updates=False, gradient_clipping=False):

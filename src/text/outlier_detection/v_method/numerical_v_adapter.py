@@ -81,17 +81,6 @@ class NumericalVOdmAdapter(BaseVAdapter):
         """
         pass
 
-    def _load_model(self, base_path: Path, features: int, model: VMMD_od | VGAN_od):
-        """
-        Loads the model from the base_path.
-        """
-        if base_path is None:
-            return
-        generator_path = base_path / "models" / "generator_0.pt"
-        if generator_path.exists():
-            model.load_models(generator_path, ndims=features)
-            self.loaded_model = True
-
     def get_subspaces(self, num_subspaces=50) -> ndarray:
         """
         Returns subspace_count operator samples from the random operator. This currently being axis parallel subspaces.

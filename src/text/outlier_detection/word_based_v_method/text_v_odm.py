@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Type, Optional
 
 import torch
@@ -18,17 +19,17 @@ from text.outlier_detection.word_based_v_method.text_v_adapter import TextVMMDAd
 
 class TextVOdm(EnsembleODM):
 
-    def __init__(self, dataset: AggregatableDataset, space: WordSpace, base_method: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
-                 output_path: str | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0):
+    def __init__(self, dataset: AggregatableDataset, space: WordSpace, base_detector: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
+                 output_path: Path | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0):
         if not isinstance(space, WordSpace):
             raise ValueError("TextVOdm only works with WordSpace.")
         if not isinstance(dataset, AggregatableDataset):
             raise ValueError("TextVOdm only works with AggregatableDataset.")
-        super().__init__(dataset=dataset, space=space, base_method=base_method, inlier_label=inlier_label, use_cached=use_cached)
+        super().__init__(dataset=dataset, space=space, base_method=base_detector, inlier_label=inlier_label, use_cached=use_cached)
         self.subspace_distance_lambda = subspace_distance_lambda
         self.classifier_delta = classifier_delta
         self.output_path = output_path
-        output_path = output_path + "/vmmd_text" if output_path is not None else None
+        output_path = output_path / "vmmd_text" if output_path is not None else None
         self.v_method = TextVMMDAdapter(dataset, self.space, output_path=output_path)
         self.amount_subspaces = 5
         self.detectors: List[BaseDetector] = []
@@ -95,7 +96,10 @@ class TextVOdm(EnsembleODM):
         self.predictions = combined_scores
 
     def _get_name(self) -> str:
-        return "TextV + " + self.base_method.__name__ + " + self.space.name "+ f"(λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"
+        subspace_dist_str = f"λ{self.subspace_distance_lambda}" if self.subspace_distance_lambda != 0 else ""
+        classifier_delta_str = f"∂{self.classifier_delta}" if self.classifier_delta != 0 else ""
+        postfix_string = f"({subspace_dist_str}, {classifier_delta_str})" if subspace_dist_str or classifier_delta_str else ""
+        return "TextV + " + self.base_method.__name__ + " + self.space.name "+ postfix_string
 
     def _get_predictions(self) -> List[float]:
         return self.predictions.tolist()

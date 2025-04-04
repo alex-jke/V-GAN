@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+from pathlib import Path
 from typing import List, Type, Optional, Callable
 
 import numpy as np
@@ -41,7 +42,7 @@ class VMMDLightningTextExperiment:
                  penalty_weight: float,
                  batch_size: int,
                  epochs: int,
-                 export_path: Optional[str] = None,
+                 export_path: Optional[Path] = None,
                  export: Optional[bool] = True,
                  sequence_length: Optional[int] = None,
                  transformer_aggregation: bool = True,
@@ -64,11 +65,12 @@ class VMMDLightningTextExperiment:
         self.seperator = " "
         self.export_path = export_path
         self.export = export
+        self.loaded_model = False
         if self.export_path is None and export:
             self.export_path = self.build_export_path()
 
-    def build_export_path(self) -> str:
-        base_dir = os.path.join(
+    def build_export_path(self) -> Path:
+        base_dir = Path(os.path.join(
             os.getcwd(),
             'experiments',
             self.vmmd_model.__name__,
@@ -77,7 +79,7 @@ class VMMDLightningTextExperiment:
             f"{self.version}",
             f"agg_{'t' if self.transformer_aggregation else 'avg'}",
             f"{self.dataset.name}_sl{self.sequence_length}_s{self.samples}"
-        )
+        ))
         if self.train_flag:
             base_dir += "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
         return base_dir
@@ -91,7 +93,7 @@ class VMMDLightningTextExperiment:
             tokenized_data=tokenized_sentences,
             tokenizer=None,
             vmmd_model=model,
-            export_path=self.export_path,
+            export_path=str(self.export_path),
             text_visualization=True
         )
         visualizer.visualize(epoch=epoch, samples=samples)
@@ -136,6 +138,27 @@ class VMMDLightningTextExperiment:
             seed=777
         )
 
+    def _load_if_exists(self, model: VMMDTextLightningBase, embedding_fun) -> VMMDTextLightningBase:
+        """
+        Load the model if it exists, otherwise return the model.
+        :param model: The VMMDTextLightningBase model to load.
+        :return: The loaded model, or the original model if it does not exist.
+        """
+        if self.export_path is not None and self.export_path.exists():
+            print(f"Loading model from {self.export_path}")
+            ckpt_path_dir = self.export_path / "tensorboard_logs" / "version_0" / "checkpoints"
+            ckpt_path_list = list(ckpt_path_dir.glob("*.ckpt"))
+            ckpt_path = ckpt_path_list[-1] if len(ckpt_path_list) > 0 else None
+            if ckpt_path is None:
+                raise FileNotFoundError(f"Checkpoint not found in {ckpt_path_dir}.")
+                #print("No checkpoint found. This is unexpected behavior. If the model path exists a ckpt file should also exist.")
+                #return model
+            model = VMMDTextLightning.load_from_checkpoint(checkpoint_path=ckpt_path)
+
+            # The embedding function is not saved in the checkpoint, so it needs to be set it again.
+            model.embedding = embedding_fun
+            self.loaded_model = True
+        return model
 
     def run(self)  -> VMMDTextLightningBase:
         """
@@ -154,6 +177,13 @@ class VMMDLightningTextExperiment:
                                                                                          aggregate=self.transformer_aggregation,
                                                                                          dataset=self.dataset)
         model = self._prepare_vmmd_model(embedding_fun)
+
+        # Load the model if it exists.
+        model = self._load_if_exists(model, embedding_fun)
+        if self.loaded_model:
+            print("Model loaded successfully.")
+            return model
+
         x_train = model.get_training_data(_x_train, embedding_fun, _x_train)
 
         data_loader = DataLoader(x_train, batch_size=self.batch_size, drop_last=True, pin_memory=True,
@@ -162,7 +192,7 @@ class VMMDLightningTextExperiment:
         # Set up the visualization callback.
         vis_cb = VisualizationCallback(
             emb_model=self.emb_model,
-            export_path=self.export_path,
+            export_path=str(self.export_path),
             dataset=self.dataset,
             yield_epochs=self.yield_epochs,
             samples=30
@@ -172,7 +202,7 @@ class VMMDLightningTextExperiment:
             save_dir=self.export_path,
             name="tensorboard_logs"
         )
-        print("TensorBoard Logs at: ", self.export_path + "/tensorboard_logs")
+        print("TensorBoard Logs at: ", self.export_path  / "tensorboard_logs")
 
         csv_logger = CSVLogger(
             save_dir=self.export_path,

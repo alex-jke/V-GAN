@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Type, Optional
 
 from numpy import ndarray
@@ -22,7 +23,7 @@ class TextVMMDAdapter(BaseVAdapter):
     def __init__(self,
                  dataset: AggregatableDataset,
                  space: Space,
-                 output_path: Optional[str] = None,):
+                 output_path: Optional[Path] = None,):
         self.dataset = dataset
         self.space = space
         self.output_path = output_path

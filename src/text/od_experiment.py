@@ -82,6 +82,11 @@ class Experiment:
             "use_cached": use_cached,
             "space": EmbeddingSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
+        self.text_params: Dict = {
+            "dataset": self.dataset,
+            "use_cached": False,
+            "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size)
+        }
 
         # Determine the output directory.
         self.output_path = output_path
@@ -120,12 +125,30 @@ class Experiment:
             pyod_LOF]
         models = []
 
-        # Base models that always use embedding.
+        # Base models that always use embedding or text.
         models.extend([
             LOF(**self.emb_params),
             LUNAR(**self.emb_params),
             ECOD(**self.emb_params)
         ])
+
+        models.extend([
+            LOF(**self.text_params),
+            LUNAR(**self.text_params),
+            ECOD(**self.text_params)
+        ])
+
+        if not self.run_cachable:
+            # VMMD Text ODM with subspace distance and ensemble outlier detection.
+            models.extend([TextVOdm(**self.text_params, base_detector=base, output_path=self.output_path)
+                           for base in bases])
+            # VMMD Text ODM with only ensemble outlier detection.
+            models.extend([TextVOdm(**self.text_params, base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0)
+                           for base in bases])
+            # VMMD Text ODM with only subspace distance.
+            models.extend([TextVOdm(**self.text_params, base_detector=base, output_path=self.output_path, classifier_delta=0.0)
+                              for base in bases])
+
 
         # VGAN ODM models with both use_embedding False and True.
         params = [self.emb_params] if self.run_cachable else [self.token_params, self.emb_params]
@@ -338,13 +361,11 @@ if __name__ == '__main__':
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
-    test_samples = 10
+    test_samples = 11
     train_samples = 10
     dataset = EmotionDataset()
     emb_model = LLama1B()
     space = WordSpace(emb_model, train_samples, test_samples)
-    path = Path(os.getcwd()) / 'results' / "outlier_detection" / "test"
-    v_model = TextVOdm(dataset, space, use_cached=False, output_path=str(path))
-    exp = Experiment(dataset, emb_model, skip_error=False,
-                        experiment_name="test", models=[v_model], use_cached=False)
+    exp = Experiment(dataset, emb_model, skip_error=False, train_size=10, test_size=10,
+                        experiment_name="test3", use_cached=True)
     exp.run()

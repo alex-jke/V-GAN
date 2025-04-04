@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from torch import Tensor
+
 
 class Tokenizer(ABC):
 
     @abstractmethod
-    def tokenize(self, data: str) -> List[int]:
+    def tokenize(self, data: str) -> Tensor:
         pass
 
     @abstractmethod

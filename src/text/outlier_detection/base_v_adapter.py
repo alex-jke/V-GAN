@@ -1,12 +1,17 @@
 from abc import ABC
+from pathlib import Path
 from typing import Tuple
 
 from numpy import ndarray
 
-from modules.od_module import ODModule
+from modules.od_module import ODModule, VMMD_od, VGAN_od
+from modules.text.vmmd_text import VMMDTextLightning
 
 
 class BaseVAdapter(ABC):
+    """
+    Base class for all V_ODM adapters. This class is the base of all v method based adapters.
+    """
     @staticmethod
     def _get_top_subspaces(model: ODModule, num_subspaces: int) -> Tuple[ndarray[float], ndarray[float]]:
         """
@@ -28,3 +33,14 @@ class BaseVAdapter(ABC):
             top_proba = top_proba[top_proba > threshold]
 
         return top_subspaces, top_proba
+
+    def _load_model(self, base_path: Path, features: int, model: VMMD_od | VGAN_od | VMMDTextLightning) -> None:
+        """
+        Loads the model from the base_path.
+        """
+        if base_path is None:
+            return
+        generator_path = base_path / "models" / "generator_0.pt"
+        if generator_path.exists():
+            model.load_models(generator_path, ndims=features)
+            self.loaded_model = True

@@ -161,9 +161,9 @@ class DatasetTokenizer:
             # if counter.counter % one_percent == 0:
             self.ui.update(f"\r{counter.counter} tokenized")
             counter.increase_counter()
-            tokenized = self.tokenizer.tokenize(x)
+            tokenized: Tensor = self.tokenizer.tokenize(x)
             # print(tokenized)
-            return tokenized
+            return tokenized.tolist()
 
         # Save the tokenized data to a csv file at path every 100 samples to avoid data loss on crash. If the file
         # already exists, for the given amount of samples, the data is loaded from the file.
