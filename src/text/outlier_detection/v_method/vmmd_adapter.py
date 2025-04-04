@@ -5,10 +5,10 @@ from modules.od_module import VMMD_od, VGAN_od
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
-from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
+from text.outlier_detection.v_method.numerical_v_adapter import NumericalVOdmAdapter
 
 
-class VMMDAdapter(BaseVOdmAdapter):
+class VMMDAdapter(NumericalVOdmAdapter):
     """
     Adapter for the VMMD model used for outlier detection.
     """

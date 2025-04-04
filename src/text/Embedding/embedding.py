@@ -53,7 +53,7 @@ class Embedding(ABC):
         """
         return sentence.split(seperator)
 
-    def embed_sentences(self, sentences: np.ndarray[str], padding_length: Optional[int], seperator: str = " ", masks: Optional[Tensor] = None,
+    def embed_sentences(self, sentences: np.ndarray[str], padding_length: Optional[int] = None, seperator: str = " ", masks: Optional[Tensor] = None,
                         aggregate: bool = True, dataset: Optional[Aggregatable] = None) -> Tensor:
         """
         Embeds a list of sentences into vectors. It splits the sentences into words using the seperator.
@@ -62,9 +62,11 @@ class Embedding(ABC):
         :param padding_length: The length to pad the sentences to. The sentences will be padded with zero vectors.
             If -1 is given, the sentences will not be truncated. Which does mean that torch will give a stack error,
             if the sentences are not of the same length.
+            Padding length only is relevant if aggregate is False.
         :param seperator: The seperator to split the sentences into words.
         :param masks: The masks to use. If None, all words are embedded.
             The mask tensor should be of shape: (n_sentences, padding_length).
+            Alternatively, the mask can be a single mask, which is then used for all sentences.
         :param aggregate: If True, the embeddings are aggregated to a single tensor.
             This is the mean of the embeddings for static embeddings.
             For dynamic embeddings, such as transformers, this is the last hidden state of the
@@ -84,17 +86,21 @@ class Embedding(ABC):
             self.prefix = dataset.prefix()
             self.suffix = dataset.suffix()
 
+        assert padding_length is not None or aggregate, "Padding length needs to be set if aggregate is not set to True"
+
         embeddings = []
         #with ui.display():
         for i in range(len(sentences)):
             #print("|", end="")
             #ui.update(f"Embedding sentence {i + 1}/{len(sentences)}")
             sentence = sentences[i]
-            mask = masks[i] if masks is not None else None
+            mask = None
+            if masks is not None:
+                mask = masks[i] if len(masks.shape) > 1 else masks
             words = self.get_words(sentence, seperator)
-            if len(words) > padding_length:
+            if padding_length is not None and len(words) > padding_length:
                 words = words[:padding_length]
-            elif len(words) < padding_length and masks is not None:
+            elif padding_length is not None and len(words) < padding_length and masks is not None:
                 mask = mask[:len(words)]
             embedded = self.embed_words(words, mask, aggregate)
             if not aggregate:

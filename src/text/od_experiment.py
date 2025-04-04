@@ -36,6 +36,7 @@ from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
 from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
+from text.outlier_detection.word_based_v_method.text_v_odm import TextVOdm
 from text.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer.rank import RankVisualizer
 from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
@@ -337,11 +338,13 @@ if __name__ == '__main__':
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
+    test_samples = 10
+    train_samples = 10
     dataset = EmotionDataset()
     emb_model = LLama1B()
-    train_size = 1000
-    test_size = 250
-    space = WordSpace(emb_model, train_size, test_size)
-    Experiment(dataset=dataset, emb_model=emb_model, train_size=train_size, test_size=test_size,
-               experiment_name=f"0.3", use_cached=False,
-               run_cachable=False, skip_error=False, runs=5).run()
+    space = WordSpace(emb_model, train_samples, test_samples)
+    path = Path(os.getcwd()) / 'results' / "outlier_detection" / "test"
+    v_model = TextVOdm(dataset, space, use_cached=False, output_path=str(path))
+    exp = Experiment(dataset, emb_model, skip_error=False,
+                        experiment_name="test", models=[v_model], use_cached=False)
+    exp.run()

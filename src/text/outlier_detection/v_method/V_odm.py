@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Type, Callable
 
+import numpy as np
 import pandas as pd
 from numpy import ndarray
 from pyod.models.base import BaseDetector
@@ -14,7 +15,7 @@ from text.outlier_detection.ensemle_odm import EnsembleODM
 from text.outlier_detection.pyod_odm import TransformBaseDetector
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
-from text.outlier_detection.v_method.base_v_adapter import BaseVOdmAdapter
+from text.outlier_detection.v_method.numerical_v_adapter import NumericalVOdmAdapter
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.visualizer.od import od_subspace_visualizer
 
@@ -23,14 +24,14 @@ class V_ODM(EnsembleODM):
 
     def __init__(self, dataset, space: Space, base_detector: Type[BaseDetector] = None, use_cached=False,
                  subspace_distance_lambda= 1.0, output_path: Path | None = None, classifier_delta = 1.0,
-                 odm_model: BaseVOdmAdapter = VMMDAdapter()):
+                 odm_model: NumericalVOdmAdapter = VMMDAdapter()):
 
         # The number of subspaces to sample from the random operator. Currently set to 50, as the runtime rises rapidly with more subspaces.
         # This way, subspaces with an occurrence of less than 2% are expected to not contribute much. Since sampling is random, they might still do,
         # but the probability is low.
         self.num_subspaces = 50
 
-        self.odm_model: BaseVOdmAdapter = odm_model
+        self.odm_model: NumericalVOdmAdapter = odm_model
         self.model = space.model
         if base_detector is None:
             base_detector = LUNAR
@@ -82,25 +83,9 @@ class V_ODM(EnsembleODM):
         self.odm_model.train()
         self._train_ensemble()
 
-    def _get_ensemble_decision_function(self):
-        if self.ensemble_model is None:
-            raise RuntimeError(f"Ensemble model not initialized. Please call train() first.")
-        test = self.x_test.to(self.device)
-        decision_function_scores_ens = self.ensemble_model.decision_function(
-            test.cpu())
-        agg_dec_fun = self.aggregator_funct(
-            decision_function_scores_ens, weights=self.odm_model.get_subspace_probabilities(), type="avg")
-        return agg_dec_fun
-
-    def _get_distances(self) -> Tensor:
-        subspaces = Tensor(self.odm_model.get_subspaces()).to(self.device)
-        transform = self._get_transformation_function()
-        x_test = self.x_test
-        subspace_distance_lambda = self.subspace_distance_lambda
-        return self._calculate_distances(transform, subspaces, x_test) * subspace_distance_lambda
-
     @staticmethod
-    def _calculate_distances(transform: Callable[[ndarray], ndarray], subspaces: Tensor, x_test: Tensor) -> Tensor:
+    def _calculate_distances(transform: Callable[[np.ndarray], np.ndarray], subspaces: Tensor,
+                             x_test: Tensor) -> Tensor:
         """
         Calculates for each datapoint its distance to the closest subspace. The distance is measured in the transformed space.
         :param transform: The transformation function to apply to the data to measure the distance.
@@ -119,7 +104,7 @@ class V_ODM(EnsembleODM):
         transformed_points = Tensor(transform(test_data)).cpu()
         for subspace in subspaces:
             try:
-                projected: ndarray = (subspace * x_test).cpu().numpy()
+                projected: np.ndarray = (subspace * x_test).cpu().numpy()
             except RuntimeError as e:
                 print(e)
                 raise e
@@ -133,6 +118,24 @@ class V_ODM(EnsembleODM):
         print(f"Aggregated over {subspaces.shape} datapoints.")
         dist_tensor = agg_dist / max_dist
         return dist_tensor
+
+    def _get_ensemble_decision_function(self):
+        if self.ensemble_model is None:
+            raise RuntimeError(f"Ensemble model not initialized. Please call train() first.")
+        test = self.x_test.to(self.device)
+        decision_function_scores_ens = self.ensemble_model.decision_function(
+            test.cpu())
+        agg_dec_fun = self.aggregator_funct(
+            decision_function_scores_ens, weights=self.odm_model.get_subspace_probabilities(), type="avg")
+        return agg_dec_fun
+
+    def _get_distances(self) -> Tensor:
+        subspaces = Tensor(self.odm_model.get_subspaces()).to(self.device)
+        transform = self._get_transformation_function()
+        x_test = self.x_test
+        subspace_distance_lambda = self.subspace_distance_lambda
+        return self._calculate_distances(transform, subspaces, x_test) * subspace_distance_lambda
+
 
     def _predict(self):
         agg_dec_fun = torch.zeros_like(self.y_test).cpu().numpy()

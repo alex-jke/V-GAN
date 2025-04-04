@@ -1,8 +1,9 @@
 import warnings
 from abc import abstractmethod
+from typing import Optional
 
-import numpy as np
 import torch
+from numpy import ndarray
 from pytorch_lightning.utilities import grad_norm
 from torch import Tensor
 import pytorch_lightning as pl
@@ -10,10 +11,11 @@ from models.Generator import GeneratorSigmoidSTE
 from models.Mmd_loss_constrained import MMDLossConstrained, RBF as RBFConstrained, MixtureRQLinear
 from VMMDBase import VMMDBase
 from models.mse_loss import MSELoss
+from modules.od_module import ODModule
 from modules.text.vmmd_lightning import VMMDLightningBase
 
 
-class VMMDTextLightningBase(VMMDLightningBase):
+class VMMDTextLightningBase(VMMDLightningBase, ODModule):
     def __init__(self, sequence_length: int, seperator: str = " ", **kwargs):
         # Assume necessary hyperparameters (e.g., lr, weight_decay, weight, epochs) are in kwargs.
         if 'generator' not in kwargs:
@@ -31,6 +33,10 @@ class VMMDTextLightningBase(VMMDLightningBase):
         #self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel)
         self.loss_function = MSELoss(weight=self.hparams.get("weight", 1.0))
 
+    def forward(self, x: Tensor) -> Tensor:
+        # Optionally define forward pass (e.g., for inference)
+        return self.generator(x)
+
     def on_before_optimizer_step(self, optimizer):
         # Compute the 2-norm for each layer
         norms = grad_norm(self.generator, norm_type=2)
@@ -46,7 +52,6 @@ class VMMDTextLightningBase(VMMDLightningBase):
         self.log_dict(norms)
 
     def on_after_backward(self):
-        # Log gradients
         for name, param in self.named_parameters():
             self.logger.experiment.add_histogram(f"gradients/{name}", param.grad, self.global_step)
             self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
@@ -96,20 +101,9 @@ class VMMDTextLightningBase(VMMDLightningBase):
         raise NotImplementedError
 
     @abstractmethod
-    def check_if_myopic(self, count=500, bandwidth: float | Tensor = 0.01):
+    def check_if_myopic(self, x_data: Optional[ndarray], count=500, bandwidth: float | Tensor = 0.01):
         """
         Custom evaluation method.
         Must be implemented.
         """
         raise NotImplementedError
-
-    @staticmethod
-    def get_average_sentence_length(x_data: np.ndarray[str], seperator = " ") -> int:
-        """
-        Calculate the average sentence length in the dataset.
-        :param x_data: A numpy array of sentences.
-        :param seperator: The separator used to split sentences into words.
-        :return: The average sentence length, as an integer.
-        """
-        sequence_length = int(np.mean([len(x.split(seperator)) for x in x_data]))
-        return sequence_length
