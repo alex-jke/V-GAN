@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Type, Callable
+from typing import List, Type, Callable, Optional
 
 import numpy as np
 import pandas as pd
@@ -24,7 +24,7 @@ class V_ODM(EnsembleODM):
 
     def __init__(self, dataset, space: Space, base_detector: Type[BaseDetector] = None, use_cached=False,
                  subspace_distance_lambda= 1.0, output_path: Path | None = None, classifier_delta = 1.0,
-                 odm_model: NumericalVOdmAdapter = VMMDAdapter()):
+                 odm_model: NumericalVOdmAdapter = VMMDAdapter(), **params):
 
         # The number of subspaces to sample from the random operator. Currently set to 50, as the runtime rises rapidly with more subspaces.
         # This way, subspaces with an occurrence of less than 2% are expected to not contribute much. Since sampling is random, they might still do,
@@ -42,7 +42,7 @@ class V_ODM(EnsembleODM):
         self.ensemble_model = None
         self.subspace_distance_lambda = subspace_distance_lambda
         self.classifier_delta = classifier_delta
-        super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_method=base_detector)
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_method=base_detector, **params)
 
     def _get_transformation_function(self) -> Callable[[ndarray], ndarray]:
         """

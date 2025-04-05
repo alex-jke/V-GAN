@@ -53,6 +53,8 @@ class OutlierDetectionModel(ABC):
     def train(self):
         self._start_timer()
         self.data = self.space.transform_dataset(self.dataset, self.use_cached, self.inlier_label)
+        assert len(self.data.y_train.unique()) == 1 and int(self.data.y_train.unique()) == self.inlier_label, \
+            f"Training data contains other data, than just the inlier data. Expected {self.inlier_label}, got {self.data.y_train.unique()}"
         self._train()
 
     def predict(self):

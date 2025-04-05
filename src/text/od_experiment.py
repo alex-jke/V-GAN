@@ -43,7 +43,7 @@ from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
 
 
 class Experiment:
-    def __init__(self, dataset, emb_model, skip_error: bool = True, train_size: int = -1, test_size: int = -1,
+    def __init__(self, dataset: Dataset, emb_model, skip_error: bool = True, train_size: int = -1, test_size: int = -1,
                  models: List[OutlierDetectionModel] = None, output_path: Path = None, experiment_name: str = None,
                  use_cached: bool = False, run_cachable: bool = False, runs=1):
         """
@@ -61,8 +61,10 @@ class Experiment:
         :param runs: The number of runs per experiment. This is used for ranking the methods in a box plot.
         """
         """
-        Initializes the experiment
+        Initializes the experiment.
         """
+        # TODO: introduce inlier label here.
+        self.inlier_label = dataset.get_possible_labels()[0]
         self.dataset = dataset
         self.emb_model = emb_model
         self.skip_error = skip_error
@@ -75,16 +77,19 @@ class Experiment:
         self.token_params: Dict = {
             "dataset": self.dataset,
             "use_cached": use_cached,
+            "inlier_label": self.inlier_label,
             "space": TokenSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
         self.emb_params: Dict = {
             "dataset": self.dataset,
             "use_cached": use_cached,
+            "inlier_label": self.inlier_label,
             "space": EmbeddingSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
         self.text_params: Dict = {
             "dataset": self.dataset,
             "use_cached": False,
+            "inlier_label": self.inlier_label,
             "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
 
@@ -361,11 +366,10 @@ if __name__ == '__main__':
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
-    test_samples = 11
-    train_samples = 10
+    test_samples = 1000
+    train_samples = 3000
     dataset = EmotionDataset()
     emb_model = LLama1B()
-    space = WordSpace(emb_model, train_samples, test_samples)
-    exp = Experiment(dataset, emb_model, skip_error=False, train_size=10, test_size=10,
-                        experiment_name="test3", use_cached=True)
+    exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
+                        experiment_name="0.3_lse+no_div_loss_in_mmd", use_cached=True, runs=5)
     exp.run()

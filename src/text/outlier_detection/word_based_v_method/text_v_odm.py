@@ -31,7 +31,7 @@ class TextVOdm(EnsembleODM):
         self.output_path = output_path
         output_path = output_path / "vmmd_text" if output_path is not None else None
         self.v_method = TextVMMDAdapter(dataset, self.space, output_path=output_path)
-        self.amount_subspaces = 5
+        self.amount_subspaces = 50
         self.detectors: List[BaseDetector] = []
         self.embedded_data: List[PreparedData] = []
         self.prepared_data: Optional[PreparedData] = None
@@ -40,6 +40,7 @@ class TextVOdm(EnsembleODM):
 
     def _train_ensemble(self):
         subspaces = self.v_method.get_subspaces(self.amount_subspaces)
+        self.amount_subspaces = subspaces.shape[0]
         ui = cli.get()
         with ui.display():
             for i in range(self.amount_subspaces):
