@@ -4,6 +4,7 @@ from numpy import ndarray
 from torch import Tensor
 
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
+from text.Embedding.unification_strategy import StrategyInstance, UnificationStrategy
 from text.dataset.dataset import Dataset, AggregatableDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.outlier_detection.space.prepared_data import PreparedData
@@ -11,11 +12,11 @@ from text.outlier_detection.space.space import Space
 
 
 class WordSpace(Space):
-    def __init__(self, transformer_agg: bool, **params):
-        self.transformer_agg = transformer_agg
+    def __init__(self, strategy: UnificationStrategy, **params):
+        self.strategy = strategy
         super().__init__(**params)
     def transform_dataset(self, dataset: AggregatableDataset, use_cached: bool, inlier_label, masks: Optional[Tensor] = None) -> PreparedData:
-        if self.transformer_agg and not isinstance(dataset, AggregatableDataset):
+        if self.strategy == UnificationStrategy.TRANSFORMER and not isinstance(dataset, AggregatableDataset):
             raise ValueError("WordSpace with transformer_aggregation set to True only works with AggregatableDataset.")
         if use_cached:
             raise ValueError("WordSpace does not support caching.")
@@ -28,10 +29,12 @@ class WordSpace(Space):
         # but still present so that regardless of the aggregation method, the other models
         # can expect the same input shape.
         avg_length = preparer.get_average_sentence_length(x_train)
-        embedded_train_with_word_dim = self.model.embed_sentences(x_train, aggregate=self.transformer_agg, dataset=dataset, padding_length=avg_length)
-        embedded_test_with_word_dim = self.model.embed_sentences(x_test, aggregate=self.transformer_agg, dataset=dataset, padding_length=avg_length)
+        strategy_instance = self.strategy.create(avg_length)
+        embedded_train_with_word_dim = self.model.embed_sentences(x_train, dataset=dataset, strategy=strategy_instance)
+        embedded_test_with_word_dim = self.model.embed_sentences(x_test, dataset=dataset, strategy=strategy_instance)
 
-        assert not self.transformer_agg or embedded_train_with_word_dim.shape[1] == 1
+        if self.strategy == UnificationStrategy.TRANSFORMER or self.strategy == UnificationStrategy.MEAN:
+            assert embedded_train_with_word_dim.shape[1] == 1, f"expected shape (_, 1, _), got {embedded_train_with_word_dim.shape}"
         embedded_train = embedded_train_with_word_dim.mean(dim=1)
         embedded_test = embedded_test_with_word_dim.mean(dim=1)
 
@@ -46,7 +49,7 @@ class WordSpace(Space):
 
     @property
     def name(self):
-        return "Word" + " " + ("t_agg" if self.transformer_agg else "avg")
+        return "Word" + " " + self.strategy.key
 
     def get_n_dims(self, x_train: ndarray) -> int:
         """

@@ -16,6 +16,7 @@ from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.llama import LLama1B, LLama3B
+from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.ag_news import AGNews
@@ -86,11 +87,11 @@ class Experiment:
             "inlier_label": self.inlier_label,
             "space": EmbeddingSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
-        self.text_params: Callable[[bool],Dict] = lambda transformer_agg: ({
+        self.text_params: Callable[[UnificationStrategy],Dict] = lambda strategy: ({
             "dataset": self.dataset,
             "use_cached": False,
             "inlier_label": self.inlier_label,
-            "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size, transformer_agg=transformer_agg)
+            "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size, strategy = strategy)
         })
 
         # Determine the output directory.
@@ -137,26 +138,26 @@ class Experiment:
             ECOD(**self.emb_params)
         ])
 
-        for use_transformer_aggregation in [True, False]:
+        for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]:
             models.extend([
-                LOF(**self.text_params(use_transformer_aggregation)),
-                LUNAR(**self.text_params(use_transformer_aggregation)),
-                ECOD(**self.text_params(use_transformer_aggregation))
+                LOF(**self.text_params(strategy)),
+                LUNAR(**self.text_params(strategy)),
+                ECOD(**self.text_params(strategy)),
             ])
 
         if not self.run_cachable:
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params(t_agg), base_detector=base, output_path=self.output_path, transformer_aggregation=t_agg)
+            models.extend([TextVOdm(**self.text_params(strategy), base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
                            for base in bases
-                           for t_agg in [True, False]])
+                           for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params(t_agg), base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, transformer_aggregation=t_agg)
+            models.extend([TextVOdm(**self.text_params(strategy), base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create())
                            for base in bases
-                           for t_agg in [True, False]])
+                           for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only subspace distance.
-            models.extend([TextVOdm(**self.text_params(t_agg), base_detector=base, output_path=self.output_path, classifier_delta=0.0, transformer_aggregation=t_agg)
+            models.extend([TextVOdm(**self.text_params(strategy), base_detector=base, output_path=self.output_path, classifier_delta=0.0, aggregation_strategy=strategy.create())
                             for base in bases
-                            for t_agg in [True, False]])
+                            for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
 
 
         # Trivial ODM models with different guess inlier rates.
@@ -375,5 +376,5 @@ if __name__ == '__main__':
     dataset = EmotionDataset()
     emb_model = LLama3B()
     exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                        experiment_name="0.31_no_div_loss_in_mmd", use_cached=True, runs=5)
+                        experiment_name="0.34_no_div_loss_in_mmd+norm+mean+no_default_one_mask", use_cached=True, runs=5)
     exp.run()

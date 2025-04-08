@@ -13,10 +13,11 @@ from VMMDBase import VMMDBase
 from models.mse_loss import MSELoss
 from modules.od_module import ODModule
 from modules.text.vmmd_lightning import VMMDLightningBase
+from text.Embedding.unification_strategy import StrategyInstance, UnificationStrategy
 
 
 class VMMDTextLightningBase(VMMDLightningBase, ODModule):
-    def __init__(self, sequence_length: int, seperator: str = " ", transformer_aggregation: bool = True, use_mmd: bool = True, **kwargs):
+    def __init__(self, sequence_length: int, seperator: str = " ", strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(), use_mmd: bool = True, **kwargs):
         # Assume necessary hyperparameters (e.g., lr, weight_decay, weight, epochs) are in kwargs.
         if 'generator' not in kwargs:
             kwargs['generator'] = GeneratorSigmoidSTE
@@ -26,7 +27,7 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         # In Lightning, we assume the sequence length is known beforehand.
         self.n_dims = sequence_length
         self._latent_size = max(self.n_dims // 16, 1)
-        self.transformer_aggregation = transformer_aggregation
+        self.strategy = strategy
         # Create generator network using base class method.
         self.generator = self.get_the_networks(self.n_dims, self._latent_size)
         # Create loss function.

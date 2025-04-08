@@ -8,6 +8,7 @@ import torch.nn.functional as F
 
 from .embedding import Embedding
 from .tokenizer import Tokenizer
+from .unification_strategy import UnificationStrategy, StrategyInstance
 from ..UI import cli
 
 
@@ -112,12 +113,27 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                 word_embedding = embedded[start_index].unsqueeze(0)
             else:
                 word_embedding = embedded[start_index:end_index].mean(dim=0).unsqueeze(0)
+                #word_embedding = embedded[end_index -1].unsqueeze(0)
             start_index = end_index
             word_embeddings = torch.concat((word_embeddings, word_embedding), dim=0)
         return word_embeddings
 
     def _embed_words_full(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
-        tokenized = [self.tokenize(word) for word in words]
+        #tokenized = [self.tokenize(word) for word in words]
+        tokenized = []
+        previous_words = []
+        previous_length = 0
+        for word in words:
+            # Only the first word keeps the begin of input token.
+            previous_words.append(word)
+            current_sequence = " ".join(previous_words)
+            tokens = self.tokenize(current_sequence)
+            if len(tokenized) == 0:
+                tokenized.append(tokens)
+            else:
+                current = tokens[previous_length:]
+                tokenized.append(current)
+            previous_length = tokens.shape[0]
         if mask is None:
             mask = torch.ones(len(words)).to(self.device)
         else:
@@ -125,8 +141,14 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         expanded_mask = self._convert_word_to_token_mask(tokenized, mask)
         #embeddings = self.embed(sentence, expanded_mask)
         tokenized_tensor = torch.concat(tokenized, dim=0).to(self.device).float()
-        embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask)
+        embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask) if mask is not None else self.fully_embed_tokenized(tokenized_tensor)
         aggregated = self._aggregate_token_to_word_embedding(embeddings, tokenized)
+
+        # Mean the embeddings. Otherwise, setting an embedding to zero might change the meaning.
+        #normed = torch.nn.functional.normalize(aggregated, dim=1)
+        #meaned = normed.mean(dim=0)
+        #aggregated = normed - meaned
+
         # Apply the mask to the embeddings, so that the masked tokens are zeroed out
         masked = aggregated * mask.unsqueeze(1).expand_as(aggregated)
         return masked
@@ -153,10 +175,14 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         expanded = last_entry.unsqueeze(0)
         return expanded
 
-    def embed_words(self, words: List[str], mask: Optional[Tensor] = None, aggregate: bool = True) -> Tensor:
-        if aggregate:
+    def embed_words(self, words: List[str], mask: Optional[Tensor] = None, strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create()) -> Tensor:
+        if strategy.equals(UnificationStrategy.TRANSFORMER):
             return self._embed_words_last(words, mask)
-        return self._embed_words_full(words, mask)
+        if strategy.equals(UnificationStrategy.MEAN):
+            return self._embed_words_full(words, mask).mean(dim=0).unsqueeze(0)
+        if strategy.equals(UnificationStrategy.PADDING):
+            return self._embed_words_full(words, mask)
+        raise NotImplementedError(f"The strategy {strategy} is not implemented for huggingmodels.")
 
     def embed_tokenized(self, tokenized: Tensor) -> Tensor:
         """
@@ -242,7 +268,6 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                 normed = torch.nn.functional.normalize(transposed, dim=1)
                 meaned = normed - normed.mean(dim=0)
                 return meaned
-            ui.done()
             return embeddings
         return embedding
 

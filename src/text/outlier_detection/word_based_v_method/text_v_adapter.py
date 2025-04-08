@@ -8,6 +8,7 @@ from modules.text.vmmd_text import VMMDTextLightning
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.llama import LLama1B
+from text.Embedding.unification_strategy import StrategyInstance, UnificationStrategy
 from text.dataset.dataset import AggregatableDataset
 from text.outlier_detection.base_v_adapter import BaseVAdapter
 from text.outlier_detection.space.space import Space
@@ -24,18 +25,18 @@ class TextVMMDAdapter(BaseVAdapter):
                  dataset: AggregatableDataset,
                  space: Space,
                  output_path: Optional[Path] = None,
-                 transformer_aggregation: bool = True,
+                 aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  use_mmd: bool = False):
         self.dataset = dataset
         self.space = space
-        agg_str = ("t_agg" if transformer_aggregation else "avg")
+        agg_str = aggregation_strategy.key()
         loss_str = ("mmd" if use_mmd else "lse")
         self.output_path = output_path / agg_str / loss_str
         self.model: VMMDTextLightningBase | None = None
         self.subspaces: Optional[ndarray] = None
         self.proba: Optional[ndarray] = None
-        self.transformer_aggregation = transformer_aggregation
         self.use_mmd = use_mmd
+        self.strategy = aggregation_strategy
 
     def _get_params(self):
         NotImplementedError("Change params based on use_mmd and transformer_aggregation")
@@ -52,12 +53,12 @@ class TextVMMDAdapter(BaseVAdapter):
             yield_epochs=10,
             lr=1e-2,
             weight_decay=0.04,
-            penalty_weight=10.0 if self.transformer_aggregation else 1.0,
+            penalty_weight=1.0,
             batch_size=10,
             epochs=25,
             export_path=self.output_path,
             export=self.output_path is not None,
-            transformer_aggregation=self.transformer_aggregation,
+            aggreagation_strategy=self.strategy,
             use_mmd=self.use_mmd,
         )
         self.model = model_run.run()

@@ -10,6 +10,7 @@ from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.embedding import Embedding
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.tokenizer import Tokenizer
+from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
@@ -28,12 +29,17 @@ class FastText(Embedding):
         except ValueError as e:
             raise e
 
-    def embed_words(self, words: List[str], mask: Optional[Tensor], aggregate: bool = False) -> np.ndarray:
+    def embed_words(self, words: List[str], mask: Optional[Tensor], strategy: StrategyInstance) -> np.ndarray:
         if mask is not None:
             raise NotImplementedError("Masking is not implemented for FastText.")
         embeddings =  self.model.embeddings(words, normalize=self.normalize)
-        if aggregate:
+
+        if strategy.equals(UnificationStrategy.TRANSFORMER):
+            raise NotImplementedError("Transformer aggregation is not implemented for FastText, as the embeddings are static.")
+
+        if strategy.equals(UnificationStrategy.MEAN):
             return embeddings.mean(0)
+
         return embeddings
 
 

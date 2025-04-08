@@ -16,6 +16,7 @@ from modules.text.vmmd_text_base import VMMDTextBase
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.huggingmodel import HuggingModel
 from text.Embedding.llama import LLama1B, LLama3B
+from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.dataset.dataset import Dataset, AggregatableDataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
@@ -45,7 +46,7 @@ class VMMDLightningTextExperiment:
                  export_path: Optional[Path] = None,
                  export: Optional[bool] = True,
                  sequence_length: Optional[int] = None,
-                 transformer_aggregation: bool = True,
+                 aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  train_flag: bool = True,
                  use_mmd: bool = False):
         self.emb_model = emb_model
@@ -60,7 +61,7 @@ class VMMDLightningTextExperiment:
         self.batch_size = batch_size
         self.epochs = epochs
         self.sequence_length = sequence_length
-        self.transformer_aggregation = transformer_aggregation
+        self.strategy = aggregation_strategy
         self.train_flag = train_flag
         self.vmmd_model = vmmd_model
         self.seperator = " "
@@ -79,7 +80,7 @@ class VMMDLightningTextExperiment:
             self.emb_model.__class__.__name__,
             self.generator.__name__,
             f"{self.version}",
-            f"agg_{'t' if self.transformer_aggregation else 'avg'}",
+            self.strategy.key(),
             f"{self.dataset.name}_sl{self.sequence_length}_s{self.samples}"
         ))
         if self.train_flag:
@@ -178,9 +179,11 @@ class VMMDLightningTextExperiment:
         # Instantiate the model with the provided hyperparameters.
         _x_train = self._prepare_data()
 
+        strategy = UnificationStrategy.TRANSFORMER.create() if self.transformer_aggregation else UnificationStrategy.MEAN.create()
+
         embedding_fun = lambda samples, padding_length, masks: self.emb_model.embed_sentences(samples, padding_length,
                                                                                          masks=masks,
-                                                                                         aggregate=self.transformer_aggregation,
+                                                                                         strategy = strategy,
                                                                                          dataset=self.dataset)
         model = self._prepare_vmmd_model(embedding_fun)
 

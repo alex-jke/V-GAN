@@ -1,9 +1,12 @@
 import unittest
 
 import torch
+from numpy import ndarray
 from torch import Tensor
 
 from text.Embedding.gpt2 import GPT2
+from text.Embedding.llama import LLama3B
+from text.Embedding.unification_strategy import UnificationStrategy
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else ('mps:0' if torch.backends.mps.is_available() else 'cpu'))
 
@@ -50,5 +53,19 @@ class HuggingModelTest(unittest.TestCase):
         hugging_model = GPT2()
         embedded = hugging_model.embed_words(words, mask)
         self.assertTupleEqual(embedded.shape, (len(words), 768))
+
+    def test_word_vs_token_embeddings(self):
+        #samples = ["first example", "second example"]
+        sample = "This is an example"
+        model = LLama3B()
+        tokenized = model.tokenize(sample).to(device).unsqueeze(0)
+
+        #word_embs = model.embed_sentences(samples, strategy=UnificationStrategy.MEAN.create()).mean(1)
+        word_embs = model.embed_sentences([sample], strategy=UnificationStrategy.MEAN.create()).mean(1)
+        #tokenized = torch.stack([model.tokenize(sample).to(device) for sample in samples])
+        embedding_fun = model.get_embedding_fun(batch_first=False)
+        token_embs = embedding_fun(tokenized).T
+        #self.assertListEqual(word_embs.tolist(), token_embs.tolist())
+        self.assertTrue(torch.equal(word_embs, token_embs))
 
 
