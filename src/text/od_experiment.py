@@ -1,7 +1,7 @@
 import os
 import traceback
 from pathlib import Path
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Callable
 
 import pandas as pd
 import torch
@@ -15,7 +15,7 @@ from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.huggingmodel import HuggingModel
-from text.Embedding.llama import LLama1B
+from text.Embedding.llama import LLama1B, LLama3B
 from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.ag_news import AGNews
@@ -86,12 +86,12 @@ class Experiment:
             "inlier_label": self.inlier_label,
             "space": EmbeddingSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
-        self.text_params: Dict = {
+        self.text_params: Callable[[bool],Dict] = lambda transformer_agg: ({
             "dataset": self.dataset,
             "use_cached": False,
             "inlier_label": self.inlier_label,
-            "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size)
-        }
+            "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size, transformer_agg=transformer_agg)
+        })
 
         # Determine the output directory.
         self.output_path = output_path
@@ -137,24 +137,36 @@ class Experiment:
             ECOD(**self.emb_params)
         ])
 
-        models.extend([
-            LOF(**self.text_params),
-            LUNAR(**self.text_params),
-            ECOD(**self.text_params)
-        ])
+        for use_transformer_aggregation in [True, False]:
+            models.extend([
+                LOF(**self.text_params(use_transformer_aggregation)),
+                LUNAR(**self.text_params(use_transformer_aggregation)),
+                ECOD(**self.text_params(use_transformer_aggregation))
+            ])
 
         if not self.run_cachable:
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params, base_detector=base, output_path=self.output_path)
-                           for base in bases])
+            models.extend([TextVOdm(**self.text_params(t_agg), base_detector=base, output_path=self.output_path, transformer_aggregation=t_agg)
+                           for base in bases
+                           for t_agg in [True, False]])
             # VMMD Text ODM with only ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params, base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0)
-                           for base in bases])
+            models.extend([TextVOdm(**self.text_params(t_agg), base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, transformer_aggregation=t_agg)
+                           for base in bases
+                           for t_agg in [True, False]])
             # VMMD Text ODM with only subspace distance.
-            models.extend([TextVOdm(**self.text_params, base_detector=base, output_path=self.output_path, classifier_delta=0.0)
-                              for base in bases])
+            models.extend([TextVOdm(**self.text_params(t_agg), base_detector=base, output_path=self.output_path, classifier_delta=0.0, transformer_aggregation=t_agg)
+                            for base in bases
+                            for t_agg in [True, False]])
 
 
+        # Trivial ODM models with different guess inlier rates.
+        models.extend([
+            TrivialODM(**self.token_params, guess_inlier_rate=rate, base_method=base)
+            for rate in [0.0, 0.5, 1.0]
+            for base in bases
+        ])
+
+        return models
         # VGAN ODM models with both use_embedding False and True.
         params = [self.emb_params] if self.run_cachable else [self.token_params, self.emb_params]
         model_types = [VMMDAdapter()]#, VGANAdapter()]
@@ -193,17 +205,8 @@ class Experiment:
             for base in bases
             for param in params
         ])
-
-
-
-        # Trivial ODM models with different guess inlier rates.
-        models.extend([
-            TrivialODM(**self.token_params, guess_inlier_rate=rate, base_method=base)
-            for rate in [0.0, 0.5, 1.0]
-            for base in bases
-        ])
-
         return models
+
 
     def _get_output_path(self) -> Path:
         """
@@ -256,6 +259,7 @@ class Experiment:
         return self.output_path / f"run_{run}"
 
     def _filter_for_not_run(self, run: int) -> None:
+        self.models = self._build_models()
         result_path = self._get_run_path(run) / self.result_csv_name
         if not result_path.exists():
             return
@@ -369,7 +373,7 @@ if __name__ == '__main__':
     test_samples = 1000
     train_samples = 3000
     dataset = EmotionDataset()
-    emb_model = LLama1B()
+    emb_model = LLama3B()
     exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                        experiment_name="0.3_lse+no_div_loss_in_mmd", use_cached=True, runs=5)
+                        experiment_name="0.31_no_div_loss_in_mmd", use_cached=True, runs=5)
     exp.run()

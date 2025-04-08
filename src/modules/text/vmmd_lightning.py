@@ -24,7 +24,7 @@ from text.Embedding.llama import LLama1B
 class VMMDLightningBase(pl.LightningModule):
     def __init__(self,
                  embedding: Optional[Callable[[np.ndarray[str], int, Optional[Tensor]], Tensor]] = None,
-                 batch_size=500, epochs=500, lr=1e-4, momentum=0.99, seed=777,
+                 batch_size=500, epochs=500, lr=1e-4, seed=777,
                  weight_decay=1e-4, path_to_directory=None, weight=0, generator=None,
                  print_updates=False, gradient_clipping=False):
         super().__init__()
@@ -36,7 +36,6 @@ class VMMDLightningBase(pl.LightningModule):
         self.batch_size = batch_size
         self.epochs = epochs
         self.lr = lr
-        self.momentum = momentum
         self.seed = seed if seed is not None else np.random.randint(10, 10000, 1)
         self.provided_generator = generator if generator is not None else GeneratorSigmoidSTE
         self.weight_decay = weight_decay
@@ -88,21 +87,6 @@ class VMMDLightningBase(pl.LightningModule):
         plot, _ = self._create_plot()
         plot.savefig(Path(path_to_directory) / "train_history.png", format="png", dpi=1200)
         plot.close()
-
-    def get_params(self) -> dict:
-        return {
-            'batch size': self.batch_size,
-            'epochs': self.epochs,
-            'lr': self.lr,
-            'momentum': self.momentum,
-            'weight decay': self.weight_decay,
-            'seed': self.seed,
-            'generator optimizer': self.generator_optimizer,
-            'penalty weight': self.weight,
-            'generator': self.provided_generator.__name__ if inspect.isclass(self.provided_generator)
-                         else str(self.provided_generator),
-            'gradient_clipping': self.apply_gradient_clipping
-        }
 
     def model_snapshot(self, path_to_directory=None):
         self._plot_loss(path_to_directory)

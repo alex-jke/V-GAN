@@ -11,9 +11,12 @@ from text.outlier_detection.space.space import Space
 
 
 class WordSpace(Space):
+    def __init__(self, transformer_agg: bool, **params):
+        self.transformer_agg = transformer_agg
+        super().__init__(**params)
     def transform_dataset(self, dataset: AggregatableDataset, use_cached: bool, inlier_label, masks: Optional[Tensor] = None) -> PreparedData:
-        if not isinstance(dataset, AggregatableDataset):
-            raise ValueError("WordSpace only works with AggregatableDataset.")
+        if self.transformer_agg and not isinstance(dataset, AggregatableDataset):
+            raise ValueError("WordSpace with transformer_aggregation set to True only works with AggregatableDataset.")
         if use_cached:
             raise ValueError("WordSpace does not support caching.")
         preparer = DatasetPreparer(dataset, self.train_size)
@@ -24,10 +27,11 @@ class WordSpace(Space):
         # Since we set aggregate to True, the word dimension is only of size 1,
         # but still present so that regardless of the aggregation method, the other models
         # can expect the same input shape.
-        embedded_train_with_word_dim = self.model.embed_sentences(x_train, aggregate=True, dataset=dataset)
-        embedded_test_with_word_dim = self.model.embed_sentences(x_test, aggregate=True, dataset=dataset)
+        avg_length = preparer.get_average_sentence_length(x_train)
+        embedded_train_with_word_dim = self.model.embed_sentences(x_train, aggregate=self.transformer_agg, dataset=dataset, padding_length=avg_length)
+        embedded_test_with_word_dim = self.model.embed_sentences(x_test, aggregate=self.transformer_agg, dataset=dataset, padding_length=avg_length)
 
-        assert embedded_train_with_word_dim.shape[1] == 1
+        assert not self.transformer_agg or embedded_train_with_word_dim.shape[1] == 1
         embedded_train = embedded_train_with_word_dim.mean(dim=1)
         embedded_test = embedded_test_with_word_dim.mean(dim=1)
 
@@ -42,7 +46,7 @@ class WordSpace(Space):
 
     @property
     def name(self):
-        return "Word"
+        return "Word" + " " + ("t_agg" if self.transformer_agg else "avg")
 
     def get_n_dims(self, x_train: ndarray) -> int:
         """

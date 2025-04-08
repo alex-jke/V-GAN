@@ -16,7 +16,7 @@ from modules.text.vmmd_lightning import VMMDLightningBase
 
 
 class VMMDTextLightningBase(VMMDLightningBase, ODModule):
-    def __init__(self, sequence_length: int, seperator: str = " ", **kwargs):
+    def __init__(self, sequence_length: int, seperator: str = " ", transformer_aggregation: bool = True, use_mmd: bool = True, **kwargs):
         # Assume necessary hyperparameters (e.g., lr, weight_decay, weight, epochs) are in kwargs.
         if 'generator' not in kwargs:
             kwargs['generator'] = GeneratorSigmoidSTE
@@ -25,13 +25,13 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         self.seperator = seperator
         # In Lightning, we assume the sequence length is known beforehand.
         self.n_dims = sequence_length
-        self._latent_size = max(self.n_dims // 4, 1)
+        self._latent_size = max(self.n_dims // 16, 1)
+        self.transformer_aggregation = transformer_aggregation
         # Create generator network using base class method.
         self.generator = self.get_the_networks(self.n_dims, self._latent_size)
         # Create loss function.
         kernel = MixtureRQLinear()#RBFConstrained()
-        #self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel)
-        self.loss_function = MSELoss(weight=self.hparams.get("weight", 1.0))
+        self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel) if use_mmd else MSELoss(weight=self.hparams.get("weight", 1.0))
 
     def forward(self, x: Tensor) -> Tensor:
         # Optionally define forward pass (e.g., for inference)
@@ -78,7 +78,7 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
             self.generator.parameters(),
-            lr=self.hparams.get("lr", 1e-3),
+            lr=self.hparams.get("lr", 1e-2),
             weight_decay=self.hparams.get("weight_decay", 0)
         )
         return optimizer

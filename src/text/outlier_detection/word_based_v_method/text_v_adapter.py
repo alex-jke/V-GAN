@@ -23,15 +23,25 @@ class TextVMMDAdapter(BaseVAdapter):
     def __init__(self,
                  dataset: AggregatableDataset,
                  space: Space,
-                 output_path: Optional[Path] = None,):
+                 output_path: Optional[Path] = None,
+                 transformer_aggregation: bool = True,
+                 use_mmd: bool = False):
         self.dataset = dataset
         self.space = space
-        self.output_path = output_path
+        agg_str = ("t_agg" if transformer_aggregation else "avg")
+        loss_str = ("mmd" if use_mmd else "lse")
+        self.output_path = output_path / agg_str / loss_str
         self.model: VMMDTextLightningBase | None = None
         self.subspaces: Optional[ndarray] = None
         self.proba: Optional[ndarray] = None
+        self.transformer_aggregation = transformer_aggregation
+        self.use_mmd = use_mmd
+
+    def _get_params(self):
+        NotImplementedError("Change params based on use_mmd and transformer_aggregation")
 
     def train(self, emdedding_model: HuggingModel):
+        self._get_params()
         model_run = VMMDLightningTextExperiment(
             emb_model=emdedding_model,
             vmmd_model=VMMDTextLightning,
@@ -42,11 +52,13 @@ class TextVMMDAdapter(BaseVAdapter):
             yield_epochs=10,
             lr=1e-2,
             weight_decay=0.04,
-            penalty_weight=10.,
+            penalty_weight=10.0 if self.transformer_aggregation else 1.0,
             batch_size=10,
             epochs=25,
             export_path=self.output_path,
             export=self.output_path is not None,
+            transformer_aggregation=self.transformer_aggregation,
+            use_mmd=self.use_mmd,
         )
         self.model = model_run.run()
 

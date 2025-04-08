@@ -20,23 +20,25 @@ from text.outlier_detection.word_based_v_method.text_v_adapter import TextVMMDAd
 class TextVOdm(EnsembleODM):
 
     def __init__(self, dataset: AggregatableDataset, space: WordSpace, base_detector: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
-                 output_path: Path | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0):
+                 output_path: Path | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0, transformer_aggregation: bool = True):
         if not isinstance(space, WordSpace):
             raise ValueError("TextVOdm only works with WordSpace.")
-        if not isinstance(dataset, AggregatableDataset):
-            raise ValueError("TextVOdm only works with AggregatableDataset.")
+        if transformer_aggregation and not isinstance(dataset, AggregatableDataset):
+            raise ValueError("TextVOdm requires an aggregatable dataset, if transformer_aggregation is True.")
         super().__init__(dataset=dataset, space=space, base_method=base_detector, inlier_label=inlier_label, use_cached=use_cached)
         self.subspace_distance_lambda = subspace_distance_lambda
         self.classifier_delta = classifier_delta
         self.output_path = output_path
         output_path = output_path / "vmmd_text" if output_path is not None else None
-        self.v_method = TextVMMDAdapter(dataset, self.space, output_path=output_path)
+        self.use_mmd = False
+        self.v_method = TextVMMDAdapter(dataset, self.space, output_path=output_path, transformer_aggregation=transformer_aggregation, use_mmd=self.use_mmd)
         self.amount_subspaces = 50
         self.detectors: List[BaseDetector] = []
         self.embedded_data: List[PreparedData] = []
         self.prepared_data: Optional[PreparedData] = None
         self.space = space
         self.dataset = dataset
+        self.transformer_aggregation = transformer_aggregation
 
     def _train_ensemble(self):
         subspaces = self.v_method.get_subspaces(self.amount_subspaces)
@@ -88,9 +90,9 @@ class TextVOdm(EnsembleODM):
         if self.subspace_distance_lambda != 0:
             subspace_dists = self._calculate_distances(self.x_test, self.embedded_data, self.space).cpu()
 
-        ensemble_scores = torch.zeros_like(self.y_test)
+        ensemble_scores = torch.zeros_like(self.y_test).cpu()
         if self.classifier_delta != 0:
-            ensemble_scores = self._predict_ensemble()
+            ensemble_scores = self._predict_ensemble().cpu()
         # Combine the two scores
         combined_scores = self.classifier_delta * ensemble_scores + self.subspace_distance_lambda * subspace_dists
         assert len(combined_scores.shape) == 1 and combined_scores.shape == self.y_test.shape
@@ -99,8 +101,10 @@ class TextVOdm(EnsembleODM):
     def _get_name(self) -> str:
         subspace_dist_str = f"λ{self.subspace_distance_lambda}" if self.subspace_distance_lambda != 0 else ""
         classifier_delta_str = f"∂{self.classifier_delta}" if self.classifier_delta != 0 else ""
-        postfix_string = f"({subspace_dist_str}, {classifier_delta_str})" if subspace_dist_str or classifier_delta_str else ""
-        return "TextV + " + self.base_method.__name__ + " + self.space.name "+ postfix_string
+        postfix_string = f"({classifier_delta_str}, {subspace_dist_str})" if subspace_dist_str or classifier_delta_str else ""
+        agg_str = "t-agg" if self.transformer_aggregation else "Avg-agg"
+        loss_str = "mmd" if self.use_mmd else "lse"
+        return "TextV + " + agg_str + " " + loss_str + " " + self.base_method.__name__ + " " + postfix_string
 
     def _get_predictions(self) -> List[float]:
         return self.predictions.tolist()

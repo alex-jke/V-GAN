@@ -52,6 +52,16 @@ class DatasetPreparer:
         return data_np, labels_np
 
     @staticmethod
+    def get_average_sentence_length(x_data: ndarray[str], seperator: str = " ") -> int:
+        """
+        Calculate the average sentence length in the dataset.
+        :param x_data: A numpy array of sentences.
+        :return: The average sentence length, as an integer.
+        """
+        sequence_length = int(np.mean([len(x.split(seperator)) for x in x_data]))
+        return sequence_length
+
+    @staticmethod
     def clean(sentence: str) -> str:
         """
         Removes any empty strings.

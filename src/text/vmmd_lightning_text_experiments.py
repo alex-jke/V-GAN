@@ -46,7 +46,8 @@ class VMMDLightningTextExperiment:
                  export: Optional[bool] = True,
                  sequence_length: Optional[int] = None,
                  transformer_aggregation: bool = True,
-                 train_flag: bool = True):
+                 train_flag: bool = True,
+                 use_mmd: bool = False):
         self.emb_model = emb_model
         self.generator = generator
         self.version = version
@@ -66,6 +67,7 @@ class VMMDLightningTextExperiment:
         self.export_path = export_path
         self.export = export
         self.loaded_model = False
+        self.use_mmd = use_mmd
         if self.export_path is None and export:
             self.export_path = self.build_export_path()
 
@@ -81,7 +83,7 @@ class VMMDLightningTextExperiment:
             f"{self.dataset.name}_sl{self.sequence_length}_s{self.samples}"
         ))
         if self.train_flag:
-            base_dir += "_" + datetime.now().strftime("%Y%m%d-%H%M%S")
+            base_dir = Path(str(base_dir) + ("_" + datetime.now().strftime("%Y%m%d-%H%M%S")))
         return base_dir
 
     def visualize(self, epoch: int, model, sentences: ndarray):
@@ -135,7 +137,11 @@ class VMMDLightningTextExperiment:
             weight_decay=self.weight_decay,
             weight=self.penalty_weight,
             generator=self.generator,
-            seed=777
+            seed=777,
+            transformer_aggregation=self.transformer_aggregation,
+            use_mmd=self.use_mmd,
+            batch_size=self.batch_size, # This is not needed for the training itself, just for the params file.
+            epochs=self.epochs, # This is also not needed for the training itself, just for the params file.
         )
 
     def _load_if_exists(self, model: VMMDTextLightningBase, embedding_fun) -> VMMDTextLightningBase:
@@ -230,12 +236,12 @@ if __name__ == "__main__":
     emb_model = LLama3B()
     dataset = EmotionDataset()
     generator = GeneratorSigmoidSTE
-    version = "0.054_MSE"
+    version = "0.055"
     sampless = [3000]
     yield_epochs = 1
-    batch_size = 10
-    penalty_weights = [10.]
-    lrs = [1e-3]
+    batch_size = 200
+    penalty_weights = [0.1]
+    lrs = [1e-2]
     epochss = [25]
     weight_decays = [0.04]
 
@@ -255,11 +261,13 @@ if __name__ == "__main__":
                         weight_decay=weight_decay,
                         penalty_weight=penalty_weight,
                         batch_size=batch_size,
-                        epochs=epochs
+                        epochs=epochs,
+                        transformer_aggregation = False,
+                        use_mmd = True,
                     )
                     exp.run()
 
 
 
 #python -m tensorboard.main --logdir=
-#/home/i40/jenkea/PycharmProjects/V-GAN/src/text/experiments/VMMDTextLightning/LLama1B/GeneratorSigmoidSTE/0.05+MSE/agg_t/Emotions_slNone_s3000_20250403-195136/tensorboard_logs
+#/home/i40/jenkea/PycharmProjects/V-GAN/src/text/experiments/VMMDTextLightning/LLama3B/GeneratorSigmoidSTE/0.054_MSE/agg_avg/Emotions_slNone_s3000/_20250407-083216/tensorboard_logs
