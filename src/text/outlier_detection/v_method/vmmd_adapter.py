@@ -15,12 +15,12 @@ class VMMDAdapter(NumericalVOdmAdapter):
 
     def __init__(self,  seed = 777,
                         epochs = 10_000,
-                        lr = 1e-5,
+                        lr = 1e-4,
                         penalty_weight = 0.1,
                         weight_decay = 10e-5,
                         generator = GeneratorSigmoidSTE,
                         dataset_specific_params = True,
-                        max_batch_size = 2500):
+                        max_batch_size = 3000):
         """
         The constructor for the VMMDAdapter class. It allows setting up the VMMD model.
         :param seed: random seed for the model to use.
@@ -46,7 +46,7 @@ class VMMDAdapter(NumericalVOdmAdapter):
     def _init_model(self, data: PreparedData, space: Space) -> VMMD_od:
         model = VMMD_od(penalty_weight=self.penalty_weight, generator=self.generator,
                         lr=self.lr, epochs=self.epochs, seed=self.seed, path_to_directory=self.output_path,
-                        weight_decay=self.weight_decay)
+                        weight_decay=self.weight_decay, batch_size=self.max_batch_size)
 
         if self.dataset_specific_params:
             self._update_params(model, data, space)

@@ -252,7 +252,7 @@ class MMDLossConstrained(nn.Module):
             raise ValueError("mmd is nan.")
         return (mmd_loss +
                 penalty
-                # + diversity_loss# + middle_penalty# + feature_selection_penalty
+                 #+ diversity_loss# + middle_penalty# + feature_selection_penalty
                 , mmd_loss)
 
     def forward(self, X, Y, U: torch.Tensor, apply_penalty = True):

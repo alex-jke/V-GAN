@@ -139,7 +139,7 @@ class VMMDLightningTextExperiment:
             weight=self.penalty_weight,
             generator=self.generator,
             seed=777,
-            transformer_aggregation=self.transformer_aggregation,
+            strategy=self.strategy,
             use_mmd=self.use_mmd,
             batch_size=self.batch_size, # This is not needed for the training itself, just for the params file.
             epochs=self.epochs, # This is also not needed for the training itself, just for the params file.
@@ -179,11 +179,11 @@ class VMMDLightningTextExperiment:
         # Instantiate the model with the provided hyperparameters.
         _x_train = self._prepare_data()
 
-        strategy = UnificationStrategy.TRANSFORMER.create() if self.transformer_aggregation else UnificationStrategy.MEAN.create()
+        #strategy = UnificationStrategy.TRANSFORMER.create() if self.transformer_aggregation else UnificationStrategy.MEAN.create()
 
-        embedding_fun = lambda samples, padding_length, masks: self.emb_model.embed_sentences(samples, padding_length,
+        embedding_fun = lambda samples, padding_length, masks: self.emb_model.embed_sentences(sentences=samples,
                                                                                          masks=masks,
-                                                                                         strategy = strategy,
+                                                                                         strategy = self.strategy,
                                                                                          dataset=self.dataset)
         model = self._prepare_vmmd_model(embedding_fun)
 
@@ -239,36 +239,36 @@ if __name__ == "__main__":
     emb_model = LLama3B()
     dataset = EmotionDataset()
     generator = GeneratorSigmoidSTE
-    version = "0.055"
+    version = "0.056"
     sampless = [3000]
     yield_epochs = 1
-    batch_size = 200
-    penalty_weights = [0.1]
-    lrs = [1e-2]
+    batch_size = 100
+    penalty_weights = [0.0]
+    lrs = [5e-3]
     epochss = [25]
-    weight_decays = [0.04]
-
-    for samples in sampless:
-        for weight_decay in weight_decays:
-            for penalty_weight in penalty_weights:
-                for epochs, lr in zip(epochss, lrs):
-                    exp = VMMDLightningTextExperiment(
-                        emb_model=emb_model,
-                        vmmd_model=VMMDTextLightning,
-                        generator=generator,
-                        version=version,
-                        dataset=dataset,
-                        samples=samples,
-                        yield_epochs=yield_epochs,
-                        lr=lr,
-                        weight_decay=weight_decay,
-                        penalty_weight=penalty_weight,
-                        batch_size=batch_size,
-                        epochs=epochs,
-                        transformer_aggregation = False,
-                        use_mmd = True,
-                    )
-                    exp.run()
+    weight_decays = [0.0]
+    for strategy in [UnificationStrategy.TRANSFORMER.create(), UnificationStrategy.MEAN.create()]:
+        for samples in sampless:
+            for weight_decay in weight_decays:
+                for penalty_weight in penalty_weights:
+                    for epochs, lr in zip(epochss, lrs):
+                        exp = VMMDLightningTextExperiment(
+                            emb_model=emb_model,
+                            vmmd_model=VMMDTextLightning,
+                            generator=generator,
+                            version=version,
+                            dataset=dataset,
+                            samples=samples,
+                            yield_epochs=yield_epochs,
+                            lr=lr,
+                            weight_decay=weight_decay,
+                            penalty_weight=penalty_weight,
+                            batch_size=batch_size,
+                            epochs=epochs,
+                            aggregation_strategy=strategy,
+                            use_mmd = False,
+                        )
+                        exp.run()
 
 
 

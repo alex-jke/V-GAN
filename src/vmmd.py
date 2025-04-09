@@ -11,7 +11,7 @@ from colors import VGAN_GREEN, COMPLIMENTARY
 from models.Generator import Generator, Generator_big
 
 import torch_two_sample as tts
-from models.Mmd_loss_constrained import MMDLossConstrained
+from models.Mmd_loss_constrained import MMDLossConstrained, MixtureRQLinear
 from models.Mmd_loss_constrained import RBF as RBFConstrained
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -66,7 +66,8 @@ class VMMD(VMMDBase):
         optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay, betas=(0.5,0.9))
         self.generator_optimizer = optimizer.__class__.__name__
         # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
-        kernel = RBFConstrained(embedding=embedding)
+        #kernel = RBFConstrained(embedding=embedding)
+        kernel = MixtureRQLinear()
         loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
 
         for epoch in range(epochs):

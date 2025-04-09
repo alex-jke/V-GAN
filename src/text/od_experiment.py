@@ -145,7 +145,7 @@ class Experiment:
                 ECOD(**self.text_params(strategy)),
             ])
 
-        if not self.run_cachable:
+        if not self.run_cachable and False:
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
             models.extend([TextVOdm(**self.text_params(strategy), base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
                            for base in bases
@@ -167,7 +167,7 @@ class Experiment:
             for base in bases
         ])
 
-        return models
+
         # VGAN ODM models with both use_embedding False and True.
         params = [self.emb_params] if self.run_cachable else [self.token_params, self.emb_params]
         model_types = [VMMDAdapter()]#, VGANAdapter()]
@@ -371,10 +371,10 @@ if __name__ == '__main__':
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
-    test_samples = 1000
-    train_samples = 3000
+    test_samples = 3000
+    train_samples = 15_000
     dataset = EmotionDataset()
     emb_model = LLama3B()
     exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                        experiment_name="0.34_no_div_loss_in_mmd+norm+mean+no_default_one_mask", use_cached=True, runs=5)
+                        experiment_name="0.36", use_cached=True, runs=5, run_cachable=True)
     exp.run()

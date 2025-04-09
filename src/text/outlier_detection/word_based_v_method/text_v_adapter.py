@@ -58,7 +58,7 @@ class TextVMMDAdapter(BaseVAdapter):
             epochs=25,
             export_path=self.output_path,
             export=self.output_path is not None,
-            aggreagation_strategy=self.strategy,
+            aggregation_strategy=self.strategy,
             use_mmd=self.use_mmd,
         )
         self.model = model_run.run()

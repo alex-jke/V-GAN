@@ -34,10 +34,6 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         kernel = MixtureRQLinear()#RBFConstrained()
         self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel) if use_mmd else MSELoss(weight=self.hparams.get("weight", 1.0))
 
-    def forward(self, x: Tensor) -> Tensor:
-        # Optionally define forward pass (e.g., for inference)
-        return self.generator(x)
-
     def on_before_optimizer_step(self, optimizer):
         # Compute the 2-norm for each layer
         norms = grad_norm(self.generator, norm_type=2)

@@ -89,9 +89,14 @@ class Embedding(ABC):
             #ui.update(f"Embedding sentence {i + 1}/{len(sentences)}")
             sentence = sentences[i]
             mask = None
+            words = self.get_words(sentence, seperator)
+
             if masks is not None:
                 mask = masks[i] if len(masks.shape) > 1 else masks
-            words = self.get_words(sentence, seperator)
+                if len(words) > mask.shape[0]:
+                    words = words[:mask.shape[0]] #TODO: this now only applies if mask is set, as if everything after is masked
+                elif len(words) < mask.shape[0]:
+                    mask = mask[:len(words)]
             if padding_length is not None and len(words) > padding_length:
                 words = words[:padding_length]
             elif padding_length is not None and len(words) < padding_length and masks is not None:
@@ -101,7 +106,7 @@ class Embedding(ABC):
                 if embedded.shape[0] < padding_length:
                     embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
                 #elif embedded.shape[0] > padding_length > 0:
-                    #embedded = embedded[:padding_length]
+                #embedded = embedded[:padding_length]
                 if embedded.shape[0] != padding_length:
                     raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
             embeddings.append(embedded)

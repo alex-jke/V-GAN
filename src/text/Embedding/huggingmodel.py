@@ -88,6 +88,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     def _convert_word_to_token_mask(self, tokenized: List[Tensor], mask: Tensor) -> Tensor:
         token_word_lengths = Tensor([tokens.shape[0] for tokens in tokenized]).int().to(self.device)
+        assert token_word_lengths.shape[0] == mask.shape[0], f"The mask length and word lengths do not match. Mask: {mask.shape[0]}, Tokens: {token_word_lengths.shape[0]} "
         try:
             mask = mask.repeat_interleave(token_word_lengths, dim=0)
         except RuntimeError as e:
@@ -141,13 +142,13 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         expanded_mask = self._convert_word_to_token_mask(tokenized, mask)
         #embeddings = self.embed(sentence, expanded_mask)
         tokenized_tensor = torch.concat(tokenized, dim=0).to(self.device).float()
-        embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask) if mask is not None else self.fully_embed_tokenized(tokenized_tensor)
+        embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask)
         aggregated = self._aggregate_token_to_word_embedding(embeddings, tokenized)
 
         # Mean the embeddings. Otherwise, setting an embedding to zero might change the meaning.
-        #normed = torch.nn.functional.normalize(aggregated, dim=1)
-        #meaned = normed.mean(dim=0)
-        #aggregated = normed - meaned
+        normed = torch.nn.functional.normalize(aggregated, dim=1)
+        meaned = normed.mean(dim=0)
+        aggregated = normed - meaned
 
         # Apply the mask to the embeddings, so that the masked tokens are zeroed out
         masked = aggregated * mask.unsqueeze(1).expand_as(aggregated)
