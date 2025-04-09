@@ -10,14 +10,14 @@ import torch
 from torch import Tensor
 
 # === Imports from your modules ===
-from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE, \
-    GeneratorSpectralNorm, GeneratorSigmoidSTEMBD, Generator_big
+from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE, GeneratorSigmoidSTEMBD, Generator_big, GeneratorSigmoidAnnealing
 from modules.od_module import VMMD_od
 from text.Embedding.bert import Bert
 from text.Embedding.gpt2 import GPT2
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek7B
 from text.Embedding.gpt2ExtraSubspace import GPT2ExtraSubspaces
 from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.llama import LLama3B
 from text.Embedding.tokenizer import Tokenizer
 from text.dataset.SimpleDataset import SimpleDataset
 from text.dataset.ag_news import AGNews
@@ -212,36 +212,36 @@ def run_all_datasets():
 
 def test_embedding():
     dataset = EmotionDataset()
-    model = GPT2()
-    generator = GeneratorSigmoidSTE
-    version = '0.4694_embedding_grid+manual_one_hot_wd+larger_latent(4)'
+    model = LLama3B()
+    generator = GeneratorSigmoidAnnealing
+    version = '0.5'
     lr = 3e-2
     #for lr in range(16,1, -7):
         #lr *= 1e-2
         #for penalty in [0.0, 0.2, 0.8]:#range(0,6):
 
-    for clip in [True, False]:
-        for weight_decay in [1e-2, 1e-3]:
-    #penalty *= 0.2
-            experiment = VMMDExperiment(
-                dataset=dataset,
-                model=model,
-                version=version,
-                pre_embed=False,
-                generator_class=generator,
-                epochs=1000,
-                batch_size=750,
-                samples=3000,
-                penalty_weight=0.2,
-                lr=lr,
-                yield_epochs=5,
-                train=True,
-                use_embedding=True,
-                weight_decay=weight_decay,
-                seed=777,
-                gradient_clipping=clip
-            )
-            experiment.run()
+    #for clip in [True, False]:
+    for weight_decay in [1e-5]:
+#penalty *= 0.2
+        experiment = VMMDExperiment(
+            dataset=dataset,
+            model=model,
+            version=version,
+            pre_embed=True,
+            generator_class=generator,
+            epochs=3000,
+            batch_size=3000,
+            samples=6000,
+            penalty_weight=0.0,
+            lr=lr,
+            yield_epochs=60,
+            train=True,
+            use_embedding=False,
+            weight_decay=weight_decay,
+            seed=777,
+            gradient_clipping=False
+        )
+        experiment.run()
 
 # === Main entry point experiments ===
 if __name__ == '__main__':

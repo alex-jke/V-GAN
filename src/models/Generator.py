@@ -140,9 +140,26 @@ class BinaryStraightThrough(nn.Module):
         x_binary = x_binary + (x - x.detach())
         return x_binary
 
+class AnnealingSigmoid(nn.Module):
+    def __init__(self, alpha: float = 1.0, beta: float = 0.5):
+        super().__init__()
+        self.alpha = alpha
+        self.beta = beta
+
+    def forward(self, x):
+        # Sigmoid function with annealing
+        sigmoid = torch.sigmoid(self.alpha * x)
+        # Update alpha and beta for annealing
+        self.alpha += self.beta
+        return sigmoid
+
 class GeneratorSigmoid(Generator_big):
     def __init__(self, latent_size, img_size):
         super().__init__(latent_size, img_size, nn.Sigmoid())
+
+class GeneratorSigmoidAnnealing(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, activation_function=AnnealingSigmoid())
 
 class GeneratorSigmoidSTE(GeneratorSigmoid):
     def __init__(self, latent_size, img_size):

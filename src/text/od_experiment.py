@@ -11,6 +11,7 @@ from pyod.models.lunar import LUNAR as pyod_LUNAR
 from pyod.models.ecod import ECOD as pyod_ECOD
 from pyod.models.lof import LOF as pyod_LOF
 
+from models.Generator import GeneratorSigmoidAnnealing
 from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
@@ -170,7 +171,7 @@ class Experiment:
 
         # VGAN ODM models with both use_embedding False and True.
         params = [self.emb_params] if self.run_cachable else [self.token_params, self.emb_params]
-        model_types = [VMMDAdapter()]#, VGANAdapter()]
+        model_types = [VMMDAdapter(generator=GeneratorSigmoidAnnealing)]#, VGANAdapter()]
 
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.
