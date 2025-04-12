@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Tuple, List, Type, Callable
+from typing import Tuple, List, Type, Callable, Optional
 
 from numpy import ndarray
 from prompt_toolkit.layout.processors import Transformation
@@ -100,33 +100,65 @@ class FeatureBagging(PyODM):
     def _get_name(self):
         return f"FeatureBagging + {self.base_name} + {self.get_space()}"
 
+detector_number = 0
+
 class TransformBaseDetector(BaseDetector):
     """
     A wrapper for a base detector that transforms the input data before passing it to the base detector.
     An example of this is to give the base detector tokenized data, while the model is trained on embeddings.
     """
 
+
     def __init__(self, transform_fun: Callable[[ndarray], ndarray],
                  base_detector: Callable[[],Type[BaseDetector]]):
         # self.model = model #saving the model will cause CUDA out of memory as model is large
+        raise NotImplementedError("This class should not be used, as it is currently error prone."
+                                  "When using this class in an ensemble, the scalar (maybe more) is not properly"
+                                  "copied, which results in an dimension missmatch, as seen below.")
         self.base_detector: Callable[[], Type[BaseDetector]] = base_detector # This is required because, when the base detectors are duplicated in the feature bagging,
         # instead for each param to check if its of type BaseDetector it checks if it has the get_params method.
         # Then an error it caused was it trying to call get_params on the base_detector class, that self was not passed.
         #self.embedding_fun = self.model.get_embedding_fun(batch_first=True)
         self.transform_fun = transform_fun
         self._classes = 2
+        self.dimensions_provided: Optional[int] = None
+        self.embedded_dims: Optional[int] = None
+        global detector_number
+        self.detector_num = detector_number
+        detector_number += 1
+        #if detector_number > 51:
+            #print(f"creating Detector #{detector_number} / 50")
+
         super().__init__()
 
     def fit(self, X: ndarray, y=None):
+        self.dimensions_provided = X.shape[1]
         self._estimator = self.base_detector()(contamination = self.contamination)
         embedded = self.transform_fun(X)
+        self.embedded_dims = embedded.shape[1]
         self._estimator.fit(embedded, y)
         self.decision_scores_ = self._estimator.decision_scores_
         self.threshold_ = self._estimator.threshold_
         self.labels_ = self._estimator.labels_
+        if isinstance(self._estimator, pyod_LUNAR):
+            #TODO: why is this not an error here, if that is the error that is thrown later? The scalar is overwritten
+            assert self.embedded_dims == self._estimator.scaler.n_features_in_, (f"Number features in does not match "
+                                                                                 f"actual dimensions: exp: {self.embedded_dims}, "
+                                                                                 f"got: {self._estimator.scaler.n_features_in_}")
 
     def decision_function(self, X):
+        dims = X.shape[1]
+        assert dims == self.dimensions_provided, (f"The amount of dimensions provided during training does not "
+                                                        f"match the dimensions here: Expected: "
+                                                        f"{self.dimensions_provided}, got: {dims}")
         embedded = self.transform_fun(X)
+        assert embedded.shape[1] == self.embedded_dims
+        if isinstance(self._estimator, pyod_LUNAR):
+            # TODO: This error is thrown here.
+            scalar_dims = self._estimator.scaler.n_features_in_
+            assert self.embedded_dims == scalar_dims, (f"Number features in does not match "
+                                                                                 f"actual dimensions: exp: {self.embedded_dims}, "
+                                                                                 f"expected dims by estimator: {self._estimator.scaler.n_features_in_}")
         return self._estimator.decision_function(embedded)
 
     @staticmethod

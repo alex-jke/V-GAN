@@ -38,11 +38,15 @@ class NumericalVOdmAdapter(BaseVAdapter):
         Initializes the model used for outlier detection. If an already trained model is found in the base_path
         the model is loaded from the file. If no model is found a new model is created and trained.
         """
+        if self.subspaces is not None:
+            raise RuntimeError("Init model was called on an already used instance of an adapter. This could lead to "
+                               "unexpected behavior, as some attributes are stored within the class.")
         self.data = data
         self.space = space
         if base_path is not None:
             self.output_path = base_path / self.get_name() / self.space.name
         self.model = self._init_model(data, space)
+        print(f"Attempting to load model for space {self.space.name}.")
         self._load_model(self.output_path, data.x_train.shape[1], self.model)
         self.initialized = True
 

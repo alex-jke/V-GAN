@@ -6,10 +6,13 @@ import torch
 from torch import Tensor
 
 from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
+from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.aggregatable import Aggregatable
 from text.dataset.dataset import Dataset
-ui = ConsoleUserInterface()
+
+
+ui = cli.get()
 
 class Embedding(ABC):
 
@@ -52,7 +55,8 @@ class Embedding(ABC):
         return sentence.split(seperator)
 
     def embed_sentences(self, sentences: np.ndarray[str], seperator: str = " ", masks: Optional[Tensor] = None,
-                        strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(), dataset: Optional[Aggregatable] = None) -> Tensor:
+                        strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(), dataset: Optional[Aggregatable] = None,
+                        verbose: bool = False) -> Tensor:
         """
         Embeds a list of sentences into vectors. It splits the sentences into words using the seperator.
         It then embeds the words into vectors and pads them to the padding length.
@@ -67,6 +71,7 @@ class Embedding(ABC):
         :param dataset: The dataset to use as an aggregatable dataset.
             It provides a prefix and suffix to the sentences to allow in-context learning.
             Only used if aggregate is True.
+        :param verbose: A boolean, whether to display the progress to the console.
         :return: The embeddings of the sentences, as a tensor.
             The shape of the tensor should be (n_sentences, n_words, n_embedding_dim).
             Note, that if aggregated, the n_words dimension is 1.
@@ -83,33 +88,34 @@ class Embedding(ABC):
             self.suffix = dataset.suffix()
 
         embeddings = []
-        #with ui.display():
-        for i in range(len(sentences)):
-            #print("|", end="")
-            #ui.update(f"Embedding sentence {i + 1}/{len(sentences)}")
-            sentence = sentences[i]
-            mask = None
-            words = self.get_words(sentence, seperator)
+        with ui.display():
+            for i in range(len(sentences)):
+                #print("|", end="")
+                if verbose:
+                    ui.update(f"Embedding sentence {i + 1}/{len(sentences)}")
+                sentence = sentences[i]
+                mask = None
+                words = self.get_words(sentence, seperator)
 
-            if masks is not None:
-                mask = masks[i] if len(masks.shape) > 1 else masks
-                if len(words) > mask.shape[0]:
-                    words = words[:mask.shape[0]] #TODO: this now only applies if mask is set, as if everything after is masked
-                elif len(words) < mask.shape[0]:
+                if masks is not None:
+                    mask = masks[i] if len(masks.shape) > 1 else masks
+                    if len(words) > mask.shape[0]:
+                        words = words[:mask.shape[0]] #TODO: this now only applies if mask is set, as if everything after is masked
+                    elif len(words) < mask.shape[0]:
+                        mask = mask[:len(words)]
+                if padding_length is not None and len(words) > padding_length:
+                    words = words[:padding_length]
+                elif padding_length is not None and len(words) < padding_length and masks is not None:
                     mask = mask[:len(words)]
-            if padding_length is not None and len(words) > padding_length:
-                words = words[:padding_length]
-            elif padding_length is not None and len(words) < padding_length and masks is not None:
-                mask = mask[:len(words)]
-            embedded = self.embed_words(words, mask, strategy)
-            if padding_strategy:
-                if embedded.shape[0] < padding_length:
-                    embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
-                #elif embedded.shape[0] > padding_length > 0:
-                #embedded = embedded[:padding_length]
-                if embedded.shape[0] != padding_length:
-                    raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
-            embeddings.append(embedded)
+                embedded = self.embed_words(words, mask, strategy)
+                if padding_strategy:
+                    if embedded.shape[0] < padding_length:
+                        embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
+                    #elif embedded.shape[0] > padding_length > 0:
+                    #embedded = embedded[:padding_length]
+                    if embedded.shape[0] != padding_length:
+                        raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
+                embeddings.append(embedded)
         stacked = torch.stack(embeddings)
         # stacked is expected to have shape (samples, [padding length or 1], embedding_dim)
         # Norm the embeddings and perform a z-transformation.

@@ -141,16 +141,17 @@ class BinaryStraightThrough(nn.Module):
         return x_binary
 
 class AnnealingSigmoid(nn.Module):
-    def __init__(self, alpha: float = 1.0, beta: float = 0.5):
+    def __init__(self, alpha: float = 1.0, beta: float = 0.5, gamma: float = 0.0):
         super().__init__()
-        self.alpha = alpha
-        self.beta = beta
+        self.register_buffer("alpha", Tensor([alpha]))
+        self.register_buffer("beta", Tensor([beta]))
+        self.register_buffer("gamma", Tensor([gamma]))
 
     def forward(self, x):
         # Sigmoid function with annealing
-        sigmoid = torch.sigmoid(self.alpha * x)
+        sigmoid = torch.sigmoid(self.alpha * (x - self.gamma))
         # Update alpha and beta for annealing
-        self.alpha += self.beta
+        self.alpha = self.alpha + self.beta
         return sigmoid
 
 class GeneratorSigmoid(Generator_big):
@@ -160,6 +161,14 @@ class GeneratorSigmoid(Generator_big):
 class GeneratorSigmoidAnnealing(Generator_big):
     def __init__(self, latent_size, img_size):
         super().__init__(latent_size, img_size, activation_function=AnnealingSigmoid())
+
+class GeneratorSoftmaxAnnealing(Generator_big):
+    def __init__(self, latent_size, img_size):
+        activation_function = nn.Sequential(
+            nn.Softmax(),
+            AnnealingSigmoid(beta= 1.0, gamma= 1/img_size)
+        )
+        super().__init__(latent_size, img_size, activation_function)
 
 class GeneratorSigmoidSTE(GeneratorSigmoid):
     def __init__(self, latent_size, img_size):

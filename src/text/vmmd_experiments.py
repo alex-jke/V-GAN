@@ -214,14 +214,14 @@ def test_embedding():
     dataset = EmotionDataset()
     model = LLama3B()
     generator = GeneratorSigmoidAnnealing
-    version = '0.5'
-    lr = 3e-2
+    version = '0.511'
+    lr = 3e-4
     #for lr in range(16,1, -7):
         #lr *= 1e-2
         #for penalty in [0.0, 0.2, 0.8]:#range(0,6):
 
     #for clip in [True, False]:
-    for weight_decay in [1e-5]:
+    for weight_decay in [1e-3]:
 #penalty *= 0.2
         experiment = VMMDExperiment(
             dataset=dataset,
@@ -232,7 +232,7 @@ def test_embedding():
             epochs=3000,
             batch_size=3000,
             samples=6000,
-            penalty_weight=0.0,
+            penalty_weight=0.01,
             lr=lr,
             yield_epochs=60,
             train=True,

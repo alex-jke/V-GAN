@@ -4,6 +4,7 @@ from itertools import takewhile
 from pathlib import Path
 from time import time
 from pyod.models.lof import LOF
+from pyod.models.lunar import LUNAR as pyod_LUNAR
 
 import pandas as pd
 import torch
@@ -11,9 +12,12 @@ from torch import Tensor
 
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
+from text.Embedding.llama import LLama3B
+from text.Embedding.unification_strategy import UnificationStrategy
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
+from text.outlier_detection.space.word_space import WordSpace
 from text.outlier_detection.v_method.V_odm import V_ODM
 from text.outlier_detection.pyod_odm import LUNAR
 from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
@@ -160,6 +164,25 @@ class OutlierDetectionMethodTest(unittest.TestCase):
         result_df = v_odm.evaluate()[0]
         print(result_df.columns.to_list())
         print(result_df.iloc[0].to_list())
+
+    def test_lunar_vmmd_word(self):
+        dataset = EmotionDataset()
+        model = LLama3B()
+        path = Path(os.path.dirname(__file__)) / ".." / ".." / "results" / "VMMD_Test_manual"
+        #space = WordSpace(model=model, train_size=1_00, test_size=1_00, strategy=UnificationStrategy.TRANSFORMER)
+        for space in [
+            #EmbeddingSpace(model=model, train_size=1_00, test_size=1_00),
+            WordSpace(model=model, train_size=1_00, test_size=1_00, strategy=UnificationStrategy.TRANSFORMER)
+        ]:
+            vmmd = VMMDAdapter(epochs=300, dataset_specific_params=False, lr=1e-3)
+            v_odm = EnsembleV_ODM(dataset=dataset, space=space, odm_model=vmmd, base_detector=pyod_LUNAR, output_path=path)
+            v_odm.train()
+            #detector_numbers_train = [detector.detector_num for detector in v_odm.ensemble_model.base_estimators]
+            v_odm.predict()
+            #detector_numbers_predict = [detector.detector_num for detector in v_odm.ensemble_model.base_estimators]
+            result_df = v_odm.evaluate()[0]
+            print(result_df.columns.to_list())
+            print(result_df.iloc[0].to_list())
 
 
 

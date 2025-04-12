@@ -88,12 +88,22 @@ class Experiment:
             "inlier_label": self.inlier_label,
             "space": EmbeddingSpace(model=emb_model, train_size=train_size, test_size=test_size)
         }
-        self.text_params: Callable[[UnificationStrategy],Dict] = lambda strategy: ({
+
+        text_base = {
             "dataset": self.dataset,
-            "use_cached": False,
-            "inlier_label": self.inlier_label,
-            "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size, strategy = strategy)
-        })
+            "use_cached": use_cached,
+            "inlier_label": self.inlier_label,}
+        self.text_params: Dict[UnificationStrategy,Dict] = {
+            UnificationStrategy.TRANSFORMER: {
+                **text_base,
+                "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size, strategy = UnificationStrategy.TRANSFORMER)
+            },
+            UnificationStrategy.MEAN: {
+                **text_base,
+                "space": WordSpace(model=emb_model, train_size=train_size, test_size=test_size,
+                                   strategy=UnificationStrategy.MEAN)
+            }
+        }
 
         # Determine the output directory.
         self.output_path = output_path
@@ -139,24 +149,17 @@ class Experiment:
             ECOD(**self.emb_params)
         ])
 
-        for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]:
-            models.extend([
-                LOF(**self.text_params(strategy)),
-                LUNAR(**self.text_params(strategy)),
-                ECOD(**self.text_params(strategy)),
-            ])
-
         if not self.run_cachable and False:
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params(strategy), base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
+            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
                            for base in bases
                            for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params(strategy), base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create())
+            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create())
                            for base in bases
                            for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only subspace distance.
-            models.extend([TextVOdm(**self.text_params(strategy), base_detector=base, output_path=self.output_path, classifier_delta=0.0, aggregation_strategy=strategy.create())
+            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, classifier_delta=0.0, aggregation_strategy=strategy.create())
                             for base in bases
                             for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
 
@@ -170,14 +173,14 @@ class Experiment:
 
 
         # VGAN ODM models with both use_embedding False and True.
-        params = [self.emb_params] if self.run_cachable else [self.token_params, self.emb_params]
-        model_types = [VMMDAdapter(generator=GeneratorSigmoidAnnealing)]#, VGANAdapter()]
+        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER]] if self.run_cachable else [self.token_params, self.emb_params]
+        model_types = [lambda: VMMDAdapter(generator=GeneratorSigmoidAnnealing)]#, VGANAdapter()]
 
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.
         models.extend(
             [V_ODM(**param, base_detector=base,
-                   output_path = self.output_path, odm_model=model_type)
+                   output_path = self.output_path, odm_model=model_type())
              for base in bases
              for model_type in model_types
              for param in params]
@@ -190,14 +193,14 @@ class Experiment:
 
 
         # VGAN ODM with only ensemble outlier detection.
-        models.extend([EnsembleV_ODM(**param, output_path=self.output_path, odm_model=model_type)
+        models.extend([EnsembleV_ODM(**param, output_path=self.output_path, odm_model=model_type())
                        for param in params
                        for model_type in model_types
                        ])
 
         # VGAN ODM with only subspace distance.
         models.extend([DistanceV_ODM(**param, output_path=self.output_path,
-                                     odm_model=model_type)
+                                     odm_model=model_type())
                        for model_type in model_types
                        for param in params
                        ])
@@ -207,6 +210,14 @@ class Experiment:
             for base in bases
             for param in params
         ])
+
+        for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]:
+            models.extend([
+                LOF(**self.text_params[strategy]),
+                LUNAR(**self.text_params[strategy]),
+                ECOD(**self.text_params[strategy]),
+            ])
+
         return models
 
 
@@ -298,7 +309,7 @@ class Experiment:
                 # Run each model experiment.
                 with self.ui.display():
                     for model in self.models:
-                        self.ui.update(f"Running model {model.__class__.__name__}")
+                        self.ui.update(f"Running model {model._get_name()}")
                         evaluation, error = self._run_single_model(model)
                         self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
                         if error is not None:
@@ -376,6 +387,6 @@ if __name__ == '__main__':
     train_samples = 15_000
     dataset = EmotionDataset()
     emb_model = LLama3B()
-    exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                        experiment_name="0.36", use_cached=True, runs=5, run_cachable=True)
+    exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
+                        experiment_name="0.37", use_cached=True, runs=5, run_cachable=True)
     exp.run()

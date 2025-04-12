@@ -46,7 +46,7 @@ class VMMDBase:
         self.path_to_directory = path_to_directory
         self.generator_optimizer = None
         self.weight = weight
-        self.latent_size_factor = 4
+        self.latent_size_factor = 16
   
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
@@ -172,6 +172,7 @@ class VMMDBase:
         self.generator.load_state_dict(torch.load(path_to_generator, map_location=device))
         self.generator.eval()  # This only works for dropout layers
         self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space'
+        print(self.generator_optimizer)
         self._latent_size = max(int(ndims / self.latent_size_factor), 1)
 
     def get_the_networks(self, ndims: int, latent_size: int, device: str = None) -> Generator_big:

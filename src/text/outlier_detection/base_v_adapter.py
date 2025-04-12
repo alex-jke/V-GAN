@@ -43,4 +43,5 @@ class BaseVAdapter(ABC):
         generator_path = base_path / "models" / "generator_0.pt"
         if generator_path.exists():
             model.load_models(generator_path, ndims=features)
+            print(f"Loaded model {model.__class__.__name__} from {generator_path}")
             self.loaded_model = True

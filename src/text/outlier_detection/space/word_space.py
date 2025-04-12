@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 from numpy import ndarray
 from torch import Tensor
@@ -15,11 +15,16 @@ class WordSpace(Space):
     def __init__(self, strategy: UnificationStrategy, **params):
         self.strategy = strategy
         super().__init__(**params)
+        self.cache: Dict[str, PreparedData] = {}
+
     def transform_dataset(self, dataset: AggregatableDataset, use_cached: bool, inlier_label, masks: Optional[Tensor] = None) -> PreparedData:
         if self.strategy == UnificationStrategy.TRANSFORMER and not isinstance(dataset, AggregatableDataset):
             raise ValueError("WordSpace with transformer_aggregation set to True only works with AggregatableDataset.")
-        if use_cached:
-            raise ValueError("WordSpace does not support caching.")
+
+        id = dataset.name + str(use_cached) + str(inlier_label)
+        if masks is None and use_cached and id in self.cache:
+            return self.cache[id]
+
         preparer = DatasetPreparer(dataset, self.train_size)
         x_train, y_train = preparer.get_data_with_labels([inlier_label], train=True)
         preparer.max_samples = self.test_size
@@ -30,8 +35,8 @@ class WordSpace(Space):
         # can expect the same input shape.
         avg_length = preparer.get_average_sentence_length(x_train)
         strategy_instance = self.strategy.create(avg_length)
-        embedded_train_with_word_dim = self.model.embed_sentences(x_train, dataset=dataset, strategy=strategy_instance)
-        embedded_test_with_word_dim = self.model.embed_sentences(x_test, dataset=dataset, strategy=strategy_instance)
+        embedded_train_with_word_dim = self.model.embed_sentences(x_train, dataset=dataset, strategy=strategy_instance, verbose=True, masks=masks)
+        embedded_test_with_word_dim = self.model.embed_sentences(x_test, dataset=dataset, strategy=strategy_instance, verbose=True, masks=masks)
 
         if self.strategy == UnificationStrategy.TRANSFORMER or self.strategy == UnificationStrategy.MEAN:
             assert embedded_train_with_word_dim.shape[1] == 1, f"expected shape (_, 1, _), got {embedded_train_with_word_dim.shape}"
@@ -44,8 +49,12 @@ class WordSpace(Space):
         y_train_tensor = Tensor(y_train_int.tolist()).int().to(self.model.device)
         y_test_tensor = Tensor(y_test_int.tolist()).int().to(self.model.device)
 
-        return PreparedData(x_train=embedded_train, y_train=y_train_tensor, x_test=embedded_test, y_test=y_test_tensor,
+        prepared_data = PreparedData(x_train=embedded_train, y_train=y_train_tensor, x_test=embedded_test, y_test=y_test_tensor,
                             space=self.name)
+        if masks is None and use_cached:
+            self.cache[id] = prepared_data
+
+        return prepared_data
 
     @property
     def name(self):

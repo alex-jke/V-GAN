@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from models.Generator import GeneratorSigmoidSTE
+from models.Generator import GeneratorSigmoidSTE, GeneratorSigmoidAnnealing
 from modules.od_module import VMMD_od, VGAN_od
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
@@ -14,11 +14,11 @@ class VMMDAdapter(NumericalVOdmAdapter):
     """
 
     def __init__(self,  seed = 777,
-                        epochs = 10_000,
-                        lr = 1e-4,
-                        penalty_weight = 0.1,
-                        weight_decay = 10e-5,
-                        generator = GeneratorSigmoidSTE,
+                        epochs = 5_000,
+                        lr = 3e-4,
+                        penalty_weight = 0.01,
+                        weight_decay = 1e-3,
+                        generator = GeneratorSigmoidAnnealing,
                         dataset_specific_params = True,
                         max_batch_size = 3000):
         """
@@ -44,15 +44,16 @@ class VMMDAdapter(NumericalVOdmAdapter):
         super().__init__()
 
     def _init_model(self, data: PreparedData, space: Space) -> VMMD_od:
+        if self.dataset_specific_params:
+            self._update_params(data, space)
         model = VMMD_od(penalty_weight=self.penalty_weight, generator=self.generator,
                         lr=self.lr, epochs=self.epochs, seed=self.seed, path_to_directory=self.output_path,
                         weight_decay=self.weight_decay, batch_size=self.max_batch_size)
 
-        if self.dataset_specific_params:
-            self._update_params(model, data, space)
+
         return model
 
-    def _update_params(self, model: VMMD_od |VGAN_od, data: PreparedData, space: Space):
+    def _update_params(self, data: PreparedData, space: Space):
         """
         Updates the parameters of the model based on the size of the dataset.
         This is done, as the model converges faster on larger datasets.
@@ -63,10 +64,10 @@ class VMMDAdapter(NumericalVOdmAdapter):
         updated_epochs = int(10 ** 6.7 / samples + 400) * 4
         if isinstance(space, TokenSpace):
             updated_epochs = int(updated_epochs * 1.5)
-        model.epochs = updated_epochs
+        self.epochs = updated_epochs
 
         batch_size = min(self.max_batch_size, samples)
-        model.batch_size = batch_size
+        self.max_batch_size = batch_size
 
     def get_name(self) -> str:
         return "VMMD"

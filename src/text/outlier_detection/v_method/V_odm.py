@@ -60,8 +60,10 @@ class V_ODM(EnsembleODM):
         return lambda x: x
 
     def _get_detector(self) -> BaseDetector:
-        transform_fun = self._get_transformation_function()
-        return TransformBaseDetector(transform_fun=transform_fun, base_detector= lambda: self.base_detector)
+        if isinstance(self.space, TokenSpace): # TODO: better solution needed
+            transform_fun = self._get_transformation_function()
+            return TransformBaseDetector(transform_fun=transform_fun, base_detector= lambda: self.base_detector)
+        return self.base_detector()
 
 
     def _train_ensemble(self):
