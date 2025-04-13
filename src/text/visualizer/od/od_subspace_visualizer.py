@@ -18,6 +18,12 @@ def plot_subspaces(subspaces: ndarray, proba: ndarray, output_dir: Path):
     :param output_dir: The directory to save the plots to as a Path object.
     """
     #for prob, subspace in zip(proba, subspaces):
+    path_with_run = output_dir / 'run_0'
+    for i in range(20):
+        if not path_with_run.exists():
+            break
+        path_with_run = path_with_run.parent / f'run_{i}'
+    print(f"Saving subspaces and their probabilities to {path_with_run}")
     for i in range(proba.shape[0]):
         subspace = subspaces[i]
         prob = proba[i]

@@ -74,7 +74,7 @@ class V_ODM(EnsembleODM):
             return
         subspaces = self.odm_model.get_subspaces(num_subspaces=self.num_subspaces).astype(bool)
         self.ensemble_model = sel_SUOD(base_estimators=[self._get_detector()], subspaces=subspaces,
-                                       n_jobs=-1, bps_flag=False, approx_flag_global=False, verbose=True)
+                                       n_jobs=1, bps_flag=False, approx_flag_global=False, verbose=True)
 
         self.ensemble_model.fit(self.x_train.cpu())
 
@@ -153,7 +153,7 @@ class V_ODM(EnsembleODM):
         self.predictions = self.classifier_delta * agg_dec_fun + dist_tensor.cpu().numpy()
 
         od_subspace_visualizer.plot_subspaces(self.odm_model.get_subspaces(), self.odm_model.get_subspace_probabilities(),
-                                              self.base_output_path / "subspaces_used" / f"{self._get_name()}")
+                                              self.base_output_path /  "subspaces_used" / f"{self._get_name()}")
 
     def _get_name(self):
         return f"{self.odm_model.get_name()} + {self.base_detector.__name__} + {self.get_space()[0]} + (λ{self.subspace_distance_lambda}, ∂{self.classifier_delta})"

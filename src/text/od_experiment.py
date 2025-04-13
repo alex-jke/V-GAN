@@ -11,7 +11,7 @@ from pyod.models.lunar import LUNAR as pyod_LUNAR
 from pyod.models.ecod import ECOD as pyod_ECOD
 from pyod.models.lof import LOF as pyod_LOF
 
-from models.Generator import GeneratorSigmoidAnnealing
+from models.Generator import GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD
 from text.Embedding.bert import Bert
 from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.gpt2 import GPT2
@@ -173,17 +173,19 @@ class Experiment:
 
 
         # VGAN ODM models with both use_embedding False and True.
-        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER]] if self.run_cachable else [self.token_params, self.emb_params]
-        model_types = [lambda: VMMDAdapter(generator=GeneratorSigmoidAnnealing)]#, VGANAdapter()]
+        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]] if self.run_cachable else [self.token_params, self.emb_params]
+        model_types = [lambda generator: VMMDAdapter(generator=generator)]#, VGANAdapter()]
+        generators = [GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD]
 
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.
         models.extend(
             [V_ODM(**param, base_detector=base,
-                   output_path = self.output_path, odm_model=model_type())
+                   output_path = self.output_path, odm_model=model_type(generator=generator))
              for base in bases
              for model_type in model_types
-             for param in params]
+             for param in params
+             for generator in generators]
         )
 
         # VGAN ODM on the token space only using the ensemble method.
@@ -193,16 +195,18 @@ class Experiment:
 
 
         # VGAN ODM with only ensemble outlier detection.
-        models.extend([EnsembleV_ODM(**param, output_path=self.output_path, odm_model=model_type())
+        models.extend([EnsembleV_ODM(**param, output_path=self.output_path, odm_model=model_type(generator))
                        for param in params
                        for model_type in model_types
+                       for generator in generators
                        ])
 
         # VGAN ODM with only subspace distance.
         models.extend([DistanceV_ODM(**param, output_path=self.output_path,
-                                     odm_model=model_type())
+                                     odm_model=model_type(generator))
                        for model_type in model_types
                        for param in params
+                       for generator in generators
                        ])
 
         models.extend([
@@ -388,5 +392,5 @@ if __name__ == '__main__':
     dataset = EmotionDataset()
     emb_model = LLama3B()
     exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
-                        experiment_name="0.37", use_cached=True, runs=5, run_cachable=True)
+                        experiment_name="0.37_generators", use_cached=True, runs=5, run_cachable=True)
     exp.run()

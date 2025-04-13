@@ -8,7 +8,7 @@ from matplotlib import pyplot
 
 from VMMDBase import VMMDBase
 from colors import VGAN_GREEN, COMPLIMENTARY
-from models.Generator import Generator, Generator_big
+from models.Generator import Generator, Generator_big, AnnealingSigmoid, GeneratorSigmoidAnnealing, GeneratorSoftmaxSTE
 
 import torch_two_sample as tts
 from models.Mmd_loss_constrained import MMDLossConstrained, MixtureRQLinear
@@ -162,7 +162,7 @@ def model_eval(model, X_data) -> pd.DataFrame:
     unique_subspaces = [str(unique_subspaces[i] * 1)
                         for i in range(unique_subspaces.shape[0])]
 
-    subspace_df = pd.DataFrame({'subspace': unique_subspaces, 'probability': proba})
+    subspace_df = pd.DataFrame({'subspace': unique_subspaces, 'probability': proba}).sort_values(by='probability', ascending=False)
     print(subspace_df)
     print(np.sum(proba))
     return subspace_df
@@ -172,15 +172,21 @@ if __name__ == "__main__":
     # cov = [[1,1,0,0,0,0,0,0,0,0],[1,1,0,0,0,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,1,1,1,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0],[0,0,0,0,0,0,1,0,0,0],
     #       [0,0,0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0,1,0],[0,0,0,0,0,0,0,0,0,1]]
     mean = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    cov = [[1, 0, 0, 0, 0, 0, 0, 0, 500, 500], [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 1, 0, 0], [500, 0, 0, 0, 0, 0, 0, 0, 1, 500], [500, 0, 0, 0, 0, 0, 0, 0, 500, 1]]
+    cov = [[1, 0, 0, 0, 0, 0, 0, 0, 500, 500],
+           [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+           [500, 0, 0, 0, 0, 0, 0, 0, 1, 500],
+           [500, 0, 0, 0, 0, 0, 0, 0, 500, 1]]
     X_data = np.random.multivariate_normal(mean, cov, 2000)
 
     model = VMMD(epochs=1500, path_to_directory=Path(os.getcwd()).parent / "experiments" /
-                 f"Example_normal_{datetime.datetime.now()}_vmmd", lr=0.01)
-    for epoch in model.fit(X_data):
-        #print(epoch)
-        continue
+                 f"Example_normal_{datetime.datetime.now()}_vmmd", lr=0.01, generator=GeneratorSoftmaxSTE)
+    model.fit(X_data)
 
     model_eval(model, X_data)
 

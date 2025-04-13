@@ -70,4 +70,4 @@ class VMMDAdapter(NumericalVOdmAdapter):
         self.max_batch_size = batch_size
 
     def get_name(self) -> str:
-        return "VMMD"
+        return f"VMMD ({self.generator.__name__})"
