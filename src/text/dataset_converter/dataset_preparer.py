@@ -44,7 +44,7 @@ class DatasetPreparer:
             data = data[:self.max_samples]
             labels = labels[:self.max_samples]
 
-        data = data.apply(lambda sentence: self.clean(sentence))#self.split_and_clean(sentence))
+        #data = data.apply(lambda sentence: self.clean(sentence))#self.split_and_clean(sentence))
 
         # Convert the pandas Series to a numpy array
         data_np: ndarray[str] = data.to_numpy(dtype=str)

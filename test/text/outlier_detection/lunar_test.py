@@ -3,6 +3,7 @@ from typing import Tuple
 
 from text.Embedding.llama import LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy
+from text.dataset.ag_news import AGNews
 from text.dataset.dataset import AggregatableDataset
 from text.dataset.emotions import EmotionDataset
 from text.outlier_detection.pyod_odm import LUNAR
@@ -48,5 +49,9 @@ class LunarTest(unittest.TestCase):
 
     def test_emotions(self):
         dataset = EmotionDataset()
+        self.run_comparison(dataset)
+
+    def test_ag_news(self):
+        dataset = AGNews()
         self.run_comparison(dataset)
 

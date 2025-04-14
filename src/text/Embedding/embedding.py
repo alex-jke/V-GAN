@@ -96,6 +96,7 @@ class Embedding(ABC):
                 sentence = sentences[i]
                 mask = None
                 words = self.get_words(sentence, seperator)
+                words = [word for word in words if word != ""] # Remove the empty strings, which can occur if two consecutive spaces are in the data. This causes NaN embeddings.
 
                 if masks is not None:
                     mask = masks[i] if len(masks.shape) > 1 else masks
@@ -115,6 +116,8 @@ class Embedding(ABC):
                     #embedded = embedded[:padding_length]
                     if embedded.shape[0] != padding_length:
                         raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
+                if torch.isnan(embedded).any():
+                    raise ValueError("Computed Embedding with NaN values.")
                 embeddings.append(embedded)
         stacked = torch.stack(embeddings)
         # stacked is expected to have shape (samples, [padding length or 1], embedding_dim)

@@ -26,7 +26,8 @@ class PyODM(OutlierDetectionModel, ABC):
         self.od_model = self._get_model()
 
     def _train(self):
-        self.od_model.fit(self.x_train.cpu().numpy(), None)
+        data = self.x_train.cpu().numpy()
+        self.od_model.fit(data, None)
 
     def _predict(self):
         test = self.x_test

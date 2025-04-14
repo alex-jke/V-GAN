@@ -1,5 +1,6 @@
 from typing import Optional
 
+import torch
 from numpy import ndarray
 from torch import Tensor
 
@@ -38,3 +39,6 @@ class PreparedData:
             raise ValueError(f"The number of training samples and labels must be the same. Got {self.x_train.shape[0]} samples and {self.y_train.shape[0]} labels.")
         if self.x_test.shape[0] != self.y_test.shape[0]:
             raise ValueError(f"The number of test samples and labels must be the same. Got {self.x_test.shape[0]} samples and {self.y_test.shape[0]} labels.")
+        for data in [self.x_train, self.y_train, self.x_test, self.y_test]:
+            if torch.isnan(data).any():
+                raise ValueError(f"The input contains NaNs.")
