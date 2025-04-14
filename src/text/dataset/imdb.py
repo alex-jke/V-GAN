@@ -3,10 +3,20 @@ from typing import Tuple, List
 import numpy as np
 import pandas as pd
 
-from .dataset import Dataset
+from .dataset import Dataset, AggregatableDataset
 
 
-class IMBdDataset(Dataset):
+class IMBdDataset(AggregatableDataset):
+
+    def prefix(self) -> List[str]:
+        return ("review : This movie was great."
+                "sentiment :  positive\n"
+                "review : I really did not like this movie."
+                "sentiment : negative\n"
+                "review :").split(" ")
+
+    def suffix(self) -> List[str]:
+        return ". sentiment :".split(" ")
 
     def get_possible_labels(self) -> list:
         #return ["positive", "negative"]
