@@ -19,8 +19,8 @@ device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.i
 if __name__ == '__main__':
     from transformers import pipeline, set_seed, TextGenerationPipeline
 
-    #generator: TextGenerationPipeline = pipeline('text-generation', model='meta-llama/Llama-3.2-1B', device=device)
-    #model = LLama1B()
+    generator: TextGenerationPipeline = pipeline('text-generation', model='meta-llama/Llama-3.2-1B', device=device)
+    model = LLama1B()
     set_seed(42)
     dataset = EmotionDataset()
     model = LLama1B()
@@ -66,8 +66,8 @@ if __name__ == '__main__':
         #sample_length = model.tokenize(extended_sample).shape[0]
         #sample_length = generator.tokenizer(extended_sample, return_tensors='pt').data['input_ids'].shape[1]
 
-        #generated = generator(extended_sample, max_length=sample_length + 5, num_return_sequences=1)[0]['generated_text']
-        #generated = generator(extended_sample, num_return_sequences=1)[0][ 'generated_text']
+        generated = generator(extended_sample, max_length=sample_length + 5, num_return_sequences=1)[0]['generated_text']
+        generated = generator(extended_sample, num_return_sequences=1)[0][ 'generated_text']
         #last_word = " ".join(generated.split(" ")[-5])
         #print(last_word + f"\n\t{generated}")
         #if i > 10:

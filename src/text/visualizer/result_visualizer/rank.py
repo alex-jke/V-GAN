@@ -39,6 +39,10 @@ class RankVisualizer():
         if n_groups == 1:
             axes = [axes]
 
+        csv_path = self.output_dir / "rank_csv"
+        if not csv_path.exists():
+            csv_path.mkdir(parents=True)
+
         # Create a boxplot for each group showing the distribution of ranks per method
         for ax, group in zip(axes, groups):
             group_data = data[data[group_by] == group]
@@ -47,6 +51,8 @@ class RankVisualizer():
             ax.set_xlabel('Method')
             ax.set_ylabel('Rank')
             ax.tick_params(axis='x', labelrotation=90)
+
+            group_data.to_csv( csv_path /f"rank_{method_col}_{metric_col}_{group}.csv")
 
         plt.tight_layout()
 

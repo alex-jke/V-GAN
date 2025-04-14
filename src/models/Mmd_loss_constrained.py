@@ -203,8 +203,7 @@ class MMDLossConstrained(nn.Module):
     @staticmethod
     def diversity_loss(M, tau=0.1):
         # M: shape (n, d) with entries in [0,1]
-        diff = M.unsqueeze(1) - M.unsqueeze(0)  # (n, n, d)
-        dist = torch.sum(diff ** 2, dim=-1)  # (n, n) squared distances
+        dist = torch.cdist(M, M) ** 2  # (n, n) squared distances
         sim = torch.exp(-dist / tau)  # similarity: high if rows are similar
         # Zero out self-similarity
         sim = sim - torch.diag_embed(sim.diagonal(0))

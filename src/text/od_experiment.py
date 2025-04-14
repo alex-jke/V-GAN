@@ -175,7 +175,11 @@ class Experiment:
         # VGAN ODM models with both use_embedding False and True.
         params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]] if self.run_cachable else [self.token_params, self.emb_params]
         model_types = [lambda generator: VMMDAdapter(generator=generator)]#, VGANAdapter()]
-        generators = [GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD]
+        generators = [GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid,
+                      #GeneratorSigmoidSTEMBD,
+                      GeneratorSoftmaxSTESpectralNorm,
+                      #GeneratorSoftmaxSTEMBD
+                      ]
 
         # VGAN ODM with both ensemble outlier detection, and subspace distance, only using pre-embedded, as euclidian
         # distance does not make sense for tokens.

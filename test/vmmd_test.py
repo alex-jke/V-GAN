@@ -8,7 +8,8 @@ from pandas import DataFrame
 
 from models.Generator import GeneratorUpperSoftmax, GeneratorSigmoidAnnealing, GeneratorSpectralSigmoidSTE, \
     GeneratorSoftmaxAnnealing, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSigmoidSoftmaxSTE, \
-    GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD
+    GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD, \
+    Generator, OldGeneratorUpperSoftmax
 from vmmd import VMMD, model_eval
 
 
@@ -64,29 +65,42 @@ class VMMDTest(unittest.TestCase):
 
     def test_synthetic2(self):
 
-        for generator in [GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD]:
+        for generator in [OldGeneratorUpperSoftmax,
+                          GeneratorSigmoidAnnealing,
+                            GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, #GeneratorSigmoidSTEMBD,
+                            GeneratorSoftmaxSTESpectralNorm,
+                          #GeneratorSoftmaxSTEMBD
+                          ]:
             subspace_probas = DataFrame({"S_1": [], "S_2": [], "F_1": [], "F_2": []})
             all_subspaces = DataFrame()
-            for F in [.0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.]:
-                samples = generate_subspace_data(2000, F)
-                vmmd = VMMD(generator=generator, weight=0.1, epochs=3000, lr=1e-2)
-                vmmd.fit(samples)
-                subspace_df = model_eval(vmmd, samples)
-                subspace_df["F"] = F
-                s1 = 0.0
-                s2 = 0.0
-                all_subspaces = pd.concat([all_subspaces, subspace_df], ignore_index=True)
-                for row in subspace_df.itertuples():
-                    subspace = row[1]
-                    proba = row[2]
-                    if str(subspace) == "[1. 1. 0.]":
-                        s1 = proba
-                    elif str(subspace) == "[0. 0. 1.]":
-                        s2 = proba
-                current_probas = DataFrame({"S_1": [s1], "S_2": [s2], "F_1": [F], "F_2": [1 - F]})
-                subspace_probas = pd.concat([subspace_probas, current_probas], ignore_index=True)
-                print(all_subspaces)
-                print(subspace_probas)
-            base_path = Path(os.path.dirname(__file__)) / "results" / "F-Test_3" / generator.__name__
+            base_path = Path(os.path.dirname(__file__)) / "results" / "F-Test_4" / f"{generator.__name__} no_penalty"
+            if base_path.exists():
+                print(f"Skipping generator {generator.__name__}")
+                continue
+            try:
+                for F in [.0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1.]:
+
+                    samples = generate_subspace_data(10000, F)
+                    vmmd = VMMD(generator=generator, weight=0.0, epochs=3000, lr=1e-2)
+                    vmmd.fit(samples)
+                    subspace_df = model_eval(vmmd, samples)
+                    subspace_df["F"] = F
+                    s1 = 0.0
+                    s2 = 0.0
+                    all_subspaces = pd.concat([all_subspaces, subspace_df], ignore_index=True)
+                    for row in subspace_df.itertuples():
+                        subspace = row[1]
+                        proba = row[2]
+                        if str(subspace) == "[1. 1. 0.]":
+                            s1 = proba
+                        elif str(subspace) == "[0. 0. 1.]":
+                            s2 = proba
+                    current_probas = DataFrame({"S_1": [s1], "S_2": [s2], "F_1": [F], "F_2": [1 - F]})
+                    subspace_probas = pd.concat([subspace_probas, current_probas], ignore_index=True)
+                    print(all_subspaces)
+                    print(subspace_probas)
+            except:
+                continue
+
             save_results(all_subspaces, "all_subspaces", base_path)
             save_results(subspace_probas, "subspace_probas", base_path)
