@@ -332,7 +332,7 @@ class Experiment:
                         results.append(self.result_df)
                         self._visualize_ranks(results)
 
-        self._visualize_and_save_results(run=run)
+                self._visualize_and_save_results(run=run)
         aggregated_results = pd.concat(results, ignore_index=True)
         return aggregated_results
 

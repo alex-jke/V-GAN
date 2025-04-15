@@ -112,12 +112,12 @@ class EmbTest(unittest.TestCase):
         dataset = NLP_ADBench.sms_spam()
         prompts = [
             Prompt(
-                instruction="You are detecting anomalies in SMS messages. Mark a message as ‘Anomaly’ if it is spam, and ‘Normal’ if it is not.",
-                sample_prefix="input:",
-                label_prefix="output:",
-                samples= ["'Win a free ticket to the concert by replying NOW! Limited time offer.'",
-                          "'Your package will be delivered by 5 PM today.'"],
-                labels= ["Anomaly", "Normal"]
+                sample_prefix="sms :",
+                label_prefix="spam type :",
+                samples=["Congratulations! You've won a $1,000 cash prize!",
+                         "What is our plan for tonight?.",
+                         "Wht r ur plans 4 2night"],
+                labels=["spam", "no spam", "no spam"]
             )
         ]
         self.run_different_prompts(dataset, prompts, output_path, model)
@@ -127,11 +127,11 @@ class EmbTest(unittest.TestCase):
 
         path = Path(os.path.dirname(__file__)).parent.parent / "results" / "embedding_test"
         path.mkdir(parents=True, exist_ok=True)
-        model = LLama3BInstruct()
-        output_path = path / "results_prompt_test.csv"
+        model = LLama3B()
+        output_path = path / "results.csv"
 
-        #self.run_all(output_path, model)
-        self.compare_sms_spam_prompts(output_path, model)
+        self.run_all(output_path, model)
+        #self.compare_sms_spam_prompts(output_path, model)
 
 
 
