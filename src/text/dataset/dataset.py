@@ -8,6 +8,7 @@ from pandas import Series
 from sklearn.model_selection import train_test_split
 
 from text.dataset.aggregatable import Aggregatable
+from text.dataset.prompt import Prompt
 
 
 class Dataset(ABC):
@@ -113,3 +114,13 @@ class AggregatableDataset(Dataset, Aggregatable, ABC):
     """
     A dataset that can be aggregated.
     """
+    def __init__(self, prompt: Prompt):
+        super().__init__()
+        self.prompt = prompt
+
+    def prefix(self) -> List[str]:
+        return self.prompt.prefix
+
+    def suffix(self) -> List[str]:
+        return self.prompt.suffix
+

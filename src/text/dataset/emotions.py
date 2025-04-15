@@ -5,20 +5,20 @@ import pandas as pd
 
 from text.dataset.aggregatable import Aggregatable
 from text.dataset.dataset import Dataset, AggregatableDataset
+from text.dataset.prompt import Prompt
 
 
 class EmotionDataset(AggregatableDataset):
 
-    def prefix(self) -> List[str]:
-
-        return ["text", ":", "I", "am", "happy", "because", "it", "is", "sunny", ".", "feeling", ":", "not",
-                   "sadness", "\n",
-                   "text", ":", "I", "feel", "sad", "because", "I", "have", "no", "friends", ".", "feeling", ":",
-                   "sadness""\n",
-                   "text", ":"]
-
-    def suffix(self) -> List[str]:
-        return [".", "feeling", ":"]
+    def __init__(self):
+        prompt = Prompt(
+            sample_prefix="text :",
+            label_prefix="feeling :",
+            samples=["I am happy because it is sunny.", "I feel sad because I have no friends."],
+            labels=["not sadness", "sadness"],
+        )
+        super().__init__(prompt)
+        self._import_data()
 
     def get_possible_labels(self) -> list:
         # Six categories: sadness (0), joy (1), love (2), anger (3), fear (4), and surprise (5).

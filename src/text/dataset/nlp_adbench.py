@@ -1,17 +1,21 @@
+from abc import ABC
 from typing import List
 
 import pandas as pd
 
 from datasets import load_dataset
-from text.dataset.dataset import Dataset
+
+from text.dataset.ag_news import AGNews
+from text.dataset.dataset import Dataset, AggregatableDataset
+from text.dataset.prompt import Prompt
 
 
-class NLP_ADBench(Dataset):
+class NLP_ADBench(AggregatableDataset, ABC):
 
-    def __init__(self, dataset_name: str):
+    def __init__(self, dataset_name: str, prompt: Prompt):
         self.dataset_name = dataset_name
         self._assert_is_valid_name(dataset_name)
-        super().__init__()
+        super().__init__(prompt=prompt)
 
     def get_possible_labels(self) -> list:
         return [0, 1]
@@ -77,36 +81,36 @@ class NLP_ADBench(Dataset):
            raise ValueError(f"Invalid dataset. Possible dataset: {self.possible_datasets()}")
 
     @classmethod
-    def agnews(cls):
-        return cls("agnews")
+    def agnews(cls) :
+        return NLPADBenchAGNews()
 
     @classmethod
     def n24news(cls):
-        return cls("N24News")
+        return NLPADBenchN24News()
 
     @classmethod
     def bbc(cls):
-        return cls("bbc")
+        return NLPADBenchBBC()
 
     @classmethod
     def email_spam(cls):
-        return cls("email_spam")
+        return NLPADBenchEmailSpam()
 
     @classmethod
     def emotion(cls):
-        return cls("emotion")
+        return NLPADBenchEmotion()
 
     @classmethod
     def movie_review(cls):
-        return cls("movie_review")
+        return NLPADBenchMovieReview()
 
     @classmethod
     def sms_spam(cls):
-        return cls("sms_spam")
+        return NLPADBenchSMSSpam()
 
     @classmethod
     def yelp_review_polarity(cls):
-        return cls("yelp_review_polarity")
+        return NLPADBenchYelpReviewPolarity()
 
     @staticmethod
     def possible_datasets():
@@ -116,7 +120,90 @@ class NLP_ADBench(Dataset):
     def get_all_datasets(cls) -> List[Dataset]:
         return [cls(dataset) for dataset in cls.possible_datasets()]
 
+class NLPADBenchAGNews(NLP_ADBench):
+    def __init__(self):
+        super().__init__("agnews", AGNews.prompt)
+
+
+class NLPADBenchN24News(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix="Description :",
+        label_prefix="News type :",
+        samples=["Mcdonald's to introduce a new burger in Germany.",
+                 "Stocks rally as electronics get a tariff break."],
+        labels=["Food", "Business"]
+    )
+    def __init__(self):
+        super().__init__("N24News", self.prompt)
+
+class NLPADBenchBBC(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix="text :",
+        label_prefix="news type :",
+        samples=["The stars from the movie 'The Breakfast Club' reunite for the fist time in 40 years.",
+                 "Stocks rally as electronics get a tariff break."],
+        labels=["Entertainment", "Business"]
+    )
+    def __init__(self):
+        super().__init__("bbc", self.prompt)
+
+class NLPADBenchEmailSpam(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix="email :",
+        label_prefix="spam type :",
+        samples=["Subject: YOU WON! Congratulations! You've won a $1,000 cash prize!",
+                 "Subject: Submission Approved. Hi, your submission has been approved."],
+        labels=["spam", "no spam"]
+    )
+    def __init__(self):
+        super().__init__("email_spam", self.prompt)
+
+class NLPADBenchEmotion(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix="text :",
+        label_prefix="emotion :",
+        samples=["I am so happy today, as I got a promotion.",
+                        "I feel absolutely devastated after hearing the news."],
+        labels=["happiness", "sadness"]
+    )
+    def __init__(self):
+        super().__init__("emotion", self.prompt)
+
+class NLPADBenchMovieReview(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix="review :",
+        label_prefix="sentiment :",
+        samples=["This movie was great!",
+                 "I really did not like this movie."],
+        labels=["positive", "negative"]
+    )
+    def __init__(self):
+        super().__init__("movie_review", self.prompt)
+
+class NLPADBenchSMSSpam(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix="sms :",
+        label_prefix="spam type :",
+        samples=["Congratulations! You've won a $1,000 cash prize!",
+                 "What is our plan for tonight?."],
+        labels=["spam", "no spam"]
+    )
+    def __init__(self):
+        super().__init__("sms_spam", self.prompt)
+
+class NLPADBenchYelpReviewPolarity(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix="review :",
+        label_prefix="sentiment :",
+        samples=["This restaurant is amazing! The food was delicious and the service was excellent.",
+                 "I had a terrible experience. The food was cold and the staff was rude."],
+        labels=["positive", "negative"]
+    )
+    def __init__(self):
+        super().__init__("yelp_review_polarity", self.prompt)
+
+
 if __name__ == "__main__":
-    dataset = NLP_ADBench.agnews()
+    dataset = NLP_ADBench.email_spam()
     dataset._import_data()
     print(dataset.x_train)
