@@ -117,7 +117,7 @@ class NLP_ADBench(AggregatableDataset, ABC):
         return ["agnews", "N24News", "bbc", "email_spam", "emotion", "movie_review", "sms_spam", "yelp_review_polarity"]
 
     @classmethod
-    def get_all_datasets(cls) -> List[Dataset]:
+    def get_all_datasets(cls) -> List[AggregatableDataset]:
         return [NLPADBenchAGNews(), NLPADBenchN24News(), NLPADBenchBBC(), NLPADBenchEmailSpam(), NLPADBenchEmotion(),
                 NLPADBenchMovieReview(), NLPADBenchSMSSpam(), NLPADBenchYelpReviewPolarity()]
 
@@ -205,6 +205,6 @@ class NLPADBenchYelpReviewPolarity(NLP_ADBench):
 
 
 if __name__ == "__main__":
-    dataset = NLP_ADBench.email_spam()
+    dataset = NLP_ADBench.sms_spam()
     dataset._import_data()
     print(dataset.x_train)
