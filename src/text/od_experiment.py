@@ -175,9 +175,10 @@ class Experiment:
         # VGAN ODM models with both use_embedding False and True.
         params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]] if self.run_cachable else [self.token_params, self.emb_params]
         model_types = [lambda generator: VMMDAdapter(generator=generator)]#, VGANAdapter()]
-        generators = [GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid,
+        generators = [GeneratorSigmoidAnnealing, #GeneratorSoftmaxAnnealing,
+                      GeneratorUpperSoftmax, #GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid,
                       #GeneratorSigmoidSTEMBD,
-                      GeneratorSoftmaxSTESpectralNorm,
+                      #GeneratorSoftmaxSTESpectralNorm,
                       #GeneratorSoftmaxSTEMBD
                       ]
 
@@ -299,7 +300,7 @@ class Experiment:
         self.result_df = result_df
 
 
-    def run(self) -> None:
+    def run(self) -> pd.DataFrame:
         """
         Executes the complete experiment pipeline.
         """
@@ -333,6 +334,8 @@ class Experiment:
                         self._visualize_ranks(results)
 
                 self._visualize_and_save_results(run=run)
+                aggregated_results = pd.concat(results, ignore_index=True)
+                return aggregated_results
 
     def _visualize_ranks(self, results: List[pd.DataFrame]):
         visualizer = RankVisualizer(results, output_dir=self.output_path)
@@ -347,6 +350,9 @@ def aggregate_results():
         result_name=Experiment.result_csv_name
     )
     aggregator.run_aggregation()
+
+MODEL = "model"
+DATASET = "dataset"
 
 if __name__ == '__main__':
     """datasets = [
@@ -393,8 +399,15 @@ if __name__ == '__main__':
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
     test_samples = 3000
     train_samples = 15_000
-    dataset = EmotionDataset()
+    datasets = NLP_ADBench.get_all_datasets()
+    datasets.sort(key=lambda d: d.average_length)
     emb_model = LLama3B()
-    exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
-                        experiment_name="0.37_generators", use_cached=True, runs=5, run_cachable=True)
-    exp.run()
+    for dataset in datasets:
+        exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
+                            experiment_name="0.38_adbench", use_cached=True, runs=5, run_cachable=True)
+        aggregated_path = exp.output_path.parent.parent # directory of the current version
+        csv_path = aggregated_path / "aggregated.csv"
+        results = exp.run()
+        results[MODEL] = emb_model.model_name
+        results[DATASET] = dataset.name
+        results.to_csv(csv_path , index=False, header= not csv_path.exists())
