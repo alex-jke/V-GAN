@@ -118,7 +118,8 @@ class NLP_ADBench(AggregatableDataset, ABC):
 
     @classmethod
     def get_all_datasets(cls) -> List[Dataset]:
-        return [cls(dataset) for dataset in cls.possible_datasets()]
+        return [NLPADBenchAGNews(), NLPADBenchN24News(), NLPADBenchBBC(), NLPADBenchEmailSpam(), NLPADBenchEmotion(),
+                NLPADBenchMovieReview(), NLPADBenchSMSSpam(), NLPADBenchYelpReviewPolarity()]
 
 class NLPADBenchAGNews(NLP_ADBench):
     def __init__(self):
