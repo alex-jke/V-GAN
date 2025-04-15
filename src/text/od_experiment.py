@@ -65,7 +65,6 @@ class Experiment:
         """
         Initializes the experiment.
         """
-        # TODO: introduce inlier label here.
         self.inlier_label = dataset.get_possible_labels()[0]
         self.dataset = dataset
         self.emb_model = emb_model
@@ -333,9 +332,9 @@ class Experiment:
                         results.append(self.result_df)
                         self._visualize_ranks(results)
 
-                self._visualize_and_save_results(run=run)
-                aggregated_results = pd.concat(results, ignore_index=True)
-                return aggregated_results
+        self._visualize_and_save_results(run=run)
+        aggregated_results = pd.concat(results, ignore_index=True)
+        return aggregated_results
 
     def _visualize_ranks(self, results: List[pd.DataFrame]):
         visualizer = RankVisualizer(results, output_dir=self.output_path)

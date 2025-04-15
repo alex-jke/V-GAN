@@ -20,3 +20,10 @@ git clone https://github.com/josipd/torch-two-sample.git
 cd torch-two-sample
 pip install .
 ```
+
+# Running
+If running the LLama models, which are run by some experiments, make sure you are logged in into Huggingface and have 
+access to the LLama models used here (meta-llama/Llama-3.2-1B and meta-llama/Llama-3.2-3B). To do so, you can use the following command:
+```
+huggingface-cli login
+```
