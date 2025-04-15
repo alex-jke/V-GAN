@@ -117,7 +117,7 @@ class EmbTest(unittest.TestCase):
                 samples=["Congratulations! You've won a $1,000 cash prize!",
                          "What is our plan for tonight?.",
                          "Wht r ur plans 4 2night"],
-                labels=["spam", "no spam", "no spam"]
+                labels=["spam", "no spam", "no spam"] #TODO: this yields a little higher auc
             )
         ]
         self.run_different_prompts(dataset, prompts, output_path, model)

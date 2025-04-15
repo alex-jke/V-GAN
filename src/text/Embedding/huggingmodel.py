@@ -37,7 +37,11 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         ) else 'mps' if torch.backends.mps.is_available() else 'cpu')
         print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
         self.tokenizer = self._tokenizer
-        self.model = self._model.to(self.device)
+        self.model = self._model
+        #if torch.cuda.device_count() > 1:
+            #print(f"Using {torch.cuda.device_count()} GPUs.")
+            #model = nn.DataParallel(model)
+        #self.model = model.to(self.device)
         self.model.eval()
         for param in self.model.parameters():
             param.requires_grad = False

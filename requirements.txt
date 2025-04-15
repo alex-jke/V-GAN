@@ -100,4 +100,5 @@ pytorch-lightning
 deepspeed
 lightning_transformers
 tensorboard
+accelerate
 
