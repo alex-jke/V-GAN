@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Tuple, Optional
 
+import numpy
 from numpy import ndarray
 
 from modules.od_module import VGAN_od, VMMD_od, ODModule
@@ -29,9 +30,28 @@ class NumericalVOdmAdapter(BaseVAdapter):
         self.subspaces: ndarray | None = None
         self.proba: ndarray | None = None
 
+    @staticmethod
+    def _remove_zero_subspaces(subspaces: ndarray, proba: ndarray) -> Tuple[ndarray, ndarray]:
+        """
+        Removes the zero subspaces from the list of subspaces and their probabilities.
+        :param subspaces: The subspaces to remove the zero subspaces from.
+        :param proba: The probabilities of the subspaces.
+        :return: The subspaces and probabilities without the zero subspaces.
+        """
+        non_zero_subspaces = subspaces.sum(axis=1) != 0
+        return subspaces[non_zero_subspaces], proba[non_zero_subspaces]
+
     def _init_subspaces(self, num_subspaces: int):
         # Select the num_subspaces most probable subspaces
-        self.subspaces, self.proba = self._get_top_subspaces(self.model, num_subspaces)
+        subspaces, proba = self._get_top_subspaces(self.model, num_subspaces)
+        # Remove the subspace with only zeros
+        subspaces, proba = self._remove_zero_subspaces(subspaces, proba)
+
+        if proba.shape[0] == 0:
+            raise ValueError("Only the zero subspace was passed.")
+
+        self.subspaces = subspaces
+        self.proba = proba
 
     def init_model(self, data: PreparedData, base_path: Path, space: Space):
         """

@@ -36,3 +36,37 @@ class BaseVOdmAdapterTest(unittest.TestCase):
         # Check if the results are as expected.
         self.assertTrue(np.array_equal(expected_top_subspaces, result_subspaces))
         self.assertTrue(np.array_equal(expected_top_proba, result_proba))
+
+class TestRemoveZeroSubspaces(unittest.TestCase):
+
+    def test_remove_some_zero_subspaces(self):
+        subspaces = np.array([[0, 0], [1, 2], [0, 0]])
+        proba = np.array([0.1, 0.9, 0.2])
+        exp_subspaces = np.array([[1, 2]])
+        exp_proba = np.array([0.9])
+        result_subspaces, result_proba = NumericalVOdmAdapter._remove_zero_subspaces(subspaces, proba)
+        np.testing.assert_array_equal(result_subspaces, exp_subspaces)
+        np.testing.assert_array_equal(result_proba, exp_proba)
+
+    def test_no_zero_subspaces(self):
+        subspaces = np.array([[1, 2], [3, 4]])
+        proba = np.array([0.3, 0.7])
+        result_subspaces, result_proba = NumericalVOdmAdapter._remove_zero_subspaces(subspaces, proba)
+        np.testing.assert_array_equal(result_subspaces, subspaces)
+        np.testing.assert_array_equal(result_proba, proba)
+
+    def test_all_zero_subspaces(self):
+        subspaces = np.array([[0, 0], [0, 0]])
+        proba = np.array([0.5, 0.5])
+        exp_subspaces = np.empty((0, subspaces.shape[1]))
+        exp_proba = np.array([])
+        result_subspaces, result_proba = NumericalVOdmAdapter._remove_zero_subspaces(subspaces, proba)
+        np.testing.assert_array_equal(result_subspaces, exp_subspaces)
+        np.testing.assert_array_equal(result_proba, exp_proba)
+
+    def test_empty_inputs(self):
+        subspaces = np.empty((0, 2))
+        proba = np.array([])
+        result_subspaces, result_proba = NumericalVOdmAdapter._remove_zero_subspaces(subspaces, proba)
+        np.testing.assert_array_equal(result_subspaces, subspaces)
+        np.testing.assert_array_equal(result_proba, proba)
