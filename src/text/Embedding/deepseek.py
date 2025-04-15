@@ -60,9 +60,10 @@ class DeepSeek(HuggingModel, ABC):
 
         #with torch.no_grad():
         #outputs = self.model.model(trimmed_token_vec, attention_mask) # not surprisingly, this takes the majority of the time.
-        unsqueezed_mask = mask.unsqueeze(0)
-        inputs_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
+
         if mask is not None:
+            unsqueezed_mask = mask.unsqueeze(0)
+            inputs_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
             causal_mask = self._get_4d_causal_mask(unsqueezed_mask)
             inputs_embeds = inputs_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
             torch.backends.cuda.enable_mem_efficient_sdp(False)
@@ -71,7 +72,7 @@ class DeepSeek(HuggingModel, ABC):
             #outputs = self.model.model(inputs_embeds=inputs_embeds, attention_mask=unsqueezed_mask)
             #assert torch.equal(outputs_causal[0], outputs[0])
         else:
-            outputs = self.model.model(inputs_embeds=inputs_embeds)
+            outputs = self.model.model(input_ids=tokenized.int().unsqueeze(0))
         #embeddings: Tensor = outputs.last_hidden_state#.to(dtype=torch.float32)
         embeddings = outputs[0]
         de_batched = embeddings[0]

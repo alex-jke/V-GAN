@@ -135,11 +135,11 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                 current = tokens[previous_length:]
                 tokenized.append(current)
             previous_length = tokens.shape[0]
-        if mask is None:
-            mask = torch.ones(len(words)).to(self.device)
-        else:
-            pass
-        expanded_mask = self._convert_word_to_token_mask(tokenized, mask)
+        #if mask is None:
+            #mask = torch.ones(len(words)).to(self.device)
+        #else:
+            #pass
+        expanded_mask = self._convert_word_to_token_mask(tokenized, mask) if mask is not None else None
         #embeddings = self.embed(sentence, expanded_mask)
         tokenized_tensor = torch.concat(tokenized, dim=0).to(self.device).float()
         embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask)
@@ -151,7 +151,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         aggregated = normed - meaned
 
         # Apply the mask to the embeddings, so that the masked tokens are zeroed out
-        masked = aggregated * mask.unsqueeze(1).expand_as(aggregated)
+        masked = aggregated * mask.unsqueeze(1).expand_as(aggregated) if mask is not None else aggregated
         return masked
 
     def get_prefix_mask(self) -> Tensor:

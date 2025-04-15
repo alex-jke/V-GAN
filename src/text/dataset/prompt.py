@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 
 class Prompt:
@@ -11,14 +11,14 @@ class Prompt:
                  label_prefix: str,
                  samples: List[str],
                  labels: List[str],
-                 instruction: str = ""):
+                 instruction: Optional[str] = None):
         if len(samples) != len(labels):
             raise ValueError("Samples and labels must have the same length.")
 
 
         prefix = [" ".join([sample_prefix,sample, label_prefix, label, "\n"]) for sample,label in zip(samples, labels)]
         prefix.append(sample_prefix)
-        prefix = [instruction] + prefix
+        prefix =(instruction.split(" ") if instruction is not None else [])+ prefix
         self.prefix = " ".join(prefix).split(" ")
         self.suffix = label_prefix.split(" ")
         self.full_prompt = " ".join(self.prefix +["[sample]"] +  self.suffix)

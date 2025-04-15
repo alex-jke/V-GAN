@@ -35,9 +35,10 @@ class LLama(HuggingModel, ABC):
         return model
 
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
-        input_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
+
         mask = mask.unsqueeze(0) if mask is not None else None
         if mask is not None:
+            input_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
             causal_mask = self._get_4d_causal_mask(mask)
             input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
             torch.backends.cuda.enable_mem_efficient_sdp(False)
@@ -51,7 +52,9 @@ class LLama(HuggingModel, ABC):
                 #raise ValueError("Causal mask and normal mask do not produce the same output."
                 #                 f"{diffs} differences") TODO: look into this appear to be the same:
         else:
-            outputs = self.model(inputs_embeds=input_embeds)
+            with torch.no_grad():
+                outputs = self.model(input_ids=tokenized.int().unsqueeze(0), use_cache=False)
+            outputs = outputs # Otherwise the line below complains about usage before assignment.
         embeddings = outputs[0]
         de_batched = embeddings[0]
         return de_batched
@@ -70,3 +73,7 @@ class LLama1B(LLama):
 class LLama3B(LLama):
     def get_model_name(self)->str:
         return "Llama-3.2-3B"
+
+class LLama3BInstruct(LLama):
+    def get_model_name(self) ->str:
+        return "Llama-3.2-3B-Instruct"
