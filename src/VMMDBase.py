@@ -26,7 +26,7 @@ class VMMDBase:
     '''
 
     def __init__(self, batch_size=500, epochs=500, lr=10e-5, momentum=0.99, seed=777, weight_decay=10e-5, path_to_directory=None,
-                 weight=0, generator = None, print_updates=None, gradient_clipping=False):
+                 weight=0, generator = None, print_updates=None, gradient_clipping=False, export_generator=False):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.generator_loss_key = "generator_loss"
@@ -47,6 +47,7 @@ class VMMDBase:
         self.generator_optimizer = None
         self.weight = weight
         self.latent_size_factor = 16
+        self.export_generator = export_generator
   
         self.device = torch.device('cuda:0' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')

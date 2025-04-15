@@ -126,7 +126,8 @@ class VMMD(VMMDBase):
                 yield epoch
 
         self.generator = generator
-        self._export(generator)
+        if self.export_generator:
+            self._export(generator)
 
 def model_eval(model, X_data) -> pd.DataFrame:
     device = torch.device('cuda' if torch.cuda.is_available(
