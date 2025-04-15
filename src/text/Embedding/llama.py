@@ -19,7 +19,12 @@ class LLama(HuggingModel, ABC):
     @property
     def _tokenizer(self):
         print("Tokenizer loaded")
-        tokenizer = AutoTokenizer.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True)
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True)
+        except OSError as ose:
+            print("An OSError was raised. This likely happened due to LLama being a restricted model. Please verify, that"
+                  "you are logged into huggingface and have access to the LLama models used here. Check readme to see how to log in. The exception:")
+            raise ose
         return tokenizer
 
     @property
