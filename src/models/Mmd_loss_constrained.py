@@ -97,7 +97,7 @@ class RBF(nn.Module):
                  vector_norm: VectorNorm = L2Norm(),
                  matrix_norm: MatrixNorm = FrobeniusNorm()):
         super().__init__()
-        device = torch.device('cuda:0' if torch.cuda.is_available(
+        device = torch.device('cuda' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
         self.bandwidth_multipliers = mul_factor ** (
@@ -193,7 +193,7 @@ class MMDLossConstrained(nn.Module):
         super().__init__()
         self.kernel = kernel
         self.weight = weight
-        self.device = torch.device('cuda:0' if torch.cuda.is_available(
+        self.device = torch.device('cuda' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
         self.subspace_penalty = subspace_amount_penalty
         self.middle_penalty = middle_penalty

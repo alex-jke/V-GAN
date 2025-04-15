@@ -24,7 +24,7 @@ class DatasetEmbedder:
         self.model = model
         self.desired_labels = None
         self.labels: Series | None = None
-        self.device = torch.device('cuda:0' if torch.cuda.is_available(
+        self.device = torch.device('cuda' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
 
     def embed(self, train: bool, samples: int, labels: list | None = None) -> (Tensor, Tensor):

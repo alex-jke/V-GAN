@@ -129,7 +129,7 @@ class VMMD(VMMDBase):
         self._export(generator)
 
 def model_eval(model, X_data) -> pd.DataFrame:
-    device = torch.device('cuda:0' if torch.cuda.is_available(
+    device = torch.device('cuda' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
     sample_amount = min(500, X_data.shape[0])
     X_sample = torch.Tensor(pd.DataFrame(

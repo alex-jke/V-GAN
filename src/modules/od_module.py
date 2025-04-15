@@ -163,6 +163,7 @@ class VMMD_od(VMMD, ODModule):
             warnings.warn(f"Selected 'count': {count} is greater than the number of samples {x_data.shape[0]} in the dataset. Setting count to {x_data.shape[0]}. This might lead to unexpected results.")
             count = x_data.shape[0]
         results = []
+        print(f"checking if myopic with {count} samples")
 
         x_data = normalize(x_data, axis=0)
         x_sample = torch.mps.Tensor(pd.DataFrame(

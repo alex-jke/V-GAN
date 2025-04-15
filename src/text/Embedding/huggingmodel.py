@@ -33,8 +33,8 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     def __init__(self):
         super().__init__()
-        self.device = torch.device('cuda:0' if torch.cuda.is_available(
-        ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available(
+        ) else 'mps' if torch.backends.mps.is_available() else 'cpu')
         print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
         self.tokenizer = self._tokenizer
         self.model = self._model.to(self.device)

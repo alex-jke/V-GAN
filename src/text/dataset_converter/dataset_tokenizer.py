@@ -35,7 +35,7 @@ class DatasetTokenizer:
         #self.base_file_name = f"{self.tokenizer_name}_{self.sequence_length}_{dataset.name}"
         self.dataset = dataset
         self.padding_token = self.tokenizer.padding_token
-        self.device = torch.device('cuda:0' if torch.cuda.is_available(
+        self.device = torch.device('cuda' if torch.cuda.is_available(
         ) else 'mps:0' if torch.backends.mps.is_available() else 'cpu')
         self.class_label = None
         self.ui = cli.get()
