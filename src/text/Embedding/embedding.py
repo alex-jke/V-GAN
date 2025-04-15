@@ -1,3 +1,4 @@
+import gc
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Optional
 
@@ -119,6 +120,9 @@ class Embedding(ABC):
                 if torch.isnan(embedded).any():
                     raise ValueError("Computed Embedding with NaN values.")
                 embeddings.append(embedded)
+                if i % 1000 == 0:
+                    gc.collect()
+                    torch.cuda.empty_cache()
         stacked = torch.stack(embeddings)
         # stacked is expected to have shape (samples, [padding length or 1], embedding_dim)
         # Norm the embeddings and perform a z-transformation.

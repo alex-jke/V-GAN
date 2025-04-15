@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Tuple, Type, List
 
 import pandas as pd
+import torch
 
 from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.huggingmodel import HuggingModel
@@ -129,8 +130,8 @@ class EmbTest(unittest.TestCase):
         path.mkdir(parents=True, exist_ok=True)
         model = LLama3B()
         output_path = path / "results.csv"
-
-        self.run_all(output_path, model)
+        with torch.no_grad():
+            self.run_all(output_path, model)
         #self.compare_sms_spam_prompts(output_path, model)
 
 
