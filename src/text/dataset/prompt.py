@@ -22,3 +22,6 @@ class Prompt:
         self.prefix = " ".join(prefix).split(" ")
         self.suffix = label_prefix.split(" ")
         self.full_prompt = " ".join(self.prefix +["sample"] +  self.suffix)
+
+    def __repr__(self):
+        return f"Prompt(prefix={self.prefix}, suffix={self.suffix})"
