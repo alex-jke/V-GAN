@@ -77,6 +77,28 @@ class Embedding(ABC):
             The shape of the tensor should be (n_sentences, n_words, n_embedding_dim).
             Note, that if aggregated, the n_words dimension is 1.
         """
+
+        if strategy.equals(UnificationStrategy.PADDING):
+            return self._get_sentence_embeddings(sentences, seperator, masks, strategy, dataset, verbose)
+
+        # This is done, as this avoids a memory leak, when embedding all of them at once. TODO: why is this happening?
+        embeddings = []
+        with ui.display():
+            for i in range(sentences.shape[0]):
+                if verbose:
+                    ui.update(f"Embedding sentence {i + 1}/{sentences.shape[0]}")
+                sentence = sentences[i:i+1]
+                masks = masks[i:i+1] if masks is not None else None
+                embedding = self._get_sentence_embeddings(sentence, seperator, masks, strategy, dataset, False)
+                embeddings.append(embedding)
+        return torch.stack(embeddings)
+
+
+
+    def _get_sentence_embeddings(self, sentences: np.ndarray[str], seperator: str = " ", masks: Optional[Tensor] = None,
+                        strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(), dataset: Optional[Aggregatable] = None,
+                        verbose: bool = False) -> Tensor:
+
         transformer_agg = strategy.equals(UnificationStrategy.TRANSFORMER)
         padding_strategy = strategy.equals(UnificationStrategy.PADDING)
         padding_length = strategy.param if padding_strategy else None
@@ -90,45 +112,57 @@ class Embedding(ABC):
 
         embeddings = []
         with ui.display():
-            for i in range(len(sentences)):
-                #print("|", end="")
+            for i in range(sentences.shape[0]):
                 if verbose:
-                    ui.update(f"Embedding sentence {i + 1}/{len(sentences)}")
-                sentence = sentences[i]
-                mask = None
-                words = self.get_words(sentence, seperator)
-                words = [word for word in words if word != ""] # Remove the empty strings, which can occur if two consecutive spaces are in the data. This causes NaN embeddings.
-
-                if masks is not None:
-                    mask = masks[i] if len(masks.shape) > 1 else masks
-                    if len(words) > mask.shape[0]:
-                        words = words[:mask.shape[0]] #TODO: this now only applies if mask is set, as if everything after is masked
-                    elif len(words) < mask.shape[0]:
-                        mask = mask[:len(words)]
-                if padding_length is not None and len(words) > padding_length:
-                    words = words[:padding_length]
-                elif padding_length is not None and len(words) < padding_length and masks is not None:
-                    mask = mask[:len(words)]
-                embedded = self.embed_words(words, mask, strategy)
-                if padding_strategy:
-                    if embedded.shape[0] < padding_length:
-                        embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
-                    #elif embedded.shape[0] > padding_length > 0:
-                    #embedded = embedded[:padding_length]
-                    if embedded.shape[0] != padding_length:
-                        raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
-                if torch.isnan(embedded).any():
-                    raise ValueError("Computed Embedding with NaN values.")
+                    ui.update(f"Embedding sentence {i + 1}/{sentences.shape[0]}")
+                sentence = sentences[i:i+1]
+                embedded = self.loop_body(sentence, i, seperator, masks, padding_length, padding_strategy, strategy)
                 embeddings.append(embedded)
-                if i % 1000 == 0:
-                    gc.collect()
-                    torch.cuda.empty_cache()
         stacked = torch.stack(embeddings)
-        # stacked is expected to have shape (samples, [padding length or 1], embedding_dim)
-        # Norm the embeddings and perform a z-transformation.
-        #normed = torch.nn.functional.normalize(stacked, dim=2)
-        #mean = normed.mean(dim=0)
-        #std = normed.std(dim=0) + 1e-6
-        #stacked = (normed - mean)# / std
-
         return stacked
+
+    def loop_body(self, sentence: np.ndarray[str], i: int, seperator: str, masks: Optional[Tensor], padding_length: Optional[int], padding_strategy: bool, strategy: StrategyInstance):
+
+        sentence = sentence[0]
+        words = self.get_words(sentence, seperator)
+        words = [word for word in words if
+                 word != ""]  # Remove the empty strings, which can occur if two consecutive spaces are in the data. This causes NaN embeddings.
+
+        words, mask = self._update_words_and_mask(words, masks, i, padding_length)
+
+        embedded = self._get_sentence_embedding(words, mask, padding_strategy, strategy, padding_length)
+
+        return embedded
+
+
+    @staticmethod
+    def _update_words_and_mask(words: List[str], masks: Optional[Tensor], i: int, padding_length: Optional[int]) -> Tuple[List[str], Optional[Tensor]]:
+        mask = None
+        if masks is not None:
+            mask = masks[i] if len(masks.shape) > 1 else masks
+            if len(words) > mask.shape[0]:
+                words = words[ :mask.shape[0]]  # TODO: this now only applies if mask is set, as if everything after is masked
+            elif len(words) < mask.shape[0]:
+                mask = mask[:len(words)]
+
+        if padding_length is not None and len(words) > padding_length:
+            words = words[:padding_length]
+
+        elif padding_length is not None and len(words) < padding_length and masks is not None:
+            mask = mask[:len(words)]
+
+        return words, mask
+
+    def _get_sentence_embedding(self, words: List[str], mask: Optional[Tensor], padding_strategy: bool, strategy: StrategyInstance, padding_length: Optional[int]) -> Tensor:
+        embedded = self.embed_words(words, mask, strategy)
+        if padding_strategy:
+            if embedded.shape[0] < padding_length:
+                embedded = torch.nn.functional.pad(embedded, (0, 0, 0, padding_length - embedded.shape[0]))
+            # elif embedded.shape[0] > padding_length > 0:
+            # embedded = embedded[:padding_length]
+            if embedded.shape[0] != padding_length:
+                raise ValueError(f"Expected shape of {padding_length}, but got {embedded.shape[0]}")
+        if torch.isnan(embedded).any():
+            raise ValueError("Computed Embedding with NaN values.")
+        return embedded
+
