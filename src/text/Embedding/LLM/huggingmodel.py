@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from torch import Tensor
 import torch.nn.functional as F
+from transformers import PreTrainedModel
 
 from text.Embedding.embedding import Embedding
 from text.Embedding.tokenizer import Tokenizer
@@ -37,7 +38,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         ) else 'mps' if torch.backends.mps.is_available() else 'cpu')
         print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
         self.tokenizer = self._tokenizer
-        self.model = self._model
+        self.model: PreTrainedModel = self._model
         #if torch.cuda.device_count() > 1:
             #print(f"Using {torch.cuda.device_count()} GPUs.")
             #model = nn.DataParallel(model)
