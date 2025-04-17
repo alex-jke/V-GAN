@@ -83,7 +83,7 @@ torchaudio==2.2.1
 #torchvision==0.17.1+cu118
 torchvision==0.17.1
 tornado==6.3.3
-transformers
+transformers==4.51.3
 tqdm==4.66.2
 traitlets==5.14.2
 typing_extensions==4.10.0

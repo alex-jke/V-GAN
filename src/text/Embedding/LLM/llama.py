@@ -8,10 +8,13 @@ import torch.nn.functional as F
 from transformers import AutoModel, AutoTokenizer
 from transformers import LlamaModel
 
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 
 
 class LLama(HuggingModel, ABC):
+    """
+    This class is a wrapper around the Llama model from Hugging Face's transformers library.
+    """
     @property
     def _model_name(self):
         return self.get_model_name()

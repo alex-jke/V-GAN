@@ -216,9 +216,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         :return: two-dimensional Tensor where each token index is an embedding. (embedding_size, num_tokens)
         """
         pass
-    @abstractmethod
-    def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
-        pass
+
 
     @property
     def _padding_token(self) -> int:
