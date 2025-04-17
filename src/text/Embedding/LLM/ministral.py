@@ -6,6 +6,7 @@ from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
 from text.Embedding.LLM.huggingmodel import HuggingModel
+from text.Embedding.unification_strategy import UnificationStrategy
 
 
 class Ministral8BInstruct(HuggingModel):
