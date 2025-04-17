@@ -12,11 +12,11 @@ from torch import Tensor
 from models.Generator import GeneratorSigmoid, FakeGenerator, GeneratorUpperSoftmax, GeneratorSigmoidSTE, \
     GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm
 from modules.od_module import VMMD_od, VGAN_od
-from text.Embedding.bert import Bert
-from text.Embedding.gpt2 import GPT2
-from text.Embedding.deepseek import DeepSeek1B, DeepSeek7B
-from text.Embedding.gpt2ExtraSubspace import GPT2ExtraSubspaces
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.bert import Bert
+from text.Embedding.LLM.gpt2 import GPT2
+from text.Embedding.LLM.deepseek import DeepSeek1B, DeepSeek7B
+from text.Embedding.LLM.gpt2ExtraSubspace import GPT2ExtraSubspaces
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.tokenizer import Tokenizer
 from text.dataset.SimpleDataset import SimpleDataset
 from text.dataset.ag_news import AGNews

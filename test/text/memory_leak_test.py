@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 import torch
 
-from text.Embedding.llama import LLama3B, LLama1B
+from text.Embedding.LLM.llama import LLama3B, LLama1B
 from text.UI import cli
 from text.dataset.aggregatable import Aggregatable
 from text.dataset.dataset import AggregatableDataset

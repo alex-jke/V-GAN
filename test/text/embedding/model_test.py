@@ -3,7 +3,7 @@ import unittest
 import torch
 from torch.functional import Tensor
 
-from text.Embedding.deepseek import DeepSeek, DeepSeek1B
+from text.Embedding.LLM.deepseek import DeepSeek, DeepSeek1B
 
 
 class DeepSeekTest(unittest.TestCase):

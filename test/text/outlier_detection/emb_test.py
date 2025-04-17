@@ -1,14 +1,13 @@
 import os
 import unittest
 from pathlib import Path
-from typing import Tuple, Type, List
+from typing import Type, List
 
 import pandas as pd
 import torch
 
-from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.huggingmodel import HuggingModel
-from text.Embedding.llama import LLama3B, LLama3BInstruct
+from text.Embedding.LLM.llama import LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import AggregatableDataset
@@ -17,7 +16,6 @@ from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset.prompt import Prompt
 from text.outlier_detection.pyod_odm import LUNAR, BasePyODM, LOF, ECOD
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
-from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.space.word_space import WordSpace
 
 DATASET = "dataset"

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
 from text.outlier_detection.space.prepared_data import PreparedData
 

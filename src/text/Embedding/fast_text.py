@@ -6,9 +6,9 @@ import torch.cuda
 from staticvectors import StaticVectors
 from torch import Tensor
 
-from text.Embedding.deepseek import DeepSeek1B
+from text.Embedding.LLM.deepseek import DeepSeek1B
 from text.Embedding.embedding import Embedding
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.tokenizer import Tokenizer
 from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.dataset.ag_news import AGNews

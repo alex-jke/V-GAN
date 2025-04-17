@@ -2,8 +2,8 @@ import unittest
 
 from torch import Tensor
 
-from text.Embedding.deepseek import DeepSeek1B
-from text.Embedding.gpt2 import GPT2
+from text.Embedding.LLM.deepseek import DeepSeek1B
+from text.Embedding.LLM.gpt2 import GPT2
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from text.dataset.nlp_adbench import NLP_ADBench

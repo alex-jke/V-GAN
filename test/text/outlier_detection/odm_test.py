@@ -10,9 +10,9 @@ import pandas as pd
 import torch
 from torch import Tensor
 
-from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
-from text.Embedding.gpt2 import GPT2
-from text.Embedding.llama import LLama3B
+from text.Embedding.LLM.deepseek import DeepSeek1B, DeepSeek7B
+from text.Embedding.LLM.gpt2 import GPT2
+from text.Embedding.LLM.llama import LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
@@ -24,7 +24,6 @@ from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
 from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
-from vmmd import VMMD
 
 
 class OutlierDetectionMethodTest(unittest.TestCase):

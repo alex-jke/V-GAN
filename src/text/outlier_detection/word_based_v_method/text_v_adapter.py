@@ -7,7 +7,7 @@ from models.Generator import GeneratorSigmoidSTE, Generator_big
 from modules.text.vmmd_text import VMMDTextLightning
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.huggingmodel import HuggingModel
-from text.Embedding.llama import LLama1B
+from text.Embedding.LLM.llama import LLama1B
 from text.Embedding.unification_strategy import StrategyInstance, UnificationStrategy
 from text.dataset.dataset import AggregatableDataset
 from text.outlier_detection.base_v_adapter import BaseVAdapter

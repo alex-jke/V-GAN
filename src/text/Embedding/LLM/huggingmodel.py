@@ -6,10 +6,10 @@ import torch
 from torch import Tensor
 import torch.nn.functional as F
 
-from .embedding import Embedding
-from .tokenizer import Tokenizer
-from .unification_strategy import UnificationStrategy, StrategyInstance
-from ..UI import cli
+from text.Embedding.embedding import Embedding
+from text.Embedding.tokenizer import Tokenizer
+from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
+from text.UI import cli
 
 
 class HuggingModel(Tokenizer, Embedding, ABC):

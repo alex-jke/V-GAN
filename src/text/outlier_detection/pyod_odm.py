@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from torch import Tensor
 import torch
 
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.space.space import Space

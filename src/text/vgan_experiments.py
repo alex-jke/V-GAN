@@ -2,8 +2,8 @@ import os
 
 from models.Generator import GeneratorSigmoidSTE, GeneratorUpperSoftmax, GeneratorSigmoid
 from modules.od_module import VGAN_od
-from text.Embedding.deepseek import DeepSeek1B
-from text.Embedding.gpt2 import GPT2
+from text.Embedding.LLM.deepseek import DeepSeek1B
+from text.Embedding.LLM.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset

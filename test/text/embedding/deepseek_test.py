@@ -6,7 +6,7 @@ import torch
 from torch import Tensor, nn
 
 from text.Embedding.deepseek import DeepSeek1B
-from text.Embedding.llama import LLama1B
+from text.Embedding.LLM.llama import LLama1B
 from text.dataset.emotions import EmotionDataset
 
 device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")

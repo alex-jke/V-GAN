@@ -3,24 +3,16 @@ from datetime import datetime
 from typing import List, Type, Optional
 
 from numpy import ndarray
-from transformers import GPT2Model
 
-from VMMDBase import VMMDBase
-from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE, GeneratorUpperSoftmax, \
-    GeneratorSoftmax, GeneratorSoftmaxSTEMBD, Generator, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, \
-    GeneratorSoftmaxSTESpectralNorm, GeneratorSpectralSigmoidSTE
+from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE, GeneratorSoftmaxSTESpectralNorm, GeneratorSpectralSigmoidSTE
 from modules.text.vmmd_text import VmmdText
 from modules.text.vmmd_text_preembed import VMMDTextPreEmbed
-from text.Embedding.deepseek import DeepSeek1B
 from text.Embedding.embedding import Embedding
 from text.Embedding.fast_text import FastText
-from text.Embedding.gpt2 import GPT2
-from text.Embedding.llama import LLama1B
-from text.dataset.ag_news import AGNews
+from text.Embedding.LLM.llama import LLama1B
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
-from text.v_experiment import VBaseExperiment
 from text.visualizer.collective_visualizer import CollectiveVisualizer
 from modules.text.vmmd_text_base import VMMDTextBase
 

@@ -2,7 +2,7 @@ import unittest
 
 from models.Generator import GeneratorSigmoidSTE
 from modules.od_module import VMMD_od
-from text.Embedding.deepseek import DeepSeek1B
+from text.Embedding.LLM.deepseek import DeepSeek1B
 from text.dataset.ag_news import AGNews
 from text.dataset.emotions import EmotionDataset
 from text.dataset_converter.dataset_tokenizer import DatasetTokenizer

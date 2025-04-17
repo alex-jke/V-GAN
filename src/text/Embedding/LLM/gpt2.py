@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import GPT2Tokenizer, GPT2Model
 
-from src.text.Embedding.huggingmodel import HuggingModel
+from src.text.Embedding.LLM.huggingmodel import HuggingModel
 
 
 class GPT2(HuggingModel):

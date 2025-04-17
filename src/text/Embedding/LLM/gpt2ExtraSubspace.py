@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from torch import Tensor
 
-from .gpt2 import GPT2
+from text.Embedding.LLM.gpt2 import GPT2
 
 
 class GPT2ExtraSubspaces(GPT2):

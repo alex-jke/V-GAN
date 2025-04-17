@@ -7,7 +7,7 @@ import torch
 from pandas import Series
 from torch import Tensor
 
-from src.text.Embedding.huggingmodel import HuggingModel
+from src.text.Embedding.LLM.huggingmodel import HuggingModel
 from src.text.UI.cli import ConsoleUserInterface
 
 from src.text.dataset.dataset import Dataset

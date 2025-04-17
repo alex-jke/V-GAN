@@ -11,7 +11,7 @@ from pyod.models.base import BaseDetector
 from sklearn.preprocessing import StandardScaler
 from torch import Tensor
 
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.dataset import Dataset

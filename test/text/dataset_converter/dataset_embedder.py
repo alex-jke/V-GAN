@@ -4,9 +4,9 @@ from time import time
 import torch
 from torch import Tensor
 
-from text.Embedding.bert import Bert
-from text.Embedding.deepseek import DeepSeek1B
-from text.Embedding.gpt2 import GPT2
+from text.Embedding.LLM.bert import Bert
+from text.Embedding.LLM.deepseek import DeepSeek1B
+from text.Embedding.LLM.gpt2 import GPT2
 from text.dataset.emotions import EmotionDataset
 from text.dataset.imdb import IMBdDataset
 from src.text.dataset_converter.dataset_embedder import DatasetEmbedder

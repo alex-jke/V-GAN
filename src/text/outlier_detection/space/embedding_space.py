@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
 from text.dataset_converter.dataset_embedder import DatasetEmbedder
 from text.outlier_detection.space.prepared_data import PreparedData

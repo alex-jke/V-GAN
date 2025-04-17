@@ -1,11 +1,10 @@
 import unittest
 
 import torch
-from numpy import ndarray
 from torch import Tensor
 
 from text.Embedding.gpt2 import GPT2
-from text.Embedding.llama import LLama3B
+from text.Embedding.LLM.llama import LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else ('mps:0' if torch.backends.mps.is_available() else 'cpu'))

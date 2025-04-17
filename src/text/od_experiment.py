@@ -12,11 +12,11 @@ from pyod.models.ecod import ECOD as pyod_ECOD
 from pyod.models.lof import LOF as pyod_LOF
 
 from models.Generator import GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD
-from text.Embedding.bert import Bert
-from text.Embedding.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
-from text.Embedding.gpt2 import GPT2
-from text.Embedding.huggingmodel import HuggingModel
-from text.Embedding.llama import LLama1B, LLama3B
+from text.Embedding.LLM.bert import Bert
+from text.Embedding.LLM.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
+from text.Embedding.LLM.gpt2 import GPT2
+from text.Embedding.LLM.huggingmodel import HuggingModel
+from text.Embedding.LLM.llama import LLama1B, LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.UI import cli
 from text.UI.cli import ConsoleUserInterface

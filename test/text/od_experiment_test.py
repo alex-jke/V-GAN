@@ -5,9 +5,9 @@ from typing import List
 from pyod.models.lof import LOF as pyodLOF
 from pyod.models.lunar import LUNAR as pyodLUNAR
 
-from text.Embedding.bert import Bert
-from text.Embedding.deepseek import DeepSeek1B, DeepSeek7B
-from text.Embedding.gpt2 import GPT2
+from text.Embedding.LLM.bert import Bert
+from text.Embedding.LLM.deepseek import DeepSeek1B, DeepSeek7B
+from text.Embedding.LLM.gpt2 import GPT2
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
