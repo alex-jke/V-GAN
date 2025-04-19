@@ -22,11 +22,13 @@ from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.word_space import WordSpace
 
-DATASET = "dataset"
-EMB_MODEL = "emb_model"
-PROMPT = "prompt"
-RUN = "run"
-TYPE = "type"
+DATASET_COL = "dataset"
+EMB_MODEL_COL = "emb_model"
+PROMPT_COL = "prompt"
+RUN_COL = "run"
+TYPE_COL = "type"
+TRAIN_SIZE_COL = "train_size"
+TEST_SIZE_COL = "test_size"
 NTPE = "NPTE"
 AVG = "avg"
 
@@ -60,7 +62,7 @@ class EmbTest(unittest.TestCase):
         method.train()
         method.predict()
         metrics, shared_metrics = method.evaluate()
-        metrics[TYPE] = type
+        metrics[TYPE_COL] = type
 
         train_samples = shared_metrics["total_train_samples"]
         test_samples = shared_metrics["total_test_samples"]
@@ -69,12 +71,12 @@ class EmbTest(unittest.TestCase):
         train_size = int(train_samples.iloc[0])
 
         comparison_df = metrics
-        comparison_df[DATASET] = dataset.name
-        comparison_df["train_size"] = train_size
-        comparison_df["test_size"] = test_size
-        comparison_df[EMB_MODEL] = model.model_name
+        comparison_df[DATASET_COL] = dataset.name
+        comparison_df[TRAIN_SIZE_COL] = train_size
+        comparison_df[TEST_SIZE_COL] = test_size
+        comparison_df[EMB_MODEL_COL] = model.model_name
         prompt = dataset.prompt.full_prompt if type == NTPE else ""
-        comparison_df[PROMPT] = prompt
+        comparison_df[PROMPT_COL] = prompt
 
         print(comparison_df)
 
@@ -115,12 +117,12 @@ class EmbTest(unittest.TestCase):
 
                             if output_path.exists():
                                 results_df = pd.read_csv(output_path)
-                                already_run = results_df[DATASET].tolist()
+                                already_run = results_df[DATASET_COL].tolist()
                                 bases = results_df["base"].tolist()
-                                emb_models = results_df[EMB_MODEL].tolist()
-                                runs_list = results_df[RUN].tolist()
-                                prompts = results_df[PROMPT].fillna("no_prompt").tolist()
-                                types = results_df[TYPE].tolist()
+                                emb_models = results_df[EMB_MODEL_COL].tolist()
+                                runs_list = results_df[RUN_COL].tolist()
+                                prompts = results_df[PROMPT_COL].fillna("no_prompt").tolist()
+                                types = results_df[TYPE_COL].tolist()
                                 prompt = dataset.prompt.full_prompt if type == NTPE else "no_prompt"
                                 if ((dataset.name, base.__name__, model.model_name, run, prompt, type)
                                         in zip(already_run, bases, emb_models, runs_list, prompts, types)):
@@ -130,7 +132,7 @@ class EmbTest(unittest.TestCase):
                             try:
                                 print(f"Running dataset: {dataset.name}, base: {base.__name__}, model: {model.model_name}, run: {run}, type: {type}")
                                 result = self.run_comparison(dataset, base, model, type=type)
-                                result[RUN] = run
+                                result[RUN_COL] = run
                                 result.to_csv(output_path, mode="a", header=not output_path.exists())
                             except Exception as e:
                                 print(f"An error occurred running {dataset.name} + {base.__name__}. Skipping. (error: {e}")
