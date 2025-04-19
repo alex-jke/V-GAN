@@ -30,7 +30,8 @@ class CausalLLM(HuggingModel, ABC):
         print("Tokenizer loaded")
         try:
             tokenizer = AutoTokenizer.from_pretrained(self._model_prefix + self._model_name,
-                                                      trust_remote_code=True)
+                                                      trust_remote_code=True
+                                                      )
         except OSError as ose:
             print(
                 "An OSError was raised. This likely happened due to this LLM being a restricted model. Please verify, that"
@@ -38,16 +39,27 @@ class CausalLLM(HuggingModel, ABC):
             raise ose
         return tokenizer
 
+    def get_dtype(self) -> Optional:
+        return None
+
     @property
     def _model(self):
-
-        model = AutoModelForCausalLM.from_pretrained(
+        dtype = self.get_dtype()
+        if dtype is None:
+            model = AutoModelForCausalLM.from_pretrained(
             self._model_prefix + self._model_name,
             trust_remote_code=True,
-           #torch_dtype=torch.float16,
-            device_map='auto',
+            device_map='cuda',
             attn_implementation="eager",
         )
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                self._model_prefix + self._model_name,
+                trust_remote_code=True,
+                torch_dtype=self.get_dtype(),
+                device_map='cuda',
+                attn_implementation="eager",
+            )
         print(f"Loaded {self._model_name} model.")
         return model
 
@@ -67,3 +79,4 @@ class CausalLLM(HuggingModel, ABC):
         embeddings = outputs[0]
         de_batched = embeddings[0]
         return de_batched
+

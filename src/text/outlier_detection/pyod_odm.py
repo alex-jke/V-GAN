@@ -26,12 +26,12 @@ class PyODM(OutlierDetectionModel, ABC):
         self.od_model = self._get_model()
 
     def _train(self):
-        data = self.x_train.cpu().numpy()
+        data = self.x_train.float().cpu().numpy()
         self.od_model.fit(data, None)
 
     def _predict(self):
         test = self.x_test
-        decision_function = self.od_model.decision_function(test.cpu().numpy())
+        decision_function = self.od_model.decision_function(test.float().cpu().numpy())
         self.decision_function = decision_function
 
     def _get_predictions(self) -> List[int]:

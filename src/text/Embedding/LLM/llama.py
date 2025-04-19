@@ -38,10 +38,14 @@ class LLama1B(LLama):
         return "Llama-3.2-1B"
 
 class LLama3B(LLama):
+
+    @property
     def _model_name(self)->str:
         return "Llama-3.2-3B"
 
 class LLama3BInstruct(LLama):
+
+    @property
     def _model_name(self) ->str:
         return "Llama-3.2-3B-Instruct"
 

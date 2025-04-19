@@ -32,7 +32,7 @@ class UnificationStrategy(Enum):
     MEAN = ("avg", False)
 
     # Lets the transformer perform the aggregation by taking the embedding of a significant token.
-    TRANSFORMER = ("t_agg", False)
+    TRANSFORMER = ("NPTE", False)
 
     def __init__(self, key: str, requires_param: bool):
         self.key: str = key

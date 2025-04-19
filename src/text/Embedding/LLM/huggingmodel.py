@@ -37,20 +37,41 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         self.device = torch.device('cuda' if torch.cuda.is_available(
         ) else 'mps' if torch.backends.mps.is_available() else 'cpu')
         print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
-        self.tokenizer = self._tokenizer
-        self.model: PreTrainedModel = self._model
+        self.__tokenizer = None
+        self.__model: Optional[HuggingModel] = None
+        #self.model = self._model
         #if torch.cuda.device_count() > 1:
             #print(f"Using {torch.cuda.device_count()} GPUs.")
             #model = nn.DataParallel(model)
         #self.model = model.to(self.device)
-        self.model.eval()
-        for param in self.model.parameters():
-            param.requires_grad = False
         self.model_name = self._model_name
-        self.padding_token = self._padding_token
+        self.__padding_token = None
+        #self.padding_token = self._padding_token
         self.ui = cli.get()
         self.prefix_mask: Optional[Tensor] = None
         self.suffix_mask: Optional[Tensor] = None
+
+    @property
+    def padding_token(self):
+        if self.__padding_token is None:
+            self.__padding_token = self._padding_token
+        return self.__padding_token
+
+
+    @property
+    def model(self):
+        if self.__model is None:
+            self.__model = self._model
+            self.__model.eval()
+            for param in self.__model.parameters():
+                param.requires_grad = False
+        return self.__model
+
+    @property
+    def tokenizer(self):
+        if self.__tokenizer is None:
+            self.__tokenizer = self._tokenizer
+        return self.__tokenizer
 
     def tokenize(self, data: str) -> Tensor: #List[int]:
         tokenized = self.tokenizer(data, return_tensors='pt')
@@ -254,7 +275,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             with ui.display():
 
                 for (i, partial_review) in enumerate(data):
-                    #ui.update(f"Embedding {i+1}/{len(data)}")
+                    ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
                     embedded: Tensor = self.fully_embed_tokenized(partial_review).T #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension

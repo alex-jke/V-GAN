@@ -18,6 +18,11 @@ class OpenELM(CausalLLM, ABC):
     """
 
     @property
+    def _tokenizer(self):
+        # OpenELM does not provide its own tokenizer.
+        return AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf", trust_remote_code=True)
+
+    @property
     def _model_prefix(self):
         return "apple/"
 
@@ -63,3 +68,10 @@ class OpenELM3BInstruct(OpenELM):
     @property
     def _model_name(self):
         return "OpenELM-3B-Instruct"
+
+if __name__ == "__main__":
+    # Load model directly
+
+    model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained("apple/OpenELM-1_1B-Instruct", trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-hf", trust_remote_code=True)
+    print(model)

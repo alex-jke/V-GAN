@@ -37,6 +37,9 @@ class DeepSeek7B(DeepSeek1B):
     def _model_name(self) -> str:
         return "DeepSeek-R1-Distill-Qwen-7B"
 
+    def get_dtype(self) -> Optional:
+        return torch.bfloat16
+
 
 if __name__ == '__main__':
     model = DeepSeek1B()

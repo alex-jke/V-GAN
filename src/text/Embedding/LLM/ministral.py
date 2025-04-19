@@ -24,6 +24,9 @@ class Ministral8BInstruct(CausalLLM):
     def _model_name(self):
         return "Ministral-8B-Instruct-2410"
 
+    def get_dtype(self) -> Optional:
+        return torch.float16
+
 
 if __name__ == "__main__":
     # Test the Gemma class

@@ -91,7 +91,10 @@ class Embedding(ABC):
                 masks = masks[i:i+1] if masks is not None else None
                 embedding = self._get_sentence_embeddings(sentence, seperator, masks, strategy, dataset, False)
                 embeddings.append(embedding)
-        return torch.stack(embeddings)
+        stacked = torch.stack(embeddings)
+        assert stacked.shape[1] == 1
+        stacked = stacked.mean(dim=1) #dim one just contains 1 entry
+        return stacked
 
 
 

@@ -17,7 +17,7 @@ from matplotlib import pyplot
 
 from colors import VGAN_GREEN, COMPLIMENTARY
 from models.Generator import Generator, Generator_big, GeneratorSigmoidSTE
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.LLM.llama import LLama1B
 
 

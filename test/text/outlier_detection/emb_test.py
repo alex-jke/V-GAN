@@ -1,12 +1,15 @@
 import os
 import unittest
+from argparse import ArgumentError
 from pathlib import Path
-from typing import Type, List
+from typing import Type, List, Optional
 
 import pandas as pd
 import torch
 
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM import llms
+from text.Embedding.LLM.causal_llm import CausalLLM
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.LLM.llama import LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy
 from text.dataset.ag_news import AGNews
@@ -16,58 +19,66 @@ from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset.prompt import Prompt
 from text.outlier_detection.pyod_odm import LUNAR, BasePyODM, LOF, ECOD
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
+from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.word_space import WordSpace
 
 DATASET = "dataset"
 EMB_MODEL = "emb_model"
 PROMPT = "prompt"
+RUN = "run"
+TYPE = "type"
+NTPE = "NPTE"
+AVG = "avg"
 
 class EmbTest(unittest.TestCase):
 
-    def run_comparison(self, dataset: AggregatableDataset, base: Type[BasePyODM] = LUNAR, model: HuggingModel = None):
+    def __init__(self, *args, **kwargs):
+        self.train_size = 15_000
+        self.test_size = 3_000
+        super().__init__(*args, **kwargs)
+
+    def run_comparison(self, dataset: AggregatableDataset, base: Type[BasePyODM] = LUNAR, model: HuggingModel = None, type: str = NTPE):
         if model is None:
             model = LLama3B()
-        train_size = 15_000
-        test_size = 3_000
-        word_space = WordSpace(strategy=UnificationStrategy.TRANSFORMER, model=model, test_size=test_size,
+        train_size = self.train_size
+        test_size = self.test_size
+        space: Optional[Space] = None
+        if type == NTPE:
+            space = WordSpace(strategy=UnificationStrategy.TRANSFORMER, model=model, test_size=test_size,
                                train_size=train_size)
-        embedding_space = EmbeddingSpace(model=model, train_size=train_size, test_size=test_size)
+        elif type == AVG:
+            space = EmbeddingSpace(model=model, train_size=train_size, test_size=test_size)
+        else:
+            raise ValueError(f"type needs to be either '{AVG}' or '{NTPE}'")
 
-        shared_params = {
-            "dataset": dataset,
-            "use_cached": True,
-        }
-
-        word_lunar = base(
-            space=word_space,
-            **shared_params,
+        method = base(
+            space=space,
+            dataset=dataset,
+            use_cached=False
         )
-        emb_lunar = base(
-            space=embedding_space,
-            **shared_params
-        )
-        word_lunar.train()
-        word_lunar.predict()
-        word_metrics = word_lunar.evaluate()[0]
-        word_metrics["type"] = "t_agg"
 
-        emb_lunar.train()
-        emb_lunar.predict()
-        emb_metrics = emb_lunar.evaluate()[0]
-        emb_metrics["type"] = "avg"
+        method.train()
+        method.predict()
+        metrics, shared_metrics = method.evaluate()
+        metrics[TYPE] = type
 
-        comparison_df = pd.concat([emb_metrics, word_metrics], ignore_index=True)
+        train_samples = shared_metrics["total_train_samples"]
+        test_samples = shared_metrics["total_test_samples"]
+
+        test_size = int(test_samples.iloc[0])
+        train_size = int(train_samples.iloc[0])
+
+        comparison_df = metrics
         comparison_df[DATASET] = dataset.name
-        comparison_df["train_test_size"] = f"{train_size}_{test_size}"
+        comparison_df["train_size"] = train_size
+        comparison_df["test_size"] = test_size
         comparison_df[EMB_MODEL] = model.model_name
-        comparison_df[PROMPT] = dataset.prompt.full_prompt
+        prompt = dataset.prompt.full_prompt if type == NTPE else ""
+        comparison_df[PROMPT] = prompt
 
         print(comparison_df)
 
         return comparison_df
-
-        #print("Word LUNAR metrics: ", word_metrics.to_markdown())
-        #print("Embedding LUNAR metrics: ", emb_metrics.to_markdown())
 
 
     def test_emotions(self):
@@ -78,26 +89,56 @@ class EmbTest(unittest.TestCase):
         dataset = AGNews()
         self.run_comparison(dataset)
 
-    def run_all(self, output_path: Path, model: HuggingModel):
+    def run_all(self, output_path: Path, models: List[Type[CausalLLM]]):
         datasets = NLP_ADBench.get_all_datasets()
         datasets.sort(key=lambda d: d.average_length)
+        datasets = [dataset for dataset in datasets if dataset.name != NLP_ADBench.sms_spam().name]
+        sms_spam_new_prompt = NLP_ADBench.sms_spam()
+        sms_spam_old_prompt = NLP_ADBench.sms_spam()
+        sms_spam_old_prompt.prompt = Prompt(
+            sample_prefix="sms :",
+            label_prefix="spam type :",
+            samples=["Congratulations! You've won a $1,000 cash prize!",
+                     "What is our plan for tonight?"],
+            labels=["spam", "no spam"]
+        )
+        datasets = [sms_spam_old_prompt, sms_spam_new_prompt] + datasets
+        amount_runs = 3
         for dataset in datasets:
-            for base in [LUNAR, LOF, ECOD]:
+            for model_cls in models:
+                #print(f"Running model {model_cls.__name__}")
+                model = model_cls()
+                for base in [LUNAR, LOF, ECOD]:
+                    for type in [AVG,
+                                 NTPE]:
+                        for run in range(amount_runs):
 
-                if output_path.exists():
-                    results_df = pd.read_csv(output_path)
-                    already_run = results_df[DATASET].tolist()
-                    bases = results_df["base"].tolist()
-                    emb_models = results_df[EMB_MODEL].tolist()
-                    if (dataset.name, base.__name__, model.model_name) in zip(already_run, bases, emb_models):
-                        print(f"Skipping dataset {dataset.name} with base {base.__name__}, already present in results.")
-                        continue
-                try:
-                    result = self.run_comparison(dataset, base, model)
-                    result.to_csv(output_path, mode="a", header=not output_path.exists())
-                except Exception as e:
-                    print(f"An error occurred running {dataset.name} + {base.__name__}. Skipping. (error: {e}")
-                    continue
+                            if output_path.exists():
+                                results_df = pd.read_csv(output_path)
+                                already_run = results_df[DATASET].tolist()
+                                bases = results_df["base"].tolist()
+                                emb_models = results_df[EMB_MODEL].tolist()
+                                runs_list = results_df[RUN].tolist()
+                                prompts = results_df[PROMPT].fillna("no_prompt").tolist()
+                                types = results_df[TYPE].tolist()
+                                prompt = dataset.prompt.full_prompt if type == NTPE else "no_prompt"
+                                if ((dataset.name, base.__name__, model.model_name, run, prompt, type)
+                                        in zip(already_run, bases, emb_models, runs_list, prompts, types)):
+                                    print(f"Skipping dataset {dataset.name} with base {base.__name__} + run {run} + "
+                                          f"type {type}, already present in results.")
+                                    continue
+                            try:
+                                print(f"Running dataset: {dataset.name}, base: {base.__name__}, model: {model.model_name}, run: {run}, type: {type}")
+                                result = self.run_comparison(dataset, base, model, type=type)
+                                result[RUN] = run
+                                result.to_csv(output_path, mode="a", header=not output_path.exists())
+                            except Exception as e:
+                                print(f"An error occurred running {dataset.name} + {base.__name__}. Skipping. (error: {e}")
+                                #raise e
+                                continue
+                #model.model.to("cpu")
+                #del model.model
+                del model
 
     def run_different_prompts(self, dataset: AggregatableDataset, prompts: List[Prompt], output_path: Path, model: HuggingModel):
         default_prompt = dataset.prompt
@@ -126,11 +167,17 @@ class EmbTest(unittest.TestCase):
 
         path = Path(os.path.dirname(__file__)).parent.parent / "results" / "embedding_test"
         path.mkdir(parents=True, exist_ok=True)
-        model = LLama3B()
-        output_path = path / "results.csv"
-        with torch.no_grad():
-            self.run_all(output_path, model)
-        #self.compare_sms_spam_prompts(output_path, model)
+        models = llms.get_causal_llms()[8:]
+
+        output_path = path / "results_small3.csv"
+
+        self.train_size = 1_000
+        self.test_size = 500
+
+        self.run_all(output_path, models)
+
+            #self.compare_sms_spam_prompts(output_path, model)
+
 
 
 

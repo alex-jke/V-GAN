@@ -183,11 +183,11 @@ class NLPADBenchMovieReview(NLP_ADBench):
 
 class NLPADBenchSMSSpam(NLP_ADBench):
     prompt = Prompt(
-        sample_prefix="sms :",
-        label_prefix="spam type :",
-        samples=["Congratulations! You've won a $1,000 cash prize!",
-                 "What is our plan for tonight?."],
-        labels=["spam", "no spam"]
+        sample_prefix="sms:",
+        label_prefix="spam type:",
+        samples=["Congratulations! You've won a $1,000 cash prize! Click here to claim it now!",
+                 "What r ur plans for tonight?"],
+        labels=["spam", "no spam", ]
     )
     def __init__(self):
         super().__init__("sms_spam", self.prompt)
