@@ -1,0 +1,6 @@
+EMB_MODEL_COL = "emb_model"
+PROMPT_COL = "prompt"
+RUN_COL = "run"
+TYPE_COL = "type"
+TRAIN_SIZE_COL = "train_size"
+TEST_SIZE_COL = "test_size"

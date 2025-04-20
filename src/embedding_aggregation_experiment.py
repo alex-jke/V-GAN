@@ -6,33 +6,31 @@ from typing import Type, List, Optional
 
 import pandas as pd
 import torch
+from pandas import DataFrame
 
 from text.Embedding.LLM import llms
 from text.Embedding.LLM.causal_llm import CausalLLM
 from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.LLM.llama import LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy
+from text.consts.columns import TYPE_COL, TRAIN_SIZE_COL, TEST_SIZE_COL, EMB_MODEL_COL, PROMPT_COL, RUN_COL
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import AggregatableDataset
 from text.dataset.emotions import EmotionDataset
 from text.dataset.nlp_adbench import NLP_ADBench
 from text.dataset.prompt import Prompt
+from text.outlier_detection.odm import DATASET_COL
 from text.outlier_detection.pyod_odm import LUNAR, BasePyODM, LOF, ECOD
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.word_space import WordSpace
+from text.visualizer.NTPE.csv_visualizer import CsvVisualizer
 
-DATASET_COL = "dataset"
-EMB_MODEL_COL = "emb_model"
-PROMPT_COL = "prompt"
-RUN_COL = "run"
-TYPE_COL = "type"
-TRAIN_SIZE_COL = "train_size"
-TEST_SIZE_COL = "test_size"
+
 NTPE = "NPTE"
 AVG = "avg"
 
-class EmbTest(unittest.TestCase):
+class EmbeddingAggregationExperiment():
 
     def __init__(self, *args, **kwargs):
         self.train_size = 15_000
@@ -164,21 +162,30 @@ class EmbTest(unittest.TestCase):
         ]
         self.run_different_prompts(dataset, prompts, output_path, model)
 
+    def create_results_csv(self, output_path: Path, experiments: DataFrame):
+        visualizer = CsvVisualizer(output_path, experiments)
+        visualizer.export_csv()
 
-    def test_nlpadbench(self):
 
-        path = Path(os.path.dirname(__file__)).parent.parent / "results" / "embedding_test"
-        path.mkdir(parents=True, exist_ok=True)
-        models = llms.get_causal_llms()[8:]
+if __name__ == "__main__":
 
-        output_path = path / "results_small3.csv"
+    exp = EmbeddingAggregationExperiment()
 
-        self.train_size = 1_000
-        self.test_size = 500
+    path = Path(os.path.dirname(__file__)) / "text" / "results" / "aggregation_test"
+    path.mkdir(parents=True, exist_ok=True)
+    models = llms.get_causal_llms()[8:]
 
-        self.run_all(output_path, models)
+    csv_path = path / "results_small3.csv"
 
-            #self.compare_sms_spam_prompts(output_path, model)
+    exp.train_size = 1_000
+    exp.test_size = 500
+
+    #exp.run_all(csv_path, models)
+    df = pd.read_csv(csv_path)
+    output_path = path / "aggregated.csv"
+    exp.create_results_csv(output_path, df)
+
+    #self.compare_sms_spam_prompts(output_path, model)
 
 
 

@@ -29,6 +29,24 @@ from text.outlier_detection.space.token_space import TokenSpace
 
 not_initizalied_error_msg = "The train data has not been set. Have you called use_embedding or use_tokenized?"
 
+METHOD_COL = "method"
+SPACE_COL = "space"
+AUC_COL = "auc"
+PRAUC_COL = "prauc"
+F1_COL = "f1"
+TIME_TAKEN_COL = "time_taken"
+BASE_COL = "base"
+
+PERCENTAGE_INLIER_COL = "percentage_inlier"
+PERCENTAGE_OUTLIER_COL = "percentage_outlier"
+TOTAL_TEST_SAMPLES_COL = "total_test_samples"
+TOTAL_TRAIN_SAMPLES_COL = "total_train_samples"
+INLIER_LABEL_COL = "inlier_label"
+OUTLIER_LABEL_COL = "outlier_labels"
+MODEL_COL = "model"
+DATASET_COL = "dataset"
+
+
 class OutlierDetectionModel(ABC):
     """
     Abstract class for outlier detection models. Specifically for one-class classification.
@@ -40,7 +58,7 @@ class OutlierDetectionModel(ABC):
         if inlier_label is None:
             self.inlier_label = self.dataset.get_possible_labels()[0]
         self.ui = cli.get()
-        self.method_column = "method"
+        self.method_column = METHOD_COL
         self.data: PreparedData | None = None
         self.space: Space = space
         self.device = self.space.model.device
@@ -160,23 +178,23 @@ class OutlierDetectionModel(ABC):
 
         self.metrics = pd.DataFrame({
             self.method_column: [self._get_name()],
-            "space": [self.get_space()],
-            "auc": [auc],
-            "prauc": [prauc],
-            "f1": [f1],
-            "time_taken": [self.time_elapsed],
-            "base": [self.base_method.__name__]
+            SPACE_COL: [self.get_space()],
+            AUC_COL: [auc],
+            PRAUC_COL: [prauc],
+            F1_COL: [f1],
+            TIME_TAKEN_COL: [self.time_elapsed],
+            BASE_COL: [self.base_method.__name__]
         })
 
         self.common_parameters = pd.DataFrame({
-             "percentage_inlier": [percentage_inlier],
-             "percentage_outlier": [percentage_outlier],
-            "total_test_samples": [len(y_test)],
-            "total_train_samples": [len(self.x_train)],
-            "inlier_label": [self.inlier_label],
-            "outlier_labels": str([label for label in self.dataset.get_possible_labels() if label != self.inlier_label]),
-            "model": [self.space.model.model_name],
-            "dataset": [self.dataset.name],
+            PERCENTAGE_INLIER_COL : [percentage_inlier],
+            PERCENTAGE_OUTLIER_COL : [percentage_outlier],
+            TOTAL_TEST_SAMPLES_COL : [len(y_test)],
+            TOTAL_TRAIN_SAMPLES_COL : [len(self.x_train)],
+            INLIER_LABEL_COL : [self.inlier_label],
+            OUTLIER_LABEL_COL : str([label for label in self.dataset.get_possible_labels() if label != self.inlier_label]),
+            MODEL_COL : [self.space.model.model_name],
+            DATASET_COL : [self.dataset.name],
         })
 
         return self.metrics, self.common_parameters

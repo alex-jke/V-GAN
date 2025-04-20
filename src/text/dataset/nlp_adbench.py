@@ -207,4 +207,5 @@ class NLPADBenchYelpReviewPolarity(NLP_ADBench):
 if __name__ == "__main__":
     dataset = NLP_ADBench.sms_spam()
     dataset._import_data()
+    combined_df = pd.concat([dataset.x_test, dataset.y_test], axis=1)
     print(dataset.x_train)
