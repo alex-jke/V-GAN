@@ -13,7 +13,8 @@ from text.Embedding.LLM.causal_llm import CausalLLM
 from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.LLM.llama import LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy
-from text.consts.columns import TYPE_COL, TRAIN_SIZE_COL, TEST_SIZE_COL, EMB_MODEL_COL, PROMPT_COL, RUN_COL
+from text.consts.columns import TYPE_COL, TRAIN_SIZE_COL, TEST_SIZE_COL, EMB_MODEL_COL, PROMPT_COL, RUN_COL, \
+    DTYPE_COLUMN, MAX_TOKEN_LENGTH
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import AggregatableDataset
 from text.dataset.emotions import EmotionDataset
@@ -42,7 +43,6 @@ class EmbeddingAggregationExperiment():
             model = LLama3B()
         train_size = self.train_size
         test_size = self.test_size
-        space: Optional[Space] = None
         if type == NTPE:
             space = WordSpace(strategy=UnificationStrategy.TRANSFORMER, model=model, test_size=test_size,
                                train_size=train_size)
@@ -76,6 +76,7 @@ class EmbeddingAggregationExperiment():
         prompt = dataset.prompt.full_prompt if type == NTPE else ""
         comparison_df[PROMPT_COL] = prompt
 
+
         print(comparison_df)
 
         return comparison_df
@@ -89,7 +90,7 @@ class EmbeddingAggregationExperiment():
         dataset = AGNews()
         self.run_comparison(dataset)
 
-    def run_all(self, output_path: Path, models: List[Type[CausalLLM]]):
+    def run_all(self, output_path: Path, models: List[Type[CausalLLM]], dtype: Optional = None):
         datasets = NLP_ADBench.get_all_datasets()
         datasets.sort(key=lambda d: d.average_length)
         datasets = [dataset for dataset in datasets if dataset.name != NLP_ADBench.sms_spam().name]
@@ -108,6 +109,7 @@ class EmbeddingAggregationExperiment():
             for model_cls in models:
                 #print(f"Running model {model_cls.__name__}")
                 model = model_cls()
+                model._dtype = dtype
                 for base in [LUNAR, LOF, ECOD]:
                     for type in [AVG,
                                  NTPE]:
@@ -124,17 +126,18 @@ class EmbeddingAggregationExperiment():
                                 prompt = dataset.prompt.full_prompt if type == NTPE else "no_prompt"
                                 if ((dataset.name, base.__name__, model.model_name, run, prompt, type)
                                         in zip(already_run, bases, emb_models, runs_list, prompts, types)):
-                                    print(f"Skipping dataset {dataset.name} with base {base.__name__} + run {run} + "
-                                          f"type {type}, already present in results.")
+                                    #print(f"Skipping dataset {dataset.name} with base {base.__name__} + run {run} + "f"type {type}, already present in results.")
                                     continue
                             try:
                                 print(f"Running dataset: {dataset.name}, base: {base.__name__}, model: {model.model_name}, run: {run}, type: {type}")
                                 result = self.run_comparison(dataset, base, model, type=type)
                                 result[RUN_COL] = run
+                                result[DTYPE_COLUMN] = dtype
+                                result[MAX_TOKEN_LENGTH] = model.max_token_length()
                                 result.to_csv(output_path, mode="a", header=not output_path.exists())
                             except Exception as e:
                                 print(f"An error occurred running {dataset.name} + {base.__name__}. Skipping. (error: {e}")
-                                #raise e
+                                raise e
                                 continue
                 #model.model.to("cpu")
                 #del model.model
@@ -173,14 +176,14 @@ if __name__ == "__main__":
 
     path = Path(os.path.dirname(__file__)) / "text" / "results" / "aggregation_test"
     path.mkdir(parents=True, exist_ok=True)
-    models = llms.get_causal_llms()[8:]
+    models = llms.get_causal_llms()[0:]
 
     csv_path = path / "results_small3.csv"
 
     exp.train_size = 1_000
     exp.test_size = 500
 
-    #exp.run_all(csv_path, models)
+    exp.run_all(csv_path, models, dtype=torch.float32)
     df = pd.read_csv(csv_path)
     output_path = path / "aggregated.csv"
     exp.create_results_csv(output_path, df)

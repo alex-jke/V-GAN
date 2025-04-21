@@ -1,3 +1,5 @@
+import logging
+import warnings
 from abc import ABC, abstractproperty, abstractmethod
 from typing import Optional
 
@@ -14,6 +16,10 @@ class CausalLLM(HuggingModel, ABC):
     It uses the Hugging Face Transformers library to load and use the model.
     It also provides methods for embedding sentences and tokenized inputs.
     """
+
+    def __init__(self, **params):
+        self._dtype = None
+        super().__init__(**params)
 
 
     @property
@@ -40,7 +46,7 @@ class CausalLLM(HuggingModel, ABC):
         return tokenizer
 
     def get_dtype(self) -> Optional:
-        return None
+        return self._dtype
 
     @property
     def _model(self):
@@ -66,6 +72,8 @@ class CausalLLM(HuggingModel, ABC):
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         mask = mask.unsqueeze(0) if mask is not None else None
         if mask is not None:
+            if mask.shape[0] > self.max_token_length():
+                raise ValueError(f"Mask of length {mask.shape[0]} is larger than max token input length of {self.max_token_length()}")
             input_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
             causal_mask = self._get_4d_causal_mask(mask)
             input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
@@ -74,6 +82,13 @@ class CausalLLM(HuggingModel, ABC):
             outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask, use_cache=False)
         else:
             with torch.no_grad():
+                if tokenized.shape[0] > self.max_token_length():
+                    if not self._token_length_warning_given:
+                        logging.warning(f"Input contains token sequences of length larger than the maximum length {self.max_token_length()}. "
+                                      f"Found: {tokenized.shape[0]}. This token tensor and further token tensors of length"
+                                      f"larger than {self.max_token_length()} will be trimmed. No further warnings will be given.")
+                        self._token_length_warning_given = True
+                    tokenized = tokenized[:self.max_token_length()]
                 outputs = self.model(input_ids=tokenized.int().unsqueeze(0), use_cache=False)
             outputs = outputs # Otherwise the line below complains about usage before assignment.
         embeddings = outputs[0]

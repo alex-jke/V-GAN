@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Callable, Optional
 
@@ -32,11 +33,11 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         pass
 
 
-    def __init__(self):
+    def __init__(self, max_token_length: int = 5120, debug: bool = True):
         super().__init__()
         self.device = torch.device('cuda' if torch.cuda.is_available(
         ) else 'mps' if torch.backends.mps.is_available() else 'cpu')
-        print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
+        #print(f"Using device: {self.device}, cuda: {torch.cuda.is_available()}, mps: {torch.backends.mps.is_available()}")
         self.__tokenizer = None
         self.__model: Optional[HuggingModel] = None
         #self.model = self._model
@@ -45,11 +46,14 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             #model = nn.DataParallel(model)
         #self.model = model.to(self.device)
         self.model_name = self._model_name
+        self._max_token_length = max_token_length
         self.__padding_token = None
         #self.padding_token = self._padding_token
         self.ui = cli.get()
         self.prefix_mask: Optional[Tensor] = None
         self.suffix_mask: Optional[Tensor] = None
+        self._token_length_warning_given = False
+        self.debug = debug
 
     @property
     def padding_token(self):
@@ -145,29 +149,56 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             word_embeddings = torch.concat((word_embeddings, word_embedding), dim=0)
         return word_embeddings
 
-    def _embed_words_full(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
-        #tokenized = [self.tokenize(word) for word in words]
+
+    def _tokenize_words(self, words: List[str], max_token_length: Optional[int] = None) -> List[Tensor]:
         tokenized = []
-        previous_words = []
+        #previous_words = []
+        previous_word: Optional[str] = None
         previous_length = 0
+        prefix = "I" # Add a prefix to the tokenization of the words, as sometimes the token changes, if at the front of a sequence.
+        prefix_tokens = self.tokenize(prefix)
+        prefix_length = prefix_tokens.shape[0]
+        current_length = 0
         for word in words:
             # Only the first word keeps the begin of input token.
-            previous_words.append(word)
-            current_sequence = " ".join(previous_words)
+
+            #previous_words.append(word)
+            current_sequence = " ".join([prefix, word]) if previous_word is not None else word
             tokens = self.tokenize(current_sequence)
-            if len(tokenized) == 0:
-                tokenized.append(tokens)
-            else:
-                current = tokens[previous_length:]
-                tokenized.append(current)
-            previous_length = tokens.shape[0]
-        #if mask is None:
-            #mask = torch.ones(len(words)).to(self.device)
-        #else:
-            #pass
+            if len(tokenized) != 0:
+                tokens = tokens[prefix_length:]
+
+            if max_token_length is not None and tokens.shape[0] + current_length > max_token_length:
+                logging.warning(f"Tried tokenizing sequence longer than maximum sequence length of "
+                                f"{self.max_token_length()}. The input will be trimmed.")
+                break
+            tokenized.append(tokens)
+            previous_word = word
+            current_length += tokens.shape[0]
+        if self.debug:
+            concat = torch.concat(tokenized, dim=0)
+            assert concat.equal(self.tokenize(" ".join(words))[:concat.shape[0]])
+        return tokenized
+
+
+    def _embed_words_full(self, words: List[str], mask: Optional[Tensor] = None, suffix: Optional[List[str]] = None) -> Tensor:
+        if suffix is not None:
+            tokenized_suffix = self._tokenize_words(words=suffix)
+            tokenized_suffix[0] = tokenized_suffix[0][1:] # Remove the beginning of sequence token.
+            suffix_length = sum([tokens.shape[0] for tokens in tokenized_suffix])
+            tokenized_sample = self._tokenize_words(words=words, max_token_length= self.max_token_length() - suffix_length)
+            tokenized = tokenized_sample + tokenized_suffix
+        else:
+            tokenized = self._tokenize_words(words=words, max_token_length=self.max_token_length())
+
         expanded_mask = self._convert_word_to_token_mask(tokenized, mask) if mask is not None else None
+        if expanded_mask is not None and expanded_mask.shape[0] > self.max_token_length():
+            raise ValueError(f"Passed a mask that is longer, than the maximum token length. {self.max_token_length()}.")
         #embeddings = self.embed(sentence, expanded_mask)
         tokenized_tensor = torch.concat(tokenized, dim=0).to(self.device).float()
+        if tokenized_tensor.shape[0] > self.max_token_length():
+            raise RuntimeError("Tokenized tensor is longer than max token length. This should not occur and signifies,"
+                               "that something is wrong with the truncation process before.")
         embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask)
         aggregated = self._aggregate_token_to_word_embedding(embeddings, tokenized)
 
@@ -197,7 +228,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         prefix_mask = self.get_prefix_mask()
         suffix_mask = self.get_suffix_mask()
         classification_added_mask = torch.concat((prefix_mask, mask, suffix_mask)) if mask is not None else None
-        masked = self._embed_words_full(classification_added_words, classification_added_mask)
+        masked = self._embed_words_full(self.prefix + words, classification_added_mask, suffix=self.suffix)
         last_entry = masked[-1]
         expanded = last_entry.unsqueeze(0)
         return expanded
@@ -272,11 +303,14 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             embeddings = torch.tensor([], dtype=torch.int).to(self.device)
             ui = cli.get()
             #with torch.no_grad():#, ui.display():
+            longest_sequence = data.shape[1]
+            print(f"Longest sequence is {longest_sequence} tokens.")
             with ui.display():
 
                 for (i, partial_review) in enumerate(data):
                     ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
+
                     embedded: Tensor = self.fully_embed_tokenized(partial_review).T #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension
                     unsqueezed = embedded.unsqueeze(1)
@@ -297,7 +331,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         return embedding
 
     def max_token_length(self) -> int:
-        return self.tokenizer.model_max_length
+        return min(self.tokenizer.model_max_length, self._max_token_length)
 
     def _get_4d_causal_mask(self, attention_mask: Tensor) -> Tensor:
         """
