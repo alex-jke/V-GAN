@@ -26,6 +26,7 @@ from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
+from text.outlier_detection.space_type import SpaceType
 
 not_initizalied_error_msg = "The train data has not been set. Have you called use_embedding or use_tokenized?"
 
@@ -63,6 +64,10 @@ class OutlierDetectionModel(ABC):
         self.space: Space = space
         self.device = self.space.model.device
         self.base_method: Type[BaseDetector] = base_method
+
+    @abstractmethod
+    def get_space_type(self) -> SpaceType:
+        pass
 
     @abstractmethod
     def _train(self):

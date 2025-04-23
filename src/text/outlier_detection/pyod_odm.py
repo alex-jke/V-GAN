@@ -17,6 +17,7 @@ from text.dataset.dataset import Dataset
 from text.outlier_detection.odm import OutlierDetectionModel
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
+from text.outlier_detection.space_type import SpaceType
 
 
 class PyODM(OutlierDetectionModel, ABC):
@@ -44,6 +45,9 @@ class PyODM(OutlierDetectionModel, ABC):
 class BasePyODM(PyODM, ABC):
     def __init__(self, dataset: Dataset, space: Space, use_cached = False, **params):
         super().__init__(dataset, space, self._get_model().__class__, use_cached, **params)
+
+    def get_space_type(self):
+        return SpaceType.FULL_SPACE
 
 #TODO: set the contamination parameter, as there is no contamination.
 class LOF(BasePyODM):
@@ -100,6 +104,9 @@ class FeatureBagging(PyODM):
 
     def _get_name(self):
         return f"FeatureBagging + {self.base_name} + {self.get_space()}"
+
+    def get_space_type(self) -> SpaceType:
+        return SpaceType.FEATURE_BAGGING
 
 detector_number = 0
 

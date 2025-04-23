@@ -14,7 +14,7 @@ from models.Generator import GeneratorSpectralSigmoidSTE, GeneratorSigmoidSTE, G
 from modules.text.vmmd_text import VMMDTextLightning
 from modules.text.vmmd_text_base import VMMDTextBase
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.LLM.llama import LLama1B, LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.dataset.dataset import Dataset, AggregatableDataset

@@ -137,7 +137,7 @@ class EmbeddingAggregationExperiment():
                                 result.to_csv(output_path, mode="a", header=not output_path.exists())
                             except Exception as e:
                                 print(f"An error occurred running {dataset.name} + {base.__name__}. Skipping. (error: {e}")
-                                raise e
+                                #raise e
                                 continue
                 #model.model.to("cpu")
                 #del model.model

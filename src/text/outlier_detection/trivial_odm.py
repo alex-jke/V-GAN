@@ -2,22 +2,25 @@ from random import random
 from typing import List
 
 from text.outlier_detection.odm import OutlierDetectionModel
+from text.outlier_detection.space_type import SpaceType
 
 
 class TrivialODM(OutlierDetectionModel):
 
-    def __init__(self,  guess_inlier_rate= 0.5, **kwargs):
-        self.guess_rate = guess_inlier_rate
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def _train(self):
         pass
 
     def _predict(self):
-        self.predictions = [1 if random() < self.guess_rate else 0 for _ in range(len(self.x_test))]
+        self.predictions = [random() for _ in range(len(self.x_test))]
 
     def _get_name(self):
-        return f"Trivial + {self.guess_rate}"
+        return f"Trivial"
 
     def _get_predictions(self) -> List[float]:
         return self.predictions
+
+    def get_space_type(self) -> SpaceType:
+        return SpaceType.RANDOM_GUESS

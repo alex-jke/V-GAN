@@ -3,7 +3,7 @@ from typing import Optional
 from pytorch_lightning import Callback, Trainer
 
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
-from text.Embedding.huggingmodel import HuggingModel
+from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
 from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.visualizer.collective_visualizer import CollectiveVisualizer

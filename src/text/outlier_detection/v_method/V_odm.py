@@ -15,6 +15,7 @@ from text.outlier_detection.ensemle_odm import EnsembleODM
 from text.outlier_detection.pyod_odm import TransformBaseDetector
 from text.outlier_detection.space.space import Space
 from text.outlier_detection.space.token_space import TokenSpace
+from text.outlier_detection.space_type import SpaceType
 from text.outlier_detection.v_method.numerical_v_adapter import NumericalVOdmAdapter
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.visualizer.od import od_subspace_visualizer
@@ -43,6 +44,9 @@ class V_ODM(EnsembleODM):
         self.subspace_distance_lambda = subspace_distance_lambda
         self.classifier_delta = classifier_delta
         super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_method=base_detector, **params)
+
+    def get_space_type(self) -> SpaceType:
+        return SpaceType.VGAN
 
     def _get_transformation_function(self) -> Callable[[ndarray], ndarray]:
         """

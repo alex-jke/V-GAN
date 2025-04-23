@@ -304,7 +304,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             ui = cli.get()
             #with torch.no_grad():#, ui.display():
             longest_sequence = data.shape[1]
-            print(f"Longest sequence is {longest_sequence} tokens.")
+            #print(f"Longest sequence is {longest_sequence} tokens.")
             with ui.display():
 
                 for (i, partial_review) in enumerate(data):

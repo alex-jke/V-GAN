@@ -165,14 +165,13 @@ class Experiment:
 
         # Trivial ODM models with different guess inlier rates.
         models.extend([
-            TrivialODM(**self.token_params, guess_inlier_rate=rate, base_method=base)
-            for rate in [0.0, 0.5, 1.0]
+            TrivialODM(**self.token_params, base_method=base)
             for base in bases
         ])
 
 
         # VGAN ODM models with both use_embedding False and True.
-        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]] if self.run_cachable else [self.token_params, self.emb_params]
+        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]] + ([] if self.run_cachable else [self.token_params])
         model_types = [lambda generator: VMMDAdapter(generator=generator)]#, VGANAdapter()]
         generators = [GeneratorSigmoidAnnealing, #GeneratorSoftmaxAnnealing,
                       GeneratorUpperSoftmax, #GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid,
@@ -403,7 +402,7 @@ if __name__ == '__main__':
     emb_model = LLama3B()
     for dataset in datasets:
         exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
-                            experiment_name="0.38_adbench", use_cached=True, runs=5, run_cachable=True)
+                            experiment_name="0.4", use_cached=True, runs=5, run_cachable=True)
         aggregated_path = exp.output_path.parent.parent # directory of the current version
         csv_path = aggregated_path / "aggregated.csv"
         results = exp.run()
