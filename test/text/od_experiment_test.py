@@ -16,7 +16,10 @@ from text.dataset.nlp_adbench import NLP_ADBench
 from text.od_experiment import Experiment
 from text.outlier_detection.pyod_odm import LUNAR, LOF, ECOD, FeatureBagging
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
+from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.v_method.V_odm import V_ODM
+from text.outlier_detection.word_based_v_method.text_v_odm import TextVOdm
+from text.outlier_detection.word_based_v_method.token_v_adapter import TokenVAdapter
 
 
 class ODExperimentTest(unittest.TestCase):
@@ -146,6 +149,18 @@ class ODExperimentTest(unittest.TestCase):
             ]
         exp = Experiment(dataset, model,  models=methods, runs=5, experiment_name="ranking5")
         exp.run()
+
+    def test_token_vmmd(self):
+        dataset = NLP_ADBench.sms_spam()
+        model = DeepSeek1B()
+        space = TokenSpace(model=model, train_size=1_00, test_size=100)
+        v_adapter= TokenVAdapter(dataset=dataset, space=space, inlier_label=0)
+        v_method = TextVOdm(dataset=dataset, space=space, v_adapter=v_adapter, inlier_label=0)
+        v_method.train()
+        v_method.predict()
+        result_df = v_method.evaluate()[0]
+        print(result_df.columns.to_list())
+        print(result_df.iloc[0].to_list())
 
 
 if __name__ == '__main__':

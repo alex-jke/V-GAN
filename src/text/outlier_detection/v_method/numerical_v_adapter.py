@@ -98,14 +98,8 @@ class NumericalVOdmAdapter(BaseVAdapter):
         """
         pass
 
-    @abstractmethod
-    def get_name(self) -> str:
-        """
-        Returns the name of the model.
-        """
-        pass
 
-    def get_subspaces(self, num_subspaces=50) -> ndarray:
+    def get_subspaces(self, num_subspaces=50) -> ndarray[float]:
         """
         Returns subspace_count operator samples from the random operator. This currently being axis parallel subspaces.
         """
@@ -116,7 +110,7 @@ class NumericalVOdmAdapter(BaseVAdapter):
 
         return self.subspaces
 
-    def get_subspace_probabilities(self, num_subspaces=50):
+    def get_probabilities(self, num_subspaces=50):
         """
         Returns the probabilities of the subspaces. This is used to determine the importance of the subspaces.
         """
@@ -133,7 +127,7 @@ class NumericalVOdmAdapter(BaseVAdapter):
         self.__assert_initialized()
         if self.output_path is not None and not self.loaded_model:
             self.output_path.mkdir(parents=True, exist_ok=True)
-            visualizer = CollectiveVisualizer(tokenized_data=self.data.x_test, tokenizer=self.space.model, vmmd_model=self.model,
+            visualizer = CollectiveVisualizer(tokenized_data=self.data.x_train, tokenizer=self.space.model, vmmd_model=self.model,
                                               export_path=str(self.output_path),
                                               text_visualization=isinstance(self.space, TokenSpace))
             visualizer.visualize(samples=30, epoch=self.model.epochs)

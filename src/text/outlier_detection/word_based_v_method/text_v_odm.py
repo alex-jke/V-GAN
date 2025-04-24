@@ -11,19 +11,23 @@ from text.Embedding.unification_strategy import StrategyInstance, UnificationStr
 from text.UI import cli
 from text.UI.cli import ConsoleUserInterface
 from text.dataset.dataset import Dataset, AggregatableDataset
+from text.outlier_detection.base_v_adapter import BaseVAdapter
 from text.outlier_detection.ensemle_odm import EnsembleODM
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
+from text.outlier_detection.space.token_space import TokenSpace
 from text.outlier_detection.space.word_space import WordSpace
+from text.outlier_detection.space_type import SpaceType
 from text.outlier_detection.word_based_v_method.text_v_adapter import TextVMMDAdapter
 
 
 class TextVOdm(EnsembleODM):
 
-    def __init__(self, dataset: AggregatableDataset, space: WordSpace, base_detector: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
+    def get_space_type(self) -> SpaceType:
+        return SpaceType.VGAN
+
+    def __init__(self, dataset: AggregatableDataset, space: WordSpace,  v_adapter: Optional[BaseVAdapter] = None, base_detector: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
                  output_path: Path | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0, aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create()):
-        if not isinstance(space, WordSpace):
-            raise ValueError("TextVOdm only works with WordSpace.")
         if aggregation_strategy.equals(UnificationStrategy.TRANSFORMER) and not isinstance(dataset, AggregatableDataset):
             raise ValueError("TextVOdm requires an aggregatable dataset, if transformer_aggregation is selected.")
         super().__init__(dataset=dataset, space=space, base_method=base_detector, inlier_label=inlier_label, use_cached=use_cached)
@@ -32,7 +36,9 @@ class TextVOdm(EnsembleODM):
         self.output_path = output_path
         output_path = output_path / "vmmd_text" if output_path is not None else None
         self.use_mmd = False
-        self.v_method = TextVMMDAdapter(dataset, self.space, output_path=output_path, aggregation_strategy=aggregation_strategy, use_mmd=self.use_mmd)
+        if v_adapter is None:
+            v_adapter = TextVMMDAdapter(dataset, self.space, output_path=output_path, aggregation_strategy=aggregation_strategy, use_mmd=self.use_mmd)
+        self.v_method = v_adapter
         self.amount_subspaces = 50
         self.detectors: List[BaseDetector] = []
         self.embedded_data: List[PreparedData] = []
@@ -58,8 +64,7 @@ class TextVOdm(EnsembleODM):
                 self.detectors.append(detector)
 
     def _train(self):
-        model = self.space.model
-        self.v_method.train(emdedding_model=model)
+        self.v_method.train()
         self._train_ensemble()
 
     @staticmethod
@@ -105,7 +110,7 @@ class TextVOdm(EnsembleODM):
         postfix_string = f"({classifier_delta_str}, {subspace_dist_str})" if subspace_dist_str or classifier_delta_str else ""
         agg_str = self.strategy.key()
         loss_str = "mmd" if self.use_mmd else "lse"
-        return "TextV + " + agg_str + " " + loss_str + " " + self.base_method.__name__ + " " + postfix_string
+        return self.v_method.get_name() + " + " + agg_str + " " + loss_str + " " + self.base_method.__name__ + " " + postfix_string
 
     def _get_predictions(self) -> List[float]:
         return self.predictions.tolist()

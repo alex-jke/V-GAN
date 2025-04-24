@@ -88,8 +88,9 @@ class Embedding(ABC):
                 if verbose:
                     ui.update(f"Embedding sentence {i + 1}/{sentences.shape[0]}")
                 sentence = sentences[i:i+1]
-                masks = masks[i:i+1] if masks is not None else None
-                embedding = self._get_sentence_embeddings(sentence, seperator, masks, strategy, dataset, False)
+                if masks is not None:
+                    mask = masks[i:i+1] if len(masks.shape) > 1 else masks
+                embedding = self._get_sentence_embeddings(sentence, seperator, mask, strategy, dataset, False)
                 embeddings.append(embedding)
         stacked = torch.stack(embeddings)
         assert stacked.shape[1] == 1

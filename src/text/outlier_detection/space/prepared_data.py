@@ -12,7 +12,7 @@ class PreparedData:
     This class is a simple container for the prepared data.
     """
     def __init__(self, x_train: Tensor, y_train: Tensor, x_test: Tensor,
-                 y_test: Tensor, space: str):
+                 y_test: Tensor, space: str, inlier_labels: list):
         """
         Initializes the PreparedData object. The x and y data are the training and testing data. If provided as tensors,
         they should be of shape (batch_size, dim_features) for x and (batch_size) for y.
@@ -23,12 +23,14 @@ class PreparedData:
         :param y_test: The test labels as a torch Tensor of shape (batch_size).
         :param space: The space in which the data is prepared.
             testing.
+        :param inlier_label: The label of the inliers.
         """
         self.x_train = x_train
         self.y_train = y_train
         self.x_test = x_test
         self.y_test = y_test
         self.space = space
+        self.inlier_labels = inlier_labels
         self._validate_data()
 
     def _validate_data(self):
