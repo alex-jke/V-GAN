@@ -25,12 +25,14 @@ class V_ODM(EnsembleODM):
 
     def __init__(self, dataset, space: Space, base_detector: Type[BaseDetector] = None, use_cached=False,
                  subspace_distance_lambda= 1.0, output_path: Path | None = None, classifier_delta = 1.0,
-                 odm_model: NumericalVOdmAdapter = VMMDAdapter(), **params):
+                 odm_model: Optional[NumericalVOdmAdapter] = None, **params):
 
         # The number of subspaces to sample from the random operator. Currently set to 50, as the runtime rises rapidly with more subspaces.
-        # This way, subspaces with an occurrence of less than 2% are expected to not contribute much. Since sampling is random, they might still do,
-        # but the probability is low.
+        # Since the subspaces are sorted by probability this means the 50 most likely subspaces are sampled
         self.num_subspaces = 50
+
+        if odm_model is None:
+            odm_model = VMMDAdapter()
 
         self.odm_model: NumericalVOdmAdapter = odm_model
         self.model = space.model

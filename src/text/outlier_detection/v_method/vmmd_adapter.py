@@ -20,7 +20,9 @@ class VMMDAdapter(NumericalVOdmAdapter):
                         weight_decay = 1e-3,
                         generator = GeneratorSigmoidAnnealing,
                         dataset_specific_params = True,
-                        max_batch_size = 3000):
+                        max_batch_size = 3000,
+                        export_generator: bool = False
+                 ):
         """
         The constructor for the VMMDAdapter class. It allows setting up the VMMD model.
         :param seed: random seed for the model to use.
@@ -32,6 +34,8 @@ class VMMDAdapter(NumericalVOdmAdapter):
         :param dataset_specific_params: whether to use dataset specification or not. For example, to recalculate the
             amount of epochs, as smaller datasets require more epochs.
         :param max_batch_size: maximum batch size to use.
+        :param export_generator: A bool whether to export the params of the generator. If set to true, the generator
+            will also be reused within the same experiment.
         """
         self.seed = seed
         self.epochs = epochs
@@ -41,6 +45,7 @@ class VMMDAdapter(NumericalVOdmAdapter):
         self.generator = generator
         self.dataset_specific_params = dataset_specific_params
         self.max_batch_size = max_batch_size
+        self.export_generator = export_generator
         super().__init__()
 
     def _init_model(self, data: PreparedData, space: Space) -> VMMD_od:
@@ -48,7 +53,7 @@ class VMMDAdapter(NumericalVOdmAdapter):
             self._update_params(data, space)
         model = VMMD_od(penalty_weight=self.penalty_weight, generator=self.generator,
                         lr=self.lr, epochs=self.epochs, seed=self.seed, path_to_directory=self.output_path,
-                        weight_decay=self.weight_decay, batch_size=self.max_batch_size)
+                        weight_decay=self.weight_decay, batch_size=self.max_batch_size, export_generator=self.export_generator)
 
 
         return model

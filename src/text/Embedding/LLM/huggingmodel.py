@@ -203,9 +203,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         aggregated = self._aggregate_token_to_word_embedding(embeddings, tokenized)
 
         # Mean the embeddings. Otherwise, setting an embedding to zero might change the meaning.
-        normed = torch.nn.functional.normalize(aggregated, dim=1)
-        meaned = normed.mean(dim=0)
-        aggregated = normed - meaned
+        meaned = aggregated - aggregated.mean(dim=0)
+        normed = torch.nn.functional.normalize(meaned, dim=1)
+        aggregated = normed
 
         # Apply the mask to the embeddings, so that the masked tokens are zeroed out
         masked = aggregated * mask.unsqueeze(1).expand_as(aggregated) if mask is not None else aggregated
@@ -324,9 +324,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                 #aggregated = self.aggregateEmbeddings(embeddings = embeddings)
             if batch_first:
                 transposed = embeddings.T
-                normed = torch.nn.functional.normalize(transposed, dim=1)
-                meaned = normed - normed.mean(dim=0)
-                return meaned
+                meaned = transposed - transposed.mean(dim=0)
+                normed = torch.nn.functional.normalize(meaned, dim=1)
+                return normed
             return embeddings
         return embedding
 

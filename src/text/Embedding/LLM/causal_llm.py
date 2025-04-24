@@ -89,9 +89,12 @@ class CausalLLM(HuggingModel, ABC):
                                       f"larger than {self.max_token_length()} will be trimmed. No further warnings will be given.")
                         self._token_length_warning_given = True
                     tokenized = tokenized[:self.max_token_length()]
-                outputs = self.model(input_ids=tokenized.int().unsqueeze(0), use_cache=False)
+                unsqueezed = tokenized.int().unsqueeze(0)
+                outputs = self.model(input_ids=unsqueezed, use_cache=False, output_hidden_states=True)
             outputs = outputs # Otherwise the line below complains about usage before assignment.
-        embeddings = outputs[0]
-        de_batched = embeddings[0]
-        return de_batched
+        embeddings = outputs.hidden_states
+        last_layer = embeddings[-1] #TODO: check if this is correct.
+        de_batched = last_layer[0]
+        normalized = torch.nn.functional.normalize(de_batched)
+        return normalized
 

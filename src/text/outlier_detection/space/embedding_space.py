@@ -46,9 +46,11 @@ class EmbeddingSpace(Space):
     def __prepare_embedding(self, tokenized: Tensor) -> Tensor:
         embedding_func = self.model.get_embedding_fun(batch_first=True)
         embedded = embedding_func(tokenized)
-        means = embedded.mean(1, keepdim=True)
-        stds = embedded.std(1, keepdim=True)
-        standardized = (embedded - means) / stds
-        normalized = torch.nn.functional.normalize(standardized, p=2, dim=1)
-        return normalized
+        #means = embedded.mean(1, keepdim=True)
+        #stds = embedded.std(1, keepdim=True)
+        #standardized = (embedded - means) / stds
+        #normalized = torch.nn.functional.normalize(standardized, p=2, dim=1)
+        #normalized = torch.nn.functional.normalize(embedded, p=2, dim=1)
+        #return normalized
+        return embedded
 
