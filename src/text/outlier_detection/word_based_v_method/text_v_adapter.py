@@ -21,32 +21,41 @@ class TextVMMDAdapter(BaseVAdapter):
     This class is designed to be used with the subclasses of VMMDTextLightningBase.
     It handles the training and visualization of the model.
     """
+
+    def get_name(self):
+        return "TextVMMD + " + self.generator.__name__
+
     def __init__(self,
                  dataset: AggregatableDataset,
                  space: Space,
+                 inlier_label,
                  output_path: Optional[Path] = None,
                  aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
-                 use_mmd: bool = False):
+                 use_mmd: bool = False,
+                 generator: Type[Generator_big]  = GeneratorSigmoidSTE):
         self.dataset = dataset
         self.space = space
         agg_str = aggregation_strategy.key()
         loss_str = ("mmd" if use_mmd else "lse")
-        self.output_path = output_path / agg_str / loss_str
+        self.output_path = output_path / "VMMD_Text" / agg_str / loss_str
         self.model: VMMDTextLightningBase | None = None
         self.subspaces: Optional[ndarray] = None
         self.proba: Optional[ndarray] = None
         self.use_mmd = use_mmd
         self.strategy = aggregation_strategy
+        self.emdedding_model: HuggingModel = space.model
+        self.inlier_label = inlier_label
+        self.generator = generator
 
     def _get_params(self):
         NotImplementedError("Change params based on use_mmd and transformer_aggregation")
 
-    def train(self, emdedding_model: HuggingModel):
+    def train(self):
         self._get_params()
         model_run = VMMDLightningTextExperiment(
-            emb_model=emdedding_model,
+            emb_model=self.emdedding_model,
             vmmd_model=VMMDTextLightning,
-            generator=GeneratorSigmoidSTE,
+            generator=self.generator,
             version="",
             dataset=self.dataset,
             samples=self.space.train_size,
@@ -60,6 +69,7 @@ class TextVMMDAdapter(BaseVAdapter):
             export=self.output_path is not None,
             aggregation_strategy=self.strategy,
             use_mmd=self.use_mmd,
+            labels = [self.inlier_label],
         )
         self.model = model_run.run()
 

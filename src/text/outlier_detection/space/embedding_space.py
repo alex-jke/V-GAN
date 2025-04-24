@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 from torch import Tensor
 
@@ -15,10 +17,24 @@ class EmbeddingSpace(Space):
     def name(self):
         return name
 
-    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label) -> PreparedData:
+    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[Tensor]) -> PreparedData:
         if use_cached:
-            return self._use_cached(dataset, inlier_label)
-        return self._create_data(dataset, inlier_label)
+            prepared_data = self._use_cached(dataset, inlier_label)
+        else:
+            prepared_data = self._create_data(dataset, inlier_label)
+        if mask is None:
+            return prepared_data
+
+        # Apply the mask to the data
+        mask = mask.to(prepared_data.x_train.device)
+        assert mask.dtype == torch.int, f"Mask should be of type int, but got {mask.dtype}"
+        assert len(mask.shape) == 1, f"Mask should be 1D, but got {mask.shape}"
+        bool_mask = mask == 1
+
+        prepared_data.x_train = prepared_data.x_train[: bool_mask]
+        prepared_data.x_test = prepared_data.x_test[: bool_mask]
+
+        return prepared_data
 
     def _use_cached(self, dataset: Dataset, inlier_label) -> PreparedData:
         dataset_embedder = DatasetEmbedder(dataset, self.model)
@@ -28,20 +44,23 @@ class EmbeddingSpace(Space):
 
         x_test, y_test = dataset_embedder.embed(train=False, samples=self.test_size)
 
-        return PreparedData(x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test, space=name)
+        return PreparedData(x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test, space=name, inlier_labels=[inlier_label])
 
     def _create_data(self, dataset: Dataset, inlier_label) -> PreparedData:
         # Get tokenized data and corresponding labels
         token_space = TokenSpace(self.model, self.train_size, self.test_size)
-        token_data = token_space.transform_dataset(dataset, use_cached=False, inlier_label=inlier_label)
+        #token_data = token_space.transform_dataset(dataset, use_cached=False, inlier_label=inlier_label)
 
-        x_train = self.__prepare_embedding(token_data.x_train)
-        x_test = self.__prepare_embedding(token_data.x_test)
+        x_train, y_train, x_test, y_test = token_space.get_tokenized(dataset, inlier_label)
+
+        x_train = token_space.embed_tokenized(x_train)
+        x_test = token_space.embed_tokenized(x_test)
         return PreparedData(x_train=x_train,
-                            y_train=token_data.y_train,
+                            y_train=y_train,
                             x_test=x_test,
-                            y_test=token_data.y_test,
-                            space=name)
+                            y_test=y_test,
+                            space=name,
+                            inlier_labels=[inlier_label])
 
     def __prepare_embedding(self, tokenized: Tensor) -> Tensor:
         embedding_func = self.model.get_embedding_fun(batch_first=True)

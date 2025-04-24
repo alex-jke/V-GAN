@@ -1,5 +1,6 @@
 from abc import ABC
-from typing import Tuple, Callable
+from lib2to3.btm_utils import token_labels
+from typing import Tuple, Callable, Optional
 
 import pandas as pd
 import torch
@@ -19,9 +20,10 @@ class TokenSpace(Space):
     def name(self):
         return "Token-space"
 
-    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label) -> PreparedData:
+    def get_tokenized(self, dataset: Dataset, inlier_label) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         _x_train, y_train = self._get_tokenized_with_labels(train=True, dataset=dataset, inlier_label=[inlier_label])
-        _x_test, y_test = self._get_tokenized_with_labels(train=False, dataset=dataset, inlier_label=dataset.get_possible_labels())
+        _x_test, y_test = self._get_tokenized_with_labels(train=False, dataset=dataset,
+                                                          inlier_label=dataset.get_possible_labels())
 
         train_length = _x_train.shape[1]
         test_length = _x_test.shape[1]
@@ -29,11 +31,44 @@ class TokenSpace(Space):
         pad_length = max(train_length, test_length)
 
         x_train = torch.nn.functional.pad(_x_train, (0, pad_length - train_length),
-                                                value=self.model.padding_token).int()
+                                          value=self.model.padding_token).int()
         x_test = torch.nn.functional.pad(_x_test, (0, pad_length - test_length),
-                                               value=self.model.padding_token).int()
+                                         value=self.model.padding_token).int()
 
-        return PreparedData(x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test, space=self.name)
+        return x_train, y_train, x_test, y_test
+
+    def embed_tokenized(self, tokenized) -> Tensor:
+        embeddings = []
+        assert len(tokenized.shape) == 2, f"Tokenized data should be 2D (batch, sequence length), but got {tokenized.shape}"
+        for i in range(tokenized.shape[0]):
+            sample = tokenized[i]
+            embedded_tokens = self.model.fully_embed_tokenized(sample)
+            embedding = embedded_tokens.mean(dim=0)
+            embeddings.append(embedding)
+        return torch.stack(embeddings)
+
+    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[Tensor]) -> PreparedData:
+
+        token_x_train, y_train, token_x_test, y_test = self.get_tokenized(dataset, inlier_label)
+
+        if mask is not None and len(mask.shape) != 1:
+            raise NotImplementedError("TokenSpace does not support masks with more than 1 dimension. Please use a mask of shape (sequence_length).")
+
+        if mask is not None:
+            token_x_train = token_x_train[:, :mask.shape[0]]
+            token_x_test = token_x_test[:, :mask.shape[0]]
+
+            assert mask.dtype == torch.int, f"Mask should be of type int, but got {mask.dtype}"
+
+            bool_mask = mask == 1
+
+            token_x_train = token_x_train[bool_mask]
+            token_x_test = token_x_test[bool_mask]
+
+        x_train = self.embed_tokenized(token_x_train)
+        x_test = self.embed_tokenized(token_x_test)
+
+        return PreparedData(x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test, space=self.name, inlier_labels=[inlier_label])
 
     def _get_tokenized_with_labels(self, train: bool, dataset: Dataset, inlier_label: list) -> Tuple[Tensor, Tensor]:
         """

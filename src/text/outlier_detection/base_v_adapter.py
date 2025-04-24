@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Tuple
 
@@ -6,12 +6,21 @@ from numpy import ndarray
 
 from modules.od_module import ODModule, VMMD_od, VGAN_od
 from modules.text.vmmd_text import VMMDTextLightning
+from text.Embedding.LLM.huggingmodel import HuggingModel
 
 
 class BaseVAdapter(ABC):
     """
     Base class for all V_ODM adapters. This class is the base of all v method based adapters.
     """
+
+    @abstractmethod
+    def get_name(self):
+        """
+        Returns the name of the adapter.
+        """
+        pass
+
     @staticmethod
     def _get_top_subspaces(model: ODModule, num_subspaces: int) -> Tuple[ndarray[float], ndarray[float]]:
         """
@@ -45,3 +54,15 @@ class BaseVAdapter(ABC):
             model.load_models(generator_path, ndims=features)
             #print(f"Loaded model {model.__class__.__name__} from {generator_path}")
             self.loaded_model = True
+
+    @abstractmethod
+    def train(self):
+        pass
+
+    @abstractmethod
+    def get_subspaces(self, num_subspaces: int = 50) -> ndarray[float]:
+        pass
+
+    @abstractmethod
+    def get_probabilities(self, num_subspaces: int = 50) -> ndarray[float]:
+        pass

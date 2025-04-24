@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Optional
+
+from torch import Tensor
 
 from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.dataset.dataset import Dataset
@@ -22,7 +25,7 @@ class Space(ABC):
         self.test_size = test_size
 
     @abstractmethod
-    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label) -> PreparedData:
+    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[Tensor]) -> PreparedData:
         """
         Prepares the data for the outlier detection model.
         :param dataset: The dataset to prepare the data from.
@@ -31,7 +34,11 @@ class Space(ABC):
             cached files will be created.
             If False, the data will be created from scratch and not cached.
         :param inlier_label: The label of the inliers.
+        :param mask: The mask to apply to the data. That is, the projection
+        into a subspace.
         :return: The PreparedData object that contains the training and
+         testing data, projected in this space and then transformed into
+         the embedding space.
         testing data.
         """
         pass

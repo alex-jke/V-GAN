@@ -50,7 +50,7 @@ class WordSpace(Space):
         y_test_tensor = Tensor(y_test_int.tolist()).int().to(self.model.device)
 
         prepared_data = PreparedData(x_train=embedded_train, y_train=y_train_tensor, x_test=embedded_test, y_test=y_test_tensor,
-                            space=self.name)
+                            space=self.name, inlier_labels=[inlier_label])
         if masks is None and use_cached:
             self.cache[id] = prepared_data
 

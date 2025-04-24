@@ -48,7 +48,8 @@ class VMMDLightningTextExperiment:
                  sequence_length: Optional[int] = None,
                  aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  train_flag: bool = True,
-                 use_mmd: bool = False):
+                 use_mmd: bool = False,
+                 labels: Optional[list] = None):
         self.emb_model = emb_model
         self.generator = generator
         self.version = version
@@ -69,6 +70,7 @@ class VMMDLightningTextExperiment:
         self.export = export
         self.loaded_model = False
         self.use_mmd = use_mmd
+        self.labels = labels
         if self.export_path is None and export:
             self.export_path = self.build_export_path()
 
@@ -119,7 +121,7 @@ class VMMDLightningTextExperiment:
         """
         # Prepare training data using a DatasetPreparer.
         preparer = DatasetPreparer(self.dataset, max_samples=self.samples)
-        _x_train = preparer.get_training_data()
+        _x_train = preparer.get_training_data(labels=self.labels)
 
         # Get the average sentence length from the dataset.
         if self.sequence_length is None:
@@ -193,7 +195,7 @@ class VMMDLightningTextExperiment:
             print("Model loaded successfully.")
             return model
 
-        x_train = model.get_training_data(_x_train, embedding_fun, _x_train)
+        x_train = model.get_training_data(_x_train, embedding_fun, None)
 
         data_loader = DataLoader(x_train, batch_size=self.batch_size, drop_last=True, pin_memory=True,
             shuffle=True, num_workers=10, persistent_workers=True)

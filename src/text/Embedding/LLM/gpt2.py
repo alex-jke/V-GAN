@@ -129,12 +129,15 @@ class GPT2(HuggingModel):
 
 if __name__ == '__main__':
     gpt2 = GPT2()
-    text = "Hello, world! This is a test."
-    print("Original:", text)
+    #text = "I feel sad and"
+    text= "I Token token"
 
-    words = gpt2.embed_words(text.split(" "))
-    sentence = gpt2.embed(text)
-    print(words.equal(sentence))
+    tokenized = gpt2.tokenize(text)
+    print("Tokenized:", tokenized)
+
+    #words = gpt2.embed_words(text.split(" "))
+    #sentence = gpt2.embed(text)
+    #print(words.equal(sentence))
     #tokenized = gpt2.tokenize(text)
     #print("Tokenized:", tokenized)
 

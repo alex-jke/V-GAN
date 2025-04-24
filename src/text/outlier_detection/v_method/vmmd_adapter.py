@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from models.Generator import GeneratorSigmoidSTE, GeneratorSigmoidAnnealing
+from numpy import ndarray
+
+from models.Generator import GeneratorSigmoidSTE, GeneratorSigmoidAnnealing, GeneratorUpperSoftmax
 from modules.od_module import VMMD_od, VGAN_od
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
@@ -18,8 +20,8 @@ class VMMDAdapter(NumericalVOdmAdapter):
                         lr = 3e-4,
                         penalty_weight = 0.01,
                         weight_decay = 1e-3,
-                        generator = GeneratorSigmoidAnnealing,
-                        dataset_specific_params = True,
+                        generator = GeneratorUpperSoftmax,
+                        dataset_specific_params = False,
                         max_batch_size = 3000,
                         export_generator: bool = False
                  ):

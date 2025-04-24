@@ -33,7 +33,6 @@ class V_ODM(EnsembleODM):
 
         if odm_model is None:
             odm_model = VMMDAdapter()
-
         self.odm_model: NumericalVOdmAdapter = odm_model
         self.model = space.model
         if base_detector is None:
@@ -134,7 +133,7 @@ class V_ODM(EnsembleODM):
         decision_function_scores_ens = self.ensemble_model.decision_function(
             test.cpu())
         agg_dec_fun = self.aggregator_funct(
-            decision_function_scores_ens, weights=self.odm_model.get_subspace_probabilities(), type="avg")
+            decision_function_scores_ens, weights=self.odm_model.get_probabilities(), type="avg")
         return agg_dec_fun
 
     def _get_distances(self) -> Tensor:
@@ -158,7 +157,7 @@ class V_ODM(EnsembleODM):
 
         self.predictions = self.classifier_delta * agg_dec_fun + dist_tensor.cpu().numpy()
 
-        od_subspace_visualizer.plot_subspaces(self.odm_model.get_subspaces(), self.odm_model.get_subspace_probabilities(),
+        od_subspace_visualizer.plot_subspaces(self.odm_model.get_subspaces(), self.odm_model.get_probabilities(),
                                               self.base_output_path /  "subspaces_used" / f"{self._get_name()}")
 
     def _get_name(self):
