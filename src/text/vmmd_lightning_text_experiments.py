@@ -49,7 +49,8 @@ class VMMDLightningTextExperiment:
                  aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  train_flag: bool = True,
                  use_mmd: bool = False,
-                 labels: Optional[list] = None):
+                 labels: Optional[list] = None,
+                 apply_gradient_clipping = True):
         self.emb_model = emb_model
         self.generator = generator
         self.version = version
@@ -71,6 +72,7 @@ class VMMDLightningTextExperiment:
         self.loaded_model = False
         self.use_mmd = use_mmd
         self.labels = labels
+        self.apply_gradient_clipping = apply_gradient_clipping
         if self.export_path is None and export:
             self.export_path = self.build_export_path()
 
@@ -159,9 +161,9 @@ class VMMDLightningTextExperiment:
             ckpt_path_list = list(ckpt_path_dir.glob("*.ckpt"))
             ckpt_path = ckpt_path_list[-1] if len(ckpt_path_list) > 0 else None
             if ckpt_path is None:
-                raise FileNotFoundError(f"Checkpoint not found in {ckpt_path_dir}.")
-                #print("No checkpoint found. This is unexpected behavior. If the model path exists a ckpt file should also exist.")
-                #return model
+                #raise FileNotFoundError(f"Checkpoint not found in {ckpt_path_dir}.")
+                print("No checkpoint found. This is unexpected behavior. If the model path exists a ckpt file should also exist.")
+                return model
             model = VMMDTextLightning.load_from_checkpoint(checkpoint_path=ckpt_path)
 
             # The embedding function is not saved in the checkpoint, so it needs to be set it again.
@@ -197,42 +199,50 @@ class VMMDLightningTextExperiment:
 
         x_train = model.get_training_data(_x_train, embedding_fun, None)
 
-        data_loader = DataLoader(x_train, batch_size=self.batch_size, drop_last=True, pin_memory=True,
-            shuffle=True, num_workers=10, persistent_workers=True)
+        data_loader = DataLoader(np.array(x_train), batch_size=self.batch_size,
+                                 #drop_last=True, pin_memory=True, shuffle=True, num_workers=10, persistent_workers=True
+                                 )
 
-        # Set up the visualization callback.
-        vis_cb = VisualizationCallback(
-            emb_model=self.emb_model,
-            export_path=str(self.export_path),
-            dataset=self.dataset,
-            yield_epochs=self.yield_epochs,
-            samples=30
-        )
+        loggers = []
+        callbacks = []
+        if self.export:
+            # Set up the visualization callback.
+            vis_cb = VisualizationCallback(
+                emb_model=self.emb_model,
+                export_path=str(self.export_path),
+                dataset=self.dataset,
+                yield_epochs=self.yield_epochs,
+                samples=30
+            )
 
-        tensorboard_logger = TensorBoardLogger(
-            save_dir=self.export_path,
-            name="tensorboard_logs"
-        )
-        print("TensorBoard Logs at: ", self.export_path  / "tensorboard_logs")
+            tensorboard_logger = TensorBoardLogger(
+                save_dir=self.export_path,
+                name="tensorboard_logs"
+            )
+            print("TensorBoard Logs at: ", self.export_path  / "tensorboard_logs")
 
-        csv_logger = CSVLogger(
-            save_dir=self.export_path,
-            name="lightning_logs",
-            version=0
-        )
-
-        loggers = [tensorboard_logger, csv_logger] if self.export else []
+            csv_logger = CSVLogger(
+                save_dir=self.export_path,
+                name="lightning_logs",
+                version=0
+            )
+            loggers = [tensorboard_logger, csv_logger]
+            callbacks = [vis_cb]
 
         trainer = Trainer(
             max_epochs=self.epochs,
-            callbacks=[vis_cb],
+            callbacks=callbacks,
             default_root_dir=self.export_path,
             log_every_n_steps=1, # Log every step, as the visualizer loads the csv file created by the logger.
             accelerator="gpu",
             logger=loggers,
+            gradient_clip_val=0.5 if self.apply_gradient_clipping else 0
         )
         # Start training.
         trainer.fit(model, train_dataloaders=data_loader)
+
+        if self.export:
+            self.visualize(epoch=epochs, model=model, sentences=np.array(x_train))
         return model
 
 

@@ -31,8 +31,8 @@ class EmbeddingSpace(Space):
         assert len(mask.shape) == 1, f"Mask should be 1D, but got {mask.shape}"
         bool_mask = mask == 1
 
-        prepared_data.x_train = prepared_data.x_train[: bool_mask]
-        prepared_data.x_test = prepared_data.x_test[: bool_mask]
+        prepared_data.x_train = prepared_data.x_train[:, bool_mask]
+        prepared_data.x_test = prepared_data.x_test[:, bool_mask]
 
         return prepared_data
 

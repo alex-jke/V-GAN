@@ -17,12 +17,12 @@ class WordSpace(Space):
         super().__init__(**params)
         self.cache: Dict[str, PreparedData] = {}
 
-    def transform_dataset(self, dataset: AggregatableDataset, use_cached: bool, inlier_label, masks: Optional[Tensor] = None) -> PreparedData:
+    def transform_dataset(self, dataset: AggregatableDataset, use_cached: bool, inlier_label, mask: Optional[ndarray] = None) -> PreparedData:
         if self.strategy == UnificationStrategy.TRANSFORMER and not isinstance(dataset, AggregatableDataset):
             raise ValueError("WordSpace with transformer_aggregation set to True only works with AggregatableDataset.")
 
         id = dataset.name + str(use_cached) + str(inlier_label)
-        if masks is None and use_cached and id in self.cache:
+        if mask is None and use_cached and id in self.cache:
             return self.cache[id]
 
         preparer = DatasetPreparer(dataset, self.train_size)
@@ -35,8 +35,8 @@ class WordSpace(Space):
         # can expect the same input shape.
         avg_length = preparer.get_average_sentence_length(x_train)
         strategy_instance = self.strategy.create(avg_length)
-        embedded_train_with_word_dim = self.model.embed_sentences(x_train, dataset=dataset, strategy=strategy_instance, verbose=True, masks=masks)
-        embedded_test_with_word_dim = self.model.embed_sentences(x_test, dataset=dataset, strategy=strategy_instance, verbose=True, masks=masks)
+        embedded_train_with_word_dim = self.model.embed_sentences(x_train, dataset=dataset, strategy=strategy_instance, verbose=True, masks=mask)
+        embedded_test_with_word_dim = self.model.embed_sentences(x_test, dataset=dataset, strategy=strategy_instance, verbose=True, masks=mask)
 
         if self.strategy == UnificationStrategy.TRANSFORMER or self.strategy == UnificationStrategy.MEAN:
             assert embedded_train_with_word_dim.shape[1] == 1, f"expected shape (_, 1, _), got {embedded_train_with_word_dim.shape}"
@@ -51,7 +51,7 @@ class WordSpace(Space):
 
         prepared_data = PreparedData(x_train=embedded_train, y_train=y_train_tensor, x_test=embedded_test, y_test=y_test_tensor,
                             space=self.name, inlier_labels=[inlier_label])
-        if masks is None and use_cached:
+        if mask is None and use_cached:
             self.cache[id] = prepared_data
 
         return prepared_data

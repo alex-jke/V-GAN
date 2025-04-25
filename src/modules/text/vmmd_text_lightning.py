@@ -30,12 +30,29 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         self.strategy = strategy
         # Create generator network using base class method.
         self.generator = self.get_the_networks(self.n_dims, self._latent_size)
+        self.add_nan_hook()
         # Create loss function.
-        kernel = MixtureRQLinear()#RBFConstrained()
+        #kernel = MixtureRQLinear()#
+        kernel = RBFConstrained()
         self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel) if use_mmd else MSELoss(weight=self.hparams.get("weight", 1.0))
+
+    def add_nan_hook(self):
+        torch.autograd.set_detect_anomaly(True)
+        def nan_hook(module, inp, out):
+            if torch.isnan(out).any():
+                raise RuntimeError(f"NaNs in {module!r}")
+
+
+        for m in self.generator.modules():
+            m.register_forward_hook(nan_hook)
 
     def on_before_optimizer_step(self, optimizer):
         # Compute the 2-norm for each layer
+        for n, p in self.generator.named_parameters():
+            if p.grad is not None and (torch.isnan(p.grad).any() or torch.isinf(p.grad).any()):
+                p.grad.data = torch.nan_to_num(p.grad.data, nan=0.0, posinf=1e3, neginf=-1e3)
+                print(f"NaN or Infs in gradient of {n} of generator")
+
         norms = grad_norm(self.generator, norm_type=2)
         avg_norm = 0
         for _, norm in norms.items():
@@ -49,9 +66,10 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         self.log_dict(norms)
 
     def on_after_backward(self):
-        for name, param in self.named_parameters():
-            self.logger.experiment.add_histogram(f"gradients/{name}", param.grad, self.global_step)
-            self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
+        pass
+        #for name, param in self.named_parameters():
+            #self.logger.experiment.add_histogram(f"gradients/{name}", param.grad, self.global_step)
+            #self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
 
     def training_step(self, batch, batch_idx):
         # Assume batch is a numpy array of sentences or similar.
@@ -59,6 +77,8 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         noise_tensor = self._get_noise_tensor(self._latent_size)
         noise_tensor.normal_()  # Sample noise
         subspaces = self.generator(noise_tensor)
+        if subspaces is None or torch.isnan(subspaces).any():
+            raise RuntimeError("Generator produced Nan values.")
 
         # Convert the batch to embeddings.
         embeddings = self._convert_batch(batch, self.embedding, None)

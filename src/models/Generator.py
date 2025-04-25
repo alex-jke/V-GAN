@@ -89,12 +89,12 @@ class ValueExtractor(nn.Module):
 
 class Generator_big(nn.Module):
     def __init__(self, latent_size, img_size, activation_function: nn.Module=upper_softmax()):
+        super(Generator_big, self).__init__()
         rel_size = int(img_size/latent_size)
         self.latent_size = latent_size
         self.img_size = img_size
         amount_layers = 4
         self.increase = log(rel_size, amount_layers).real
-        super(Generator_big, self).__init__()
         self.final_activation_function = activation_function
         self.avg_mask = ValueExtractor()
 
@@ -121,7 +121,11 @@ class Generator_big(nn.Module):
         return last_layer if last else layer
 
     def forward(self, input):
-        return self.main(input)
+        with torch.autograd.detect_anomaly(check_nan=True):
+            output = self.main(input)
+            if torch.isnan(output).any():
+                raise RuntimeError("Generator produced NaN values.")
+            return output
 
 class GeneratorUpperSoftmax(Generator_big):
     def __init__(self, latent_size, img_size):
@@ -177,7 +181,11 @@ class GeneratorSigmoidSTE(GeneratorSigmoid):
 
     def forward(self, input):
         x = super().forward(input)
-        return self.binarize(x)
+        binarized = self.binarize(x)
+        if torch.isnan(binarized).any():
+            x = super().forward(input)
+            raise RuntimeError("SigmoidSTE generator produced NaN values.")
+        return binarized
 
 class GeneratorSpectralSigmoidSTE(GeneratorSigmoidSTE):
     def get_layer(self, layer_num: int, last=False):

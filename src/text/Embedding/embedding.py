@@ -83,11 +83,13 @@ class Embedding(ABC):
 
         # This is done, as this avoids a memory leak, when embedding all of them at once. TODO: why is this happening?
         embeddings = []
+        amount_sentences = len(sentences)
         with ui.display():
-            for i in range(sentences.shape[0]):
+            for i in range(amount_sentences):
                 if verbose:
-                    ui.update(f"Embedding sentence {i + 1}/{sentences.shape[0]}")
+                    ui.update(f"Embedding sentence {i + 1}/{amount_sentences}")
                 sentence = sentences[i:i+1]
+                mask = masks
                 if masks is not None:
                     mask = masks[i:i+1] if len(masks.shape) > 1 else masks
                 embedding = self._get_sentence_embeddings(sentence, seperator, mask, strategy, dataset, False)
@@ -116,9 +118,9 @@ class Embedding(ABC):
 
         embeddings = []
         with ui.display():
-            for i in range(sentences.shape[0]):
-                if verbose:
-                    ui.update(f"Embedding sentence {i + 1}/{sentences.shape[0]}")
+            for i in range(len(sentences)):
+                #if verbose:
+                    #ui.update(f"Embedding sentence {i + 1}/{sentences.shape[0]}")
                 sentence = sentences[i:i+1]
                 embedded = self.loop_body(sentence, i, seperator, masks, padding_length, padding_strategy, strategy)
                 embeddings.append(embedded)

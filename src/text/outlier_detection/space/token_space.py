@@ -1,9 +1,10 @@
 from abc import ABC
-from lib2to3.btm_utils import token_labels
 from typing import Tuple, Callable, Optional
 
+import numpy
 import pandas as pd
 import torch
+from numpy import ndarray
 from torch import Tensor
 
 from text.dataset.dataset import Dataset
@@ -47,7 +48,7 @@ class TokenSpace(Space):
             embeddings.append(embedding)
         return torch.stack(embeddings)
 
-    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[Tensor]) -> PreparedData:
+    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[ndarray]) -> PreparedData:
 
         token_x_train, y_train, token_x_test, y_test = self.get_tokenized(dataset, inlier_label)
 
@@ -58,12 +59,12 @@ class TokenSpace(Space):
             token_x_train = token_x_train[:, :mask.shape[0]]
             token_x_test = token_x_test[:, :mask.shape[0]]
 
-            assert mask.dtype == torch.int, f"Mask should be of type int, but got {mask.dtype}"
+            assert mask.dtype == numpy.int64, f"Mask should be of type int, but got {mask.dtype}"
 
-            bool_mask = mask == 1
+            bool_mask = (mask == 1)
 
-            token_x_train = token_x_train[bool_mask]
-            token_x_test = token_x_test[bool_mask]
+            token_x_train = token_x_train[:,bool_mask]
+            token_x_test = token_x_test[:,bool_mask]
 
         x_train = self.embed_tokenized(token_x_train)
         x_test = self.embed_tokenized(token_x_test)

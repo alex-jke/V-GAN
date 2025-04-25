@@ -148,7 +148,7 @@ class Experiment:
             ECOD(**self.emb_params)
         ])
 
-        if not self.run_cachable and False:
+        if not self.run_cachable:
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
             models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
                            for base in bases
@@ -162,6 +162,12 @@ class Experiment:
                             for base in bases
                             for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
 
+            # VMMD Text ODM with subspace distance and ensemble outlier detection.
+            for base in bases:
+                models.extend([TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path),
+                               TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0),
+                               TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, classifier_delta=0.0)
+                               ])
 
         # Trivial ODM models with different guess inlier rates.
         models.extend([
@@ -171,7 +177,7 @@ class Experiment:
 
 
         # VGAN ODM models with both use_embedding False and True.
-        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]] + ([] if self.run_cachable else [self.token_params])
+        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]]
         model_types = [lambda generator: VMMDAdapter(generator=generator, export_generator=self.use_cached)]#, VGANAdapter()]
         generators = [#GeneratorSigmoidAnnealing, #GeneratorSoftmaxAnnealing,
                       GeneratorUpperSoftmax,
@@ -193,9 +199,9 @@ class Experiment:
         )
 
         # VGAN ODM on the token space only using the ensemble method.
-        if not self.run_cachable:
-            models.extend([EnsembleV_ODM(**self.token_params, base_detector=base,
-                                         output_path=self.output_path) for base in bases])
+        #if not self.run_cachable:
+        #    models.extend([EnsembleV_ODM(**self.token_params, base_detector=base,
+        #                                 output_path=self.output_path) for base in bases])
 
 
         # VGAN ODM with only ensemble outlier detection.
@@ -402,8 +408,8 @@ if __name__ == '__main__':
     datasets.sort(key=lambda d: d.average_length)
     emb_model = LLama3B()
     for dataset in datasets:
-        exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
-                            experiment_name="0.41", use_cached=True, runs=5, run_cachable=True)
+        exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
+                            experiment_name="0.42", use_cached=True, runs=5, run_cachable=False)
         aggregated_path = exp.output_path.parent.parent # directory of the current version
         csv_path = aggregated_path / "aggregated.csv"
         results = exp.run()

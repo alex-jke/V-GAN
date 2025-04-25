@@ -17,8 +17,8 @@ class CausalLLM(HuggingModel, ABC):
     It also provides methods for embedding sentences and tokenized inputs.
     """
 
-    def __init__(self, **params):
-        self._dtype = None
+    def __init__(self, dtype = None, **params):
+        self._dtype = dtype
         super().__init__(**params)
 
 
@@ -74,12 +74,15 @@ class CausalLLM(HuggingModel, ABC):
         if mask is not None:
             if mask.shape[0] > self.max_token_length():
                 raise ValueError(f"Mask of length {mask.shape[0]} is larger than max token input length of {self.max_token_length()}")
-            input_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
-            causal_mask = self._get_4d_causal_mask(mask)
-            input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
-            torch.backends.cuda.enable_mem_efficient_sdp(False)
-            torch.backends.cuda.enable_flash_sdp(False)
-            outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask, use_cache=False)
+            #input_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
+            #causal_mask = self._get_4d_causal_mask(mask)
+            #input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
+            #torch.backends.cuda.enable_mem_efficient_sdp(False)
+            #torch.backends.cuda.enable_flash_sdp(False)
+            #outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask, use_cache=False,
+                                 #output_hidden_states=True)
+            with torch.no_grad():
+                outputs = self.model(input_ids=tokenized.int().unsqueeze(0), attention_mask=mask, output_hidden_states=True, use_cache=False)
         else:
             with torch.no_grad():
                 if tokenized.shape[0] > self.max_token_length():
@@ -93,6 +96,9 @@ class CausalLLM(HuggingModel, ABC):
                 outputs = self.model(input_ids=unsqueezed, use_cache=False, output_hidden_states=True)
             outputs = outputs # Otherwise the line below complains about usage before assignment.
         embeddings = outputs.hidden_states
+        if embeddings is None:
+            raise RuntimeError(f"Model returned NoneType. This should not happen and means, that something is not"
+                               f"behaving as expected.")
         last_layer = embeddings[-1] #TODO: check if this is correct.
         de_batched = last_layer[0]
         normalized = torch.nn.functional.normalize(de_batched)

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from numpy import ndarray
 from torch import Tensor
 
 from text.Embedding.LLM.huggingmodel import HuggingModel
@@ -25,7 +26,7 @@ class Space(ABC):
         self.test_size = test_size
 
     @abstractmethod
-    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[Tensor]) -> PreparedData:
+    def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[ndarray[float]]) -> PreparedData:
         """
         Prepares the data for the outlier detection model.
         :param dataset: The dataset to prepare the data from.

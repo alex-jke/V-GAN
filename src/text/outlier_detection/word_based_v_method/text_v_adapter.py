@@ -37,7 +37,7 @@ class TextVMMDAdapter(BaseVAdapter):
         self.space = space
         agg_str = aggregation_strategy.key()
         loss_str = ("mmd" if use_mmd else "lse")
-        self.output_path = output_path / "VMMD_Text" / agg_str / loss_str
+        self.output_path = output_path / "VMMD_Text" / agg_str / loss_str if output_path is not None else None
         self.model: VMMDTextLightningBase | None = None
         self.subspaces: Optional[ndarray] = None
         self.proba: Optional[ndarray] = None
@@ -52,6 +52,7 @@ class TextVMMDAdapter(BaseVAdapter):
 
     def train(self):
         self._get_params()
+        epochs = 25
         model_run = VMMDLightningTextExperiment(
             emb_model=self.emdedding_model,
             vmmd_model=VMMDTextLightning,
@@ -60,11 +61,11 @@ class TextVMMDAdapter(BaseVAdapter):
             dataset=self.dataset,
             samples=self.space.train_size,
             yield_epochs=10,
-            lr=1e-2,
-            weight_decay=0.04,
+            lr=1e-3,
+            weight_decay=1e-5,
             penalty_weight=1.0,
             batch_size=10,
-            epochs=25,
+            epochs=epochs,
             export_path=self.output_path,
             export=self.output_path is not None,
             aggregation_strategy=self.strategy,
@@ -72,6 +73,7 @@ class TextVMMDAdapter(BaseVAdapter):
             labels = [self.inlier_label],
         )
         self.model = model_run.run()
+        #model_run.visualize(epoch=epochs, model=self.model, sentences=self.model)
 
     def get_subspaces(self, num_subspaces: int = 50) -> ndarray[float]:
         if self.model is None:

@@ -2,12 +2,15 @@ import os
 import unittest
 from typing import List
 
+import torch
 from pyod.models.lof import LOF as pyodLOF
 from pyod.models.lunar import LUNAR as pyodLUNAR
 
 from text.Embedding.LLM.bert import Bert
 from text.Embedding.LLM.deepseek import DeepSeek1B, DeepSeek7B
 from text.Embedding.LLM.gpt2 import GPT2
+from text.Embedding.LLM.llama import LLama3B
+from text.Embedding.unification_strategy import UnificationStrategy
 from text.dataset.ag_news import AGNews
 from text.dataset.dataset import Dataset
 from text.dataset.emotions import EmotionDataset
@@ -17,7 +20,10 @@ from text.od_experiment import Experiment
 from text.outlier_detection.pyod_odm import LUNAR, LOF, ECOD, FeatureBagging
 from text.outlier_detection.space.embedding_space import EmbeddingSpace
 from text.outlier_detection.space.token_space import TokenSpace
+from text.outlier_detection.space.word_space import WordSpace
 from text.outlier_detection.v_method.V_odm import V_ODM
+from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
+from text.outlier_detection.word_based_v_method.text_v_adapter import TextVMMDAdapter
 from text.outlier_detection.word_based_v_method.text_v_odm import TextVOdm
 from text.outlier_detection.word_based_v_method.token_v_adapter import TokenVAdapter
 
@@ -155,6 +161,20 @@ class ODExperimentTest(unittest.TestCase):
         model = DeepSeek1B()
         space = TokenSpace(model=model, train_size=1_00, test_size=100)
         v_adapter= TokenVAdapter(dataset=dataset, space=space, inlier_label=0)
+        #space = EmbeddingSpace(model=model, train_size=100, test_size=100)
+        #v_adapter = VMMDAdapter()
+        v_method = TextVOdm(dataset=dataset, space=space, v_adapter=v_adapter, inlier_label=0)
+        v_method.train()
+        v_method.predict()
+        result_df = v_method.evaluate()[0]
+        print(result_df.columns.to_list())
+        print(result_df.iloc[0].to_list())
+
+    def test_vmmd_text(self):
+        dataset = NLP_ADBench.sms_spam()
+        model = LLama3B()
+        space = WordSpace(model=model, train_size=1_00, test_size=100, strategy=UnificationStrategy.TRANSFORMER)
+        v_adapter = TextVMMDAdapter(dataset=dataset, space=space, inlier_label=0)
         v_method = TextVOdm(dataset=dataset, space=space, v_adapter=v_adapter, inlier_label=0)
         v_method.train()
         v_method.predict()

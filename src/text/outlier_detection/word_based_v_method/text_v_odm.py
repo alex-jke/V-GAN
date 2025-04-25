@@ -26,8 +26,10 @@ class TextVOdm(EnsembleODM):
     def get_space_type(self) -> SpaceType:
         return SpaceType.VGAN
 
-    def __init__(self, dataset: AggregatableDataset, space: WordSpace,  v_adapter: Optional[BaseVAdapter] = None, base_detector: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
-                 output_path: Path | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0, aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create()):
+    def __init__(self, dataset: AggregatableDataset, space: Space,  v_adapter: Optional[BaseVAdapter] = None, base_detector: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
+                 output_path: Path | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0,
+                 aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create() # TODO: not necessary for Token, refactor the OD logic
+                 ):
         if aggregation_strategy.equals(UnificationStrategy.TRANSFORMER) and not isinstance(dataset, AggregatableDataset):
             raise ValueError("TextVOdm requires an aggregatable dataset, if transformer_aggregation is selected.")
         super().__init__(dataset=dataset, space=space, base_method=base_detector, inlier_label=inlier_label, use_cached=use_cached)
@@ -35,9 +37,9 @@ class TextVOdm(EnsembleODM):
         self.classifier_delta = classifier_delta
         self.output_path = output_path
         output_path = output_path / "vmmd_text" if output_path is not None else None
-        self.use_mmd = False
+        self.use_mmd = True
         if v_adapter is None:
-            v_adapter = TextVMMDAdapter(dataset, self.space, output_path=output_path, aggregation_strategy=aggregation_strategy, use_mmd=self.use_mmd)
+            v_adapter = TextVMMDAdapter(dataset, self.space, output_path=output_path, aggregation_strategy=aggregation_strategy, use_mmd=self.use_mmd, inlier_label=self.inlier_label)
         self.v_method = v_adapter
         self.amount_subspaces = 50
         self.detectors: List[BaseDetector] = []
@@ -48,7 +50,7 @@ class TextVOdm(EnsembleODM):
         self.strategy = aggregation_strategy
 
     def _train_ensemble(self):
-        subspaces = self.v_method.get_subspaces(self.amount_subspaces)
+        subspaces: ndarray[float] = self.v_method.get_subspaces(self.amount_subspaces)
         self.amount_subspaces = subspaces.shape[0]
         ui = cli.get()
         with ui.display():
@@ -56,7 +58,7 @@ class TextVOdm(EnsembleODM):
                 ui.update(f"Fitting for subspace {i + 1}/{self.amount_subspaces}")
                 subspace = subspaces[i]
                 with torch.no_grad():
-                    prepared_data = self.space.transform_dataset(dataset=self.dataset, use_cached=False, inlier_label=self.inlier_label, masks=subspace)
+                    prepared_data = self.space.transform_dataset(dataset=self.dataset, use_cached=False, inlier_label=self.inlier_label, mask=subspace)
                 self.embedded_data.append(prepared_data)
                 x_data = prepared_data.x_train
                 detector = self.base_method()

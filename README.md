@@ -27,3 +27,8 @@ access to the LLama models used here (meta-llama/Llama-3.2-1B and meta-llama/Lla
 ```
 huggingface-cli login
 ```
+
+Torch version in requirements not correct, will give error. To install proper version:
+```
+pip install torch==2.2.1+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+```
