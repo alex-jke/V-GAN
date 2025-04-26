@@ -74,15 +74,30 @@ class CausalLLM(HuggingModel, ABC):
         if mask is not None:
             if mask.shape[0] > self.max_token_length():
                 raise ValueError(f"Mask of length {mask.shape[0]} is larger than max token input length of {self.max_token_length()}")
-            #input_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
-            #causal_mask = self._get_4d_causal_mask(mask)
-            #input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
-            #torch.backends.cuda.enable_mem_efficient_sdp(False)
-            #torch.backends.cuda.enable_flash_sdp(False)
-            #outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask, use_cache=False,
-                                 #output_hidden_states=True)
+
+            input_embeds = self.embed_tokenized(tokenized)
+            expanded_mask = mask.T.expand_as(input_embeds)
+            input_embeds = input_embeds * expanded_mask
+            input_embeds = input_embeds.unsqueeze(0)
             with torch.no_grad():
-                outputs = self.model(input_ids=tokenized.int().unsqueeze(0), attention_mask=mask, output_hidden_states=True, use_cache=False)
+                #causal_mask = self._get_4d_causal_mask(mask)
+                input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
+                torch.backends.cuda.enable_mem_efficient_sdp(False)
+                torch.backends.cuda.enable_flash_sdp(False)
+                outputs = self.model(inputs_embeds=input_embeds,
+                                     #attention_mask=causal_mask,
+                                     attention_mask=mask,
+                                     use_cache=False,
+                                     output_hidden_states=True)
+            embeddings = outputs.hidden_states
+            last_layer = embeddings[-1] + (input_embeds - input_embeds.detach())# TODO: check if this is correct.
+            de_batched = last_layer[0]
+            assert de_batched.shape[0] == mask.shape[1], "Debatch was not successful."
+            normalized = torch.nn.functional.normalize(de_batched)
+            return normalized
+
+            #with torch.no_grad():
+                #outputs = self.model(input_ids=tokenized.int().unsqueeze(0), attention_mask=mask, output_hidden_states=True, use_cache=False)
         else:
             with torch.no_grad():
                 if tokenized.shape[0] > self.max_token_length():

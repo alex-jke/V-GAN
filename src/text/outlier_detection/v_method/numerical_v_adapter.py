@@ -7,6 +7,7 @@ from numpy import ndarray
 
 from modules.od_module import VGAN_od, VMMD_od, ODModule
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
+from text.UI import cli
 from text.outlier_detection.base_v_adapter import BaseVAdapter
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
@@ -78,16 +79,19 @@ class NumericalVOdmAdapter(BaseVAdapter):
         """
         self.__assert_initialized()
         if not self.loaded_model:
-            self._train(print_epochs)
+            ui = cli.get()
+            with ui.display():
+                ui.update(f"training model {self.model.__class__.__name__}")
+                self._train(print_epochs)
 
     def _train(self, print_epochs: int):
         """
         Trains the model.
         """
-        print(f"Training {self.get_name()} model for {self.model.epochs} epochs.")
-        for epoch in self.model.yield_fit(self.data.x_train, yield_epochs=print_epochs):
+        #print(f"Training {self.get_name()} model for {self.model.epochs} epochs.")
+        for epoch in self.model.yield_fit(self.data.x_train.detach().float(), yield_epochs=print_epochs):
             loss = self.model.train_history[self.model.generator_loss_key][-1] if epoch > 0 else float("nan")
-            print(f"({epoch}, {loss})")
+            #print(f"({epoch}, {loss})")
         self.visualize_results()
 
     @abstractmethod

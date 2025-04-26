@@ -100,7 +100,7 @@ class VmmdText(VMMDTextBase, TextMethod):
         return self._check_if_myopic(x_sample=x_sample, ux_sample=ux_sample, u_subspaces=u_subspaces,
                                      bandwidth=bandwidth, count=count)
 
-class VMMDTextLightning(VMMDTextLightningBase):
+class VMMDTextLightning(VMMDTextLightningBase, TextMethod):
     """
     An implementation of VMMDTextBase that embeds the data each epoch.
     """

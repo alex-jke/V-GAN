@@ -19,7 +19,7 @@ class TokenVAdapter(BaseVAdapter):
         self.space = space
         self.inlier_label = inlier_label
         self.output_path = output_path
-        self.adapter = VMMDAdapter(generator=generator, export_generator=True)
+        self.adapter = VMMDAdapter(generator=generator, export_generator=True, max_batch_size=500)
         self.generator = generator
         self.space = space
 

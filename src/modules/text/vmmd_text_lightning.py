@@ -1,8 +1,11 @@
 import warnings
 from abc import abstractmethod
+from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import torch
+from matplotlib import pyplot as plt
 from numpy import ndarray
 from pytorch_lightning.utilities import grad_norm
 from torch import Tensor
@@ -29,7 +32,7 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         self._latent_size = max(self.n_dims // 16, 1)
         self.strategy = strategy
         # Create generator network using base class method.
-        self.generator = self.get_the_networks(self.n_dims, self._latent_size)
+        self.generator = self.get_the_networks(self.n_dims, self._latent_size, device=self.device())
         self.add_nan_hook()
         # Create loss function.
         #kernel = MixtureRQLinear()#
@@ -99,6 +102,20 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
             weight_decay=self.hparams.get("weight_decay", 0)
         )
         return optimizer
+
+    def _plot_loss(self, path_to_directory, x_data: Optional[np.ndarray[str]] = None):
+        plot, ax = self._create_plot()
+
+        p_values = self.check_if_myopic(x_data, count=1000)
+        recomended_p_value = p_values[self.recommended_bandwidth_name].values[0]
+        recommended_bandwidth = self.bandwidth.item()
+
+        # add the p-value to the plot in the top right corner
+        plt.text(0.5, 0.99, f'{self.recommended_bandwidth_name}\n({recommended_bandwidth}): {recomended_p_value}',
+                 ha='center', va='top',
+                 transform=ax.transAxes, color='black', fontsize=8)
+        plot.savefig(Path(path_to_directory) / "train_history.png", format="png", dpi=1200)
+        plot.close()
 
     # The following methods remain abstract or utility; implement as needed:
     @abstractmethod

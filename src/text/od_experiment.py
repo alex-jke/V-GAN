@@ -39,6 +39,7 @@ from text.outlier_detection.v_method.distance_v_odm import DistanceV_ODM
 from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.outlier_detection.word_based_v_method.text_v_odm import TextVOdm
+from text.outlier_detection.word_based_v_method.token_v_adapter import TokenVAdapter
 from text.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer.rank import RankVisualizer
 from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
@@ -110,6 +111,7 @@ class Experiment:
             self.output_path: Path = self._get_output_path()
 
         # Build the list of outlier detection models.
+        self.provided_models = models
         self.models = models
         if models is None:
             self.models: List = self._build_models()
@@ -150,23 +152,23 @@ class Experiment:
 
         if not self.run_cachable:
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
-                           for base in bases
-                           for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
+            #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
+            #               for base in bases
+            #               for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only ensemble outlier detection.
             models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create())
                            for base in bases
                            for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only subspace distance.
-            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, classifier_delta=0.0, aggregation_strategy=strategy.create())
-                            for base in bases
-                            for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
+            #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, classifier_delta=0.0, aggregation_strategy=strategy.create())
+            #                for base in bases
+            #                for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
 
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
             for base in bases:
-                models.extend([TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path),
-                               TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0),
-                               TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, classifier_delta=0.0)
+                models.extend([#TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path)),
+                               TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path)),
+                               #TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, classifier_delta=0.0, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path))
                                ])
 
         # Trivial ODM models with different guess inlier rates.
@@ -250,8 +252,11 @@ class Experiment:
             #model.start_timer()
             #if self.emb_model.model_name == DeepSeek1B().model_name and "VMMD + LUNAR + T" in model._get_name():
                 #raise Exception("Skipping DeepSeek1B with VMMD + LUNAR + T, due to high runtime")
-            model.train()
-            model.predict()
+            with ui.display():
+                ui.update("training (1/2)")
+                model.train()
+                ui.update("predicting (2/2)")
+                model.predict()
             #model.stop_timer()
             evaluation, self.comon_metrics = model.evaluate(self.output_path)
             print(f" | finished successfully (auc: {float(evaluation['auc']):>1.3f}).")
@@ -286,6 +291,8 @@ class Experiment:
         return self.output_path / f"run_{run}"
 
     def _filter_for_not_run(self, run: int) -> None:
+        if self.provided_models is not None:
+            return
         self.models = self._build_models()
         result_path = self._get_run_path(run) / self.result_csv_name
         if not result_path.exists():
@@ -322,8 +329,8 @@ class Experiment:
 
                 # Run each model experiment.
                 with self.ui.display():
-                    for model in self.models:
-                        self.ui.update(f"Running model {model._get_name()}")
+                    for i, model in enumerate(self.models):
+                        self.ui.update(f"Running model {model._get_name()} ({i+1}/{len(self.models)})")
                         evaluation, error = self._run_single_model(model)
                         self.result_df = pd.concat([self.result_df, evaluation], ignore_index=True)
                         if error is not None:
@@ -407,12 +414,16 @@ if __name__ == '__main__':
     datasets = NLP_ADBench.get_all_datasets()
     datasets.sort(key=lambda d: d.average_length)
     emb_model = LLama3B()
-    for dataset in datasets:
-        exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                            experiment_name="0.42", use_cached=True, runs=5, run_cachable=False)
-        aggregated_path = exp.output_path.parent.parent # directory of the current version
-        csv_path = aggregated_path / "aggregated.csv"
-        results = exp.run()
-        results[MODEL] = emb_model.model_name
-        results[DATASET] = dataset.name
-        results.to_csv(csv_path , index=False, header= not csv_path.exists())
+    ui = cli.get()
+    with ui.display():
+        for i, dataset in enumerate(datasets):
+            ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
+            exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
+                                experiment_name="0.42", use_cached=True, runs=5, run_cachable=False)
+            aggregated_path = exp.output_path.parent.parent # directory of the current version
+            csv_path = aggregated_path / "aggregated.csv"
+
+            results = exp.run()
+            results[MODEL] = emb_model.model_name
+            results[DATASET] = dataset.name
+            results.to_csv(csv_path , index=False, header= not csv_path.exists(), mode="a")

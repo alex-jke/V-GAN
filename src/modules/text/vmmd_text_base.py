@@ -224,32 +224,3 @@ class VMMDTextBase(VMMDBase):
         """
         return sentence.split(self.seperator)
 
-    def _check_if_myopic(self, x_sample, ux_sample, u_subspaces, bandwidth: float | List[float] = 0.01, count=500):
-
-        results = []
-
-        if type(bandwidth) == float:
-            bandwidth = [bandwidth]
-
-        if not hasattr(self, 'bandwidth'):
-            mmd_loss = MMDLossConstrained(self.weight)
-            mmd_loss.forward(
-                x_sample, ux_sample, u_subspaces * 1)
-            self.bandwidth = mmd_loss.bandwidth
-
-        bandwidth.sort()
-        for bw in bandwidth:
-            mmd = tts.MMDStatistic(count, count)
-            _, distances = mmd(x_sample, ux_sample, alphas=[
-                bw], ret_matrix=True)
-            results.append(mmd.pval(distances))
-
-        bw = self.bandwidth.item()
-        mmd = tts.MMDStatistic(count, count)
-        _, distances = mmd(x_sample, ux_sample, alphas=[
-            bw], ret_matrix=True)
-        results.append(mmd.pval(distances))
-
-        bandwidth.append("recommended bandwidth")
-        return pd.DataFrame([results], columns=bandwidth, index=["p-val"])
-

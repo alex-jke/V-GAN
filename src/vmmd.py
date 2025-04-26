@@ -23,6 +23,8 @@ import os
 import operator
 import datetime
 
+from text.UI import cli
+
 
 class VMMD(VMMDBase):
     '''
@@ -66,64 +68,68 @@ class VMMD(VMMDBase):
         optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay, betas=(0.5,0.9))
         self.generator_optimizer = optimizer.__class__.__name__
         # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
-        #kernel = RBFConstrained(embedding=embedding)
-        kernel = MixtureRQLinear()
+        kernel = RBFConstrained(embedding=embedding)
+        #kernel = MixtureRQLinear()
         loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
+        ui = cli.get()
 
-        for epoch in range(epochs):
-            if self.print_updates:
-                print(f'\rEpoch {epoch} of {epochs}')
-            generator_loss = 0
-            mmd_loss = 0
-            gradient = 0
+        with ui.display():
+            for epoch in range(epochs):
+                if self.print_updates:
+                    print(f'\rEpoch {epoch} of {epochs}')
+                generator_loss = 0
+                mmd_loss = 0
+                gradient = 0
 
-            # DATA LOADER#
-            data_loader = self._get_data_loader(X)
-            batch_number = data_loader.__len__()
+                # DATA LOADER#
+                data_loader = self._get_data_loader(X)
+                batch_number = data_loader.__len__()
 
-            # GET NOISE TENSORS#
-            noise_tensor = self._get_noise_tensor(latent_size)
+                # GET NOISE TENSORS#
+                noise_tensor = self._get_noise_tensor(latent_size)
 
-            # BATCH LOOP#
-            for batch in tqdm(data_loader, leave=False):
-                # Make sure there is only 1 observation per row.
-                batch = batch.view(self.batch_size, -1)
-                if cuda:
-                    batch = batch.cuda()
-                elif mps:
-                    #batch = batch.to(torch.float32).to(torch.device('mps'))  # float64 not suported with mps
-                    batch = batch.to('mps') # For tokeniz
-                # SAMPLE NOISE#
-                noise_tensor.normal_()
+                # BATCH LOOP#
+                #for batch in tqdm(data_loader, leave=False):
+                for batch in data_loader:
+                    ui.update(f"epoch {epoch}/{epochs}, loss {generator_loss}")
+                    # Make sure there is only 1 observation per row.
+                    batch = batch.view(self.batch_size, -1)
+                    if cuda:
+                        batch = batch.cuda()
+                    elif mps:
+                        #batch = batch.to(torch.float32).to(torch.device('mps'))  # float64 not suported with mps
+                        batch = batch.to('mps') # For tokeniz
+                    # SAMPLE NOISE#
+                    noise_tensor.normal_()
 
-                # OPTIMIZATION STEP#
-                optimizer.zero_grad()
-                fake_subspaces = generator(noise_tensor)
-                masked_batch = (fake_subspaces * batch)
-                batch_loss = loss_function(masked_batch, batch, fake_subspaces)
-                batch_mmd_loss = loss_function.mmd_loss
-                self.bandwidth = loss_function.bandwidth
-                batch_loss.backward()
+                    # OPTIMIZATION STEP#
+                    optimizer.zero_grad()
+                    fake_subspaces = generator(noise_tensor)
+                    masked_batch = (fake_subspaces * batch)
+                    batch_loss = loss_function(masked_batch, batch, fake_subspaces)
+                    batch_mmd_loss = loss_function.mmd_loss
+                    self.bandwidth = loss_function.bandwidth
+                    batch_loss.backward()
 
-                # Apply gradient clipping (e.g., max norm of 1.0)
-                if self.apply_gradient_clipping:
-                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=2.0)
+                    # Apply gradient clipping (e.g., max norm of 1.0)
+                    if self.apply_gradient_clipping:
+                        torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=2.0)
 
-                gradients = [param.grad.norm() for param in generator.parameters()]
+                    gradients = [param.grad.norm() for param in generator.parameters()]
 
-                gradient += torch.Tensor(gradients).mean() / batch_number
+                    gradient += torch.Tensor(gradients).mean() / batch_number
 
-                optimizer.step()
+                    optimizer.step()
 
-                generator_loss += float(batch_loss.to(
-                    'cpu').detach().numpy())/batch_number
-                mmd_loss += float(batch_mmd_loss.to(
-                    'cpu').detach().numpy())/batch_number
-                #print("finished batch")
+                    generator_loss += float(batch_loss.to(
+                        'cpu').detach().numpy())/batch_number
+                    mmd_loss += float(batch_mmd_loss.to(
+                        'cpu').detach().numpy())/batch_number
+                    #print("finished batch")
 
-            self._log_epoch(generator_loss, mmd_loss, generator, gradient)
-            if yield_epochs is not None and epoch % yield_epochs == 0:
-                yield epoch
+                self._log_epoch(generator_loss, mmd_loss, generator, gradient)
+                if yield_epochs is not None and epoch % yield_epochs == 0:
+                    yield epoch
 
         self.generator = generator
         if self.export_generator:

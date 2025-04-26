@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Tuple, Callable, Optional
+from typing import Tuple, Callable, Optional, Dict
 
 import numpy
 import pandas as pd
@@ -7,15 +7,20 @@ import torch
 from numpy import ndarray
 from torch import Tensor
 
+from text.UI import cli
 from text.dataset.dataset import Dataset
 from text.outlier_detection.space.prepared_data import PreparedData
 from text.outlier_detection.space.space import Space
 
-
+ui = cli.get()
 class TokenSpace(Space):
     """
     This class represents the token space that the outlier detection models should operate in.
     """
+
+    def __init__(self, **params):
+        self.cache: Dict[str, PreparedData] = {}
+        super().__init__(**params)
 
     @property
     def name(self):
@@ -41,16 +46,22 @@ class TokenSpace(Space):
     def embed_tokenized(self, tokenized) -> Tensor:
         embeddings = []
         assert len(tokenized.shape) == 2, f"Tokenized data should be 2D (batch, sequence length), but got {tokenized.shape}"
-        for i in range(tokenized.shape[0]):
-            sample = tokenized[i]
-            embedded_tokens = self.model.fully_embed_tokenized(sample)
-            embedding = embedded_tokens.mean(dim=0)
-            embeddings.append(embedding)
+        with ui.display():
+            for i in range(tokenized.shape[0]):
+                ui.update(f"Embedding {i}/{tokenized.shape[0]}")
+                sample = tokenized[i]
+                embedded_tokens = self.model.fully_embed_tokenized(sample)
+                embedding = embedded_tokens.mean(dim=0)
+                embeddings.append(embedding)
         return torch.stack(embeddings)
 
     def transform_dataset(self, dataset: Dataset, use_cached: bool, inlier_label, mask: Optional[ndarray]) -> PreparedData:
 
         token_x_train, y_train, token_x_test, y_test = self.get_tokenized(dataset, inlier_label)
+
+        id = dataset.name + str(use_cached) + str(inlier_label)
+        if mask is None and use_cached and id in self.cache:
+            return self.cache[id]
 
         if mask is not None and len(mask.shape) != 1:
             raise NotImplementedError("TokenSpace does not support masks with more than 1 dimension. Please use a mask of shape (sequence_length).")
@@ -63,13 +74,22 @@ class TokenSpace(Space):
 
             bool_mask = (mask == 1)
 
-            token_x_train = token_x_train[:,bool_mask]
-            token_x_test = token_x_test[:,bool_mask]
+            with ui.display():
+                ui.update("train set")
+                token_x_train = token_x_train[:,bool_mask]
+                ui.update("test set")
+                token_x_test = token_x_test[:,bool_mask]
 
         x_train = self.embed_tokenized(token_x_train)
         x_test = self.embed_tokenized(token_x_test)
 
-        return PreparedData(x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test, space=self.name, inlier_labels=[inlier_label])
+        prepared_data = PreparedData(x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test, space=self.name, inlier_labels=[inlier_label])
+
+        if mask is None and use_cached:
+            print("Cached")
+            self.cache[id] = prepared_data
+
+        return prepared_data
 
     def _get_tokenized_with_labels(self, train: bool, dataset: Dataset, inlier_label: list) -> Tuple[Tensor, Tensor]:
         """

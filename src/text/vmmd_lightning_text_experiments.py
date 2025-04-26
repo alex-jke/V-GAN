@@ -104,7 +104,7 @@ class VMMDLightningTextExperiment:
             text_visualization=True
         )
         visualizer.visualize(epoch=epoch, samples=samples)
-        model._export(model.generator, export_params=False)
+        model._export(model.generator, export_params=False, x_data=sentences)
 
     def _get_average_sentence_length(self, x_data: ndarray[str]) -> int:
         """
@@ -250,14 +250,14 @@ if __name__ == "__main__":
 
     emb_model = LLama3B()
     dataset = EmotionDataset()
-    generator = GeneratorSigmoidSTE
+    generator = GeneratorSoftmaxSTE
     version = "0.056"
-    sampless = [3000]
+    sampless = [300]
     yield_epochs = 1
     batch_size = 100
     penalty_weights = [0.0]
     lrs = [5e-3]
-    epochss = [25]
+    epochss = [5]
     weight_decays = [0.0]
     for strategy in [UnificationStrategy.TRANSFORMER.create(), UnificationStrategy.MEAN.create()]:
         for samples in sampless:

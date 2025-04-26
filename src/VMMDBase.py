@@ -1,5 +1,5 @@
 import inspect
-from typing import Optional
+from typing import Optional, List
 
 import torch
 from collections import defaultdict
@@ -8,6 +8,7 @@ from matplotlib import pyplot
 from torch.utils.data import DataLoader
 
 from colors import VGAN_GREEN, COMPLIMENTARY
+from i_vmmd_base import IVMMDBase
 from models.Generator import Generator, Generator_big
 
 import pandas as pd
@@ -17,7 +18,10 @@ import matplotlib.pyplot as plt
 import os
 import operator
 
-class VMMDBase:
+from models.Mmd_loss_constrained import MMDLossConstrained
+
+
+class VMMDBase(IVMMDBase):
     '''
     V-MMD, a Subspace-Generative Moment Matching Network.
 
@@ -26,7 +30,7 @@ class VMMDBase:
     '''
 
     def __init__(self, batch_size=500, epochs=500, lr=10e-5, momentum=0.99, seed=777, weight_decay=10e-5, path_to_directory=None,
-                 weight=0, generator = None, print_updates=None, gradient_clipping=False, export_generator=False):
+                 weight=0, generator = None, print_updates=None, gradient_clipping=False, export_generator=True):
         self.storage = locals()
         self.train_history = defaultdict(list)
         self.generator_loss_key = "generator_loss"
@@ -60,18 +64,7 @@ class VMMDBase:
         self.cuda = torch.cuda.is_available()
         self.mps = torch.backends.mps.is_available()
 
-    def _plot_gradients(self):
-        gradients = self.train_history[self.gradient_key]
-        plt.style.use('ggplot')
-        x = np.linspace(1, len(gradients), len(gradients))
-        fig, ax = plt.subplots()
-        ax.plot(x, gradients, color=VGAN_GREEN,
-                label="Gradient norm", linewidth=2)
-        ax.legend(loc='best')
-        plt.xlabel("Epoch")
-        plt.ylabel(self.gradient_key)
-        plt.savefig(Path(self.path_to_directory) / "gradients.png")
-        plt.close()
+
 
     def _create_plot(self) -> pyplot:
         self._plot_gradients()
@@ -107,15 +100,6 @@ class VMMDBase:
         fig.tight_layout()
 
         return plt, ax1
-
-    def _plot_loss(self, path_to_directory, show=False):
-        plot, _ = self._create_plot()
-        plot.savefig(path_to_directory / "train_history.png",
-                    format="png", dpi=1200)
-        plot.close()
-
-        if show == True:
-            print("The show option has been depricated due to lack of utility")
 
     def get_params(self) -> dict:
         return {'batch size': self.batch_size, 'epochs': self.epochs, 'lr_g': self.lr,
@@ -172,33 +156,9 @@ class VMMDBase:
         self.generator = self.get_the_networks(ndims, latent_size=max(int(ndims/self.latent_size_factor), 1)).to(device)
         self.generator.load_state_dict(torch.load(path_to_generator, map_location=device))
         self.generator.eval()  # This only works for dropout layers
-        self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space'
-        print(self.generator_optimizer)
         self._latent_size = max(int(ndims / self.latent_size_factor), 1)
-
-    def get_the_networks(self, ndims: int, latent_size: int, device: str = None) -> Generator_big:
-        """Object function to obtain the networks' architecture
-
-        Args:
-            ndims (int): Number of dimensions of the full space
-            latent_size (int): Number of dimensions of the latent space
-            device (str, optional): CUDA device to mount the networks to. Defaults to None.
-
-        Returns:
-            generator: A generator model (child class from torch.nn.Module)
-        """
-        if device == None:
-            device = self.device
-
-        # Check if only the constructor or a whole generator was passed.
-        self._latent_size = latent_size
-        if inspect.isclass(self.provided_generator):
-            generator = self.provided_generator(
-                img_size=ndims, latent_size=latent_size).to(device)
-        else:
-            generator = self.provided_generator
-
-        return generator
+        self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions in the full space and {self._latent_size} latent size.'
+        print(self.generator_optimizer)
 
     def generate_subspaces(self, nsubs, round = True):
         # Need to load in cpu as mps Tensor module doesn't properly fix the seed
@@ -268,4 +228,3 @@ class VMMDBase:
         self.train_history[self.mmd_loss_key].append(mmd_loss)
         self.train_history[self.gradient_key].append(gradient)
         self.generator = generator
-

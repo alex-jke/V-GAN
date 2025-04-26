@@ -62,6 +62,16 @@ class DatasetPreparer:
         return sequence_length
 
     @staticmethod
+    def get_max_sentence_length(x_data: ndarray[str], seperator: str = " ") -> int:
+        """
+        Calculate the max sentence length in the dataset.
+        :param x_data: A numpy array of sentences.
+        :return: The max sentence length, as an integer.
+        """
+        sequence_length = int(np.max([len(x.split(seperator)) for x in x_data]))
+        return sequence_length
+
+    @staticmethod
     def clean(sentence: str) -> str:
         """
         Removes any empty strings.

@@ -174,11 +174,10 @@ class ODExperimentTest(unittest.TestCase):
         dataset = NLP_ADBench.sms_spam()
         model = LLama3B()
         space = WordSpace(model=model, train_size=1_00, test_size=100, strategy=UnificationStrategy.TRANSFORMER)
-        v_adapter = TextVMMDAdapter(dataset=dataset, space=space, inlier_label=0)
-        v_method = TextVOdm(dataset=dataset, space=space, v_adapter=v_adapter, inlier_label=0)
-        v_method.train()
-        v_method.predict()
-        result_df = v_method.evaluate()[0]
+        v_adapter = TextVMMDAdapter(dataset=dataset, space=space, inlier_label=0, epochs=5)
+        v_method = TextVOdm(dataset=dataset, space=space, v_adapter=v_adapter, inlier_label=0, amount_subspaces=2)
+        exp = Experiment(dataset=dataset, emb_model=model, skip_error=False, models = [v_method])
+        result_df = exp.run()
         print(result_df.columns.to_list())
         print(result_df.iloc[0].to_list())
 

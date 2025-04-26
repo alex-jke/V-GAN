@@ -28,8 +28,8 @@ class TextVOdm(EnsembleODM):
 
     def __init__(self, dataset: AggregatableDataset, space: Space,  v_adapter: Optional[BaseVAdapter] = None, base_detector: Type[BaseDetector] = pyod_LUNAR, inlier_label: int | None = None, use_cached: bool = False,
                  output_path: Path | None = None, subspace_distance_lambda=1.0, classifier_delta=1.0,
-                 aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create() # TODO: not necessary for Token, refactor the OD logic
-                 ):
+                 aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(), # TODO: not necessary for Token, refactor the OD logic
+                 amount_subspaces = 50):
         if aggregation_strategy.equals(UnificationStrategy.TRANSFORMER) and not isinstance(dataset, AggregatableDataset):
             raise ValueError("TextVOdm requires an aggregatable dataset, if transformer_aggregation is selected.")
         super().__init__(dataset=dataset, space=space, base_method=base_detector, inlier_label=inlier_label, use_cached=use_cached)
@@ -41,7 +41,7 @@ class TextVOdm(EnsembleODM):
         if v_adapter is None:
             v_adapter = TextVMMDAdapter(dataset, self.space, output_path=output_path, aggregation_strategy=aggregation_strategy, use_mmd=self.use_mmd, inlier_label=self.inlier_label)
         self.v_method = v_adapter
-        self.amount_subspaces = 50
+        self.amount_subspaces = amount_subspaces
         self.detectors: List[BaseDetector] = []
         self.embedded_data: List[PreparedData] = []
         self.prepared_data: Optional[PreparedData] = None

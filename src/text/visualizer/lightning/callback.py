@@ -55,4 +55,4 @@ class VisualizationCallback(Callback):
                 text_visualization=True
             )
             visualizer.visualize(epoch=epoch, samples=self.samples)
-            pl_module._export(pl_module.generator, export_params=epoch == trainer.max_epochs - 1, export_path=self.export_path)
+            pl_module._export(pl_module.generator, export_params=epoch == trainer.max_epochs - 1, export_path=self.export_path, x_data=x_train)

@@ -3,7 +3,7 @@ from typing import Type, Optional
 
 from numpy import ndarray
 
-from models.Generator import GeneratorSigmoidSTE, Generator_big
+from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE
 from modules.text.vmmd_text import VMMDTextLightning
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.LLM.huggingmodel import HuggingModel
@@ -32,12 +32,13 @@ class TextVMMDAdapter(BaseVAdapter):
                  output_path: Optional[Path] = None,
                  aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  use_mmd: bool = False,
-                 generator: Type[Generator_big]  = GeneratorSigmoidSTE):
+                 generator: Type[Generator_big]  = GeneratorSoftmaxSTE,
+                 epochs = 25):
         self.dataset = dataset
         self.space = space
         agg_str = aggregation_strategy.key()
         loss_str = ("mmd" if use_mmd else "lse")
-        self.output_path = output_path / "VMMD_Text" / agg_str / loss_str if output_path is not None else None
+        self.output_path = output_path / "VMMD_Text"  / agg_str / generator.__name__ / loss_str if output_path is not None else None
         self.model: VMMDTextLightningBase | None = None
         self.subspaces: Optional[ndarray] = None
         self.proba: Optional[ndarray] = None
@@ -46,13 +47,14 @@ class TextVMMDAdapter(BaseVAdapter):
         self.emdedding_model: HuggingModel = space.model
         self.inlier_label = inlier_label
         self.generator = generator
+        self.epochs = epochs
 
     def _get_params(self):
         NotImplementedError("Change params based on use_mmd and transformer_aggregation")
 
     def train(self):
         self._get_params()
-        epochs = 25
+        epochs = self.epochs
         model_run = VMMDLightningTextExperiment(
             emb_model=self.emdedding_model,
             vmmd_model=VMMDTextLightning,
@@ -63,7 +65,7 @@ class TextVMMDAdapter(BaseVAdapter):
             yield_epochs=10,
             lr=1e-3,
             weight_decay=1e-5,
-            penalty_weight=1.0,
+            penalty_weight=0,
             batch_size=10,
             epochs=epochs,
             export_path=self.output_path,

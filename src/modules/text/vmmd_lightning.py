@@ -10,18 +10,20 @@ import numpy as np
 import pandas as pd
 import torch
 from lightning_fabric import seed_everything
+from numpy import ndarray
 from torch import Tensor
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from matplotlib import pyplot
 
 from colors import VGAN_GREEN, COMPLIMENTARY
+from i_vmmd_base import IVMMDBase
 from models.Generator import Generator, Generator_big, GeneratorSigmoidSTE
 from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.LLM.llama import LLama1B
 
 
-class VMMDLightningBase(pl.LightningModule):
+class VMMDLightningBase(pl.LightningModule, IVMMDBase):
     def __init__(self,
                  embedding: Optional[Callable[[np.ndarray[str], int, Optional[Tensor]], Tensor]] = None,
                  batch_size=500, epochs=500, lr=1e-4, seed=777,
@@ -48,18 +50,7 @@ class VMMDLightningBase(pl.LightningModule):
         self._latent_size = None
         seed_everything(self.seed)
         torch.set_float32_matmul_precision('high')
-
-    def _plot_gradients(self):
-        gradients = self.train_history[self.gradient_key]
-        plt.style.use('ggplot')
-        x = np.linspace(1, len(gradients), len(gradients))
-        fig, ax = plt.subplots()
-        ax.plot(x, gradients, color=VGAN_GREEN, label="Gradient norm", linewidth=2)
-        ax.legend(loc='best')
-        plt.xlabel("Epoch")
-        plt.ylabel(self.gradient_key)
-        plt.savefig(Path(self.path_to_directory) / "gradients.png")
-        plt.close()
+        self.recommended_bandwidth_name = "recommended bandwidth"
 
     def _create_plot(self):
         train_df = pd.read_csv(Path(self.path_to_directory) / "lightning_logs" / "version_0" / "metrics.csv")
@@ -83,13 +74,9 @@ class VMMDLightningBase(pl.LightningModule):
         fig.tight_layout()
         return plt, ax1
 
-    def _plot_loss(self, path_to_directory):
-        plot, _ = self._create_plot()
-        plot.savefig(Path(path_to_directory) / "train_history.png", format="png", dpi=1200)
-        plot.close()
 
-    def model_snapshot(self, path_to_directory=None):
-        self._plot_loss(path_to_directory)
+    def model_snapshot(self, path_to_directory=None, x_data: Optional[np.ndarray[str]] = None):
+        self._plot_loss(path_to_directory, x_data)
 
     def load_models(self, path_to_generator, ndims, device=None):
         if device is None:
@@ -99,16 +86,6 @@ class VMMDLightningBase(pl.LightningModule):
         self.generator.eval()
         self.generator_optimizer = f'Loaded Model from {path_to_generator} with {ndims} dimensions'
         self._latent_size = max(int(ndims / 16), 1)
-
-    def get_the_networks(self, ndims: int, latent_size: int, device=None):
-        if device is None:
-            device = self.device()
-        self._latent_size = latent_size
-        if inspect.isclass(self.provided_generator):
-            generator = self.provided_generator(img_size=ndims, latent_size=latent_size).to(device)
-        else:
-            generator = self.provided_generator
-        return generator
 
     def generate_subspaces(self, nsubs, round=True):
         if self._latent_size is None:
@@ -139,7 +116,8 @@ class VMMDLightningBase(pl.LightningModule):
         else:
             return torch.FloatTensor(self.batch_size, latent_size)
 
-    def _export(self, generator, export_params=True, export_path: Optional[str] = None):
+    def _export(self, generator, export_params=True, export_path: Optional[str] = None,
+                x_data: Optional[ndarray[str]] = None):
         path = self.path_to_directory
 
         if path is None:
@@ -156,7 +134,7 @@ class VMMDLightningBase(pl.LightningModule):
             run_number = int(len(os.listdir(models_dir)))
             if export_params:
                 torch.save(generator.state_dict(), models_dir / f'generator_{run_number}.pt')
-            self.model_snapshot(path_to_directory)
+            self.model_snapshot(path_to_directory, x_data)
 
     def device(self) -> torch.device:
         return torch.device('cuda' if torch.cuda.is_available()

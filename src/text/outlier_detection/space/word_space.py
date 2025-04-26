@@ -24,6 +24,8 @@ class WordSpace(Space):
         id = dataset.name + str(use_cached) + str(inlier_label)
         if mask is None and use_cached and id in self.cache:
             return self.cache[id]
+        if mask is not None:
+            mask = Tensor(mask).to(self.model.device)
 
         preparer = DatasetPreparer(dataset, self.train_size)
         x_train, y_train = preparer.get_data_with_labels([inlier_label], train=True)
@@ -33,8 +35,9 @@ class WordSpace(Space):
         # Since we set aggregate to True, the word dimension is only of size 1,
         # but still present so that regardless of the aggregation method, the other models
         # can expect the same input shape.
-        avg_length = preparer.get_average_sentence_length(x_train)
-        strategy_instance = self.strategy.create(avg_length)
+        # avg_length = preparer.get_average_sentence_length(x_train)
+        length = preparer.get_max_sentence_length(x_train)
+        strategy_instance = self.strategy.create(length)
         embedded_train_with_word_dim = self.model.embed_sentences(x_train, dataset=dataset, strategy=strategy_instance, verbose=True, masks=mask)
         embedded_test_with_word_dim = self.model.embed_sentences(x_test, dataset=dataset, strategy=strategy_instance, verbose=True, masks=mask)
 
@@ -52,6 +55,7 @@ class WordSpace(Space):
         prepared_data = PreparedData(x_train=embedded_train, y_train=y_train_tensor, x_test=embedded_test, y_test=y_test_tensor,
                             space=self.name, inlier_labels=[inlier_label])
         if mask is None and use_cached:
+            print("Cached")
             self.cache[id] = prepared_data
 
         return prepared_data

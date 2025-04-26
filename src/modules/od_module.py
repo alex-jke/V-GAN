@@ -21,6 +21,8 @@ import pandas as pd
 from typing import Union, Optional
 import logging
 
+from text.UI import cli
+
 logger = logging.getLogger(__name__)
 
 class ODModule(ABC):
@@ -144,6 +146,7 @@ class VMMD_od(VMMD, ODModule):
 
     def yield_fit(self, X, embedding=lambda x: x, yield_epochs=None):
         self.x_data = X
+
         for epoch in super().yield_fit(X, embedding, yield_epochs):
             yield epoch
 

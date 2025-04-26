@@ -60,7 +60,7 @@ class OutlierDetectionModel(ABC):
             self.inlier_label = self.dataset.get_possible_labels()[0]
         self.ui = cli.get()
         self.method_column = METHOD_COL
-        self.data: PreparedData | None = None
+        self._data: PreparedData | None = None
         self.space: Space = space
         self.device = self.space.model.device
         self.base_method: Type[BaseDetector] = base_method
@@ -73,11 +73,16 @@ class OutlierDetectionModel(ABC):
     def _train(self):
         pass
 
+    @property
+    def data(self) -> PreparedData:
+        if self._data is None:
+            self._data = self.space.transform_dataset(self.dataset, self.use_cached, self.inlier_label, None)
+            assert len(self.data.y_train.unique()) == 1 and int(self._data.y_train.unique()) == self.inlier_label, \
+                f"Training data contains other data, than just the inlier data. Expected {self.inlier_label}, got {self._data.y_train.unique()}"
+        return self._data
+
     def train(self):
         self._start_timer()
-        self.data = self.space.transform_dataset(self.dataset, self.use_cached, self.inlier_label, None)
-        assert len(self.data.y_train.unique()) == 1 and int(self.data.y_train.unique()) == self.inlier_label, \
-            f"Training data contains other data, than just the inlier data. Expected {self.inlier_label}, got {self.data.y_train.unique()}"
         self._train()
 
     def predict(self):
