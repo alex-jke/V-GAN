@@ -91,6 +91,69 @@ class MixtureRQLinear(nn.Module):
 
         return combined_kernel
 
+class EfficientRBF(nn.Module):
+    def __init__(self,
+                 n_kernels: int = 5,
+                 mul_factor: float = 2.0,
+                 embedding=lambda x: x):
+        super().__init__()
+        self.device = torch.device('cuda' if torch.cuda.is_available(
+        ) else 'mps' if torch.backends.mps.is_available() else 'cpu')
+        self.n_kernels = n_kernels
+        self.embedding = embedding
+        # μ_i = mul_factor ** (i - n_kernels//2) for i∈[0..K)
+        bw_mult = mul_factor ** (torch.arange(n_kernels) - n_kernels//2)
+        self.bandwidth_multipliers = bw_mult
+        self.register_buffer("bw_mult", bw_mult.float().to(self.device))
+
+    def forward(self, X: torch.Tensor, Y: torch.Tensor):
+        """
+        X, Y: (B, D)
+        Returns three (B,B) blocks K_xx, K_xy, K_yy that match the original RBF.
+        """
+        X = self.embedding(X)
+        Y = self.embedding(Y)
+        B = X.size(0)
+
+        # squared norms
+        x_norm = (X*X).sum(1, keepdim=True)   # (B,1)
+        y_norm = (Y*Y).sum(1, keepdim=True)   # (B,1)
+
+        # pairwise squared distances
+        D_xx = x_norm + x_norm.t() - 2*(X @ X.t())
+        D_yy = y_norm + y_norm.t() - 2*(Y @ Y.t())
+        D_xy = x_norm + y_norm.t() - 2*(X @ Y.t())
+
+        # build the off-diag bandwidth pool exactly like the original
+        mask = ~torch.eye(B, device=X.device, dtype=torch.bool)
+        flat_xx = D_xx[mask]            # B^2 – B entries
+        flat_yy = D_yy[mask]
+        flat_xy = D_xy.reshape(-1)      # B^2 entries
+        # include both X->Y and Y->X just once each
+        all_offdiag = torch.cat([
+            flat_xx,
+            flat_yy,
+            flat_xy,
+            flat_xy  # duplicate for Y->X
+        ], dim=0)
+
+        # exact same denominator (4B^2 – 2B)
+        base_bw = all_offdiag.sum() / all_offdiag.numel()
+        self.bandwidth = base_bw
+        bws = base_bw * self.bw_mult  # (K,)
+
+        # accumulate sum over kernels K)
+        K_xx = torch.zeros_like(D_xx)
+        K_xy = torch.zeros_like(D_xy)
+        K_yy = torch.zeros_like(D_yy)
+        for σ2 in bws:
+            inv = 1.0/σ2
+            K_xx += torch.exp(-D_xx * inv)
+            K_xy += torch.exp(-D_xy * inv)
+            K_yy += torch.exp(-D_yy * inv)
+
+        return K_xx, K_xy, K_yy
+
 class RBF(nn.Module):
 
     def __init__(self, n_kernels=5, mul_factor=2.0, bandwidth=None, embedding = lambda x: x,
@@ -189,7 +252,7 @@ class MMDLossConstrained(nn.Module):
     Constrained loss by the number of features selected
     '''
 
-    def __init__(self, weight, kernel=RBF(), subspace_amount_penalty = 3, middle_penalty = None):
+    def __init__(self, weight, kernel=EfficientRBF(), subspace_amount_penalty = 3, middle_penalty = None):
         super().__init__()
         self.kernel = kernel
         self.weight = weight
@@ -211,13 +274,23 @@ class MMDLossConstrained(nn.Module):
 
     def get_loss(self, X, Y, U, apply_penalty = True):
         #K = self.kernel(torch.vstack([X, Y]))
-        K = self.kernel(X, Y)
+        #K = self.kernel(X, Y)
+
+        #X_size = X.shape[0]
+        #XX = K[:X_size, :X_size].mean()
+        #XY = K[:X_size, X_size:].mean()
+        #YY = K[X_size:, X_size:].mean()
+
+
+        #kernel_eff = EfficientRBF()
+        K_xx, K_xy, K_yy = self.kernel(X, Y)
         self.bandwidth = self.kernel.bandwidth
-        #self.bandwidth_multipliers = self.kernel.bandwidth_multipliers
-        X_size = X.shape[0]
-        XX = K[:X_size, :X_size].mean()
-        XY = K[:X_size, X_size:].mean()
-        YY = K[X_size:, X_size:].mean()
+        self.bandwidth_multipliers = self.kernel.bandwidth_multipliers
+        XX= K_xx.mean()
+        XY = K_xy.mean()
+        YY = K_yy.mean()
+
+        #assert torch.allclose(XX, XX_eff) and torch.allclose(XY, XY_eff) and torch.allclose(YY, YY_eff)
 
         if torch.isnan(XX).any() or torch.isnan(XY).any() or torch.isnan(YY).any():
             raise ValueError("XX or XY contain nan values.")
@@ -237,9 +310,9 @@ class MMDLossConstrained(nn.Module):
         #penalty = self.weight * (avg) if apply_penalty else 0 # self.weight*(mean)
         penalty = 0
         diversity_loss = 0
-        if apply_penalty:
+        if apply_penalty or self.weight != 0.0:
             penalty = self.weight * torch.exp(avg)  # self.weight*(mean)
-            diversity_loss = self.diversity_loss(U.float())
+            #diversity_loss = self.diversity_loss(U.float())
         #u_sizes = U.float().sum(dim=1)
         #median = u_sizes.median()
         #penalty = self.weight * (median) if  apply_penalty else 0

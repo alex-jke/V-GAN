@@ -86,7 +86,7 @@ class CausalLLM(HuggingModel, ABC):
                 torch.backends.cuda.enable_flash_sdp(False)
                 outputs = self.model(inputs_embeds=input_embeds,
                                      #attention_mask=causal_mask,
-                                     attention_mask=mask,
+                                     attention_mask=mask.int().float(),
                                      use_cache=False,
                                      output_hidden_states=True)
             embeddings = outputs.hidden_states

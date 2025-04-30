@@ -1,19 +1,24 @@
 from pathlib import Path
 from typing import Type, Optional
 
+import numpy as np
 from numpy import ndarray
 
-from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE
+import text.UI.cli
+from models.Generator import GeneratorSigmoidSTE, Generator_big, GeneratorSoftmaxSTE, GeneratorUpperSoftmax
 from modules.text.vmmd_text import VMMDTextLightning
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
 from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.LLM.llama import LLama1B
 from text.Embedding.unification_strategy import StrategyInstance, UnificationStrategy
+from text.UI import cli
 from text.dataset.dataset import AggregatableDataset
+from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.outlier_detection.base_v_adapter import BaseVAdapter
 from text.outlier_detection.space.space import Space
 from text.vmmd_lightning_text_experiments import VMMDLightningTextExperiment
 
+ui = cli.get()
 
 class TextVMMDAdapter(BaseVAdapter):
     """
@@ -32,7 +37,7 @@ class TextVMMDAdapter(BaseVAdapter):
                  output_path: Optional[Path] = None,
                  aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  use_mmd: bool = False,
-                 generator: Type[Generator_big]  = GeneratorSoftmaxSTE,
+                 generator: Type[Generator_big]  = GeneratorUpperSoftmax,
                  epochs = 25):
         self.dataset = dataset
         self.space = space
@@ -55,6 +60,7 @@ class TextVMMDAdapter(BaseVAdapter):
     def train(self):
         self._get_params()
         epochs = self.epochs
+        sequence_length = DatasetPreparer.get_max_sentence_length(np.array(self.dataset.get_training_data()[0].tolist()))
         model_run = VMMDLightningTextExperiment(
             emb_model=self.emdedding_model,
             vmmd_model=VMMDTextLightning,
@@ -64,7 +70,7 @@ class TextVMMDAdapter(BaseVAdapter):
             samples=self.space.train_size,
             yield_epochs=10,
             lr=1e-3,
-            weight_decay=1e-5,
+            weight_decay=0.0,
             penalty_weight=0,
             batch_size=10,
             epochs=epochs,
@@ -73,8 +79,10 @@ class TextVMMDAdapter(BaseVAdapter):
             aggregation_strategy=self.strategy,
             use_mmd=self.use_mmd,
             labels = [self.inlier_label],
+            sequence_length=sequence_length
         )
-        self.model = model_run.run()
+        with ui.display(f"Training"):
+            self.model = model_run.run()
         #model_run.visualize(epoch=epochs, model=self.model, sentences=self.model)
 
     def get_subspaces(self, num_subspaces: int = 50) -> ndarray[float]:

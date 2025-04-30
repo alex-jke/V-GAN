@@ -118,7 +118,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     def _convert_word_to_token_mask(self, tokenized: List[Tensor], mask: Tensor) -> Tensor:
         token_word_lengths = Tensor([tokens.shape[0] for tokens in tokenized]).int().to(self.device)
-        assert token_word_lengths.shape[0] == mask.shape[0], f"The mask length and word lengths do not match. Mask: {mask.shape[0]}, Tokens: {token_word_lengths.shape[0]} "
+        assert token_word_lengths.shape[0] == mask.shape[0], f"The word mask length and word lengths do not match. Mask: {mask.shape[0]}, Tokens: {token_word_lengths.shape[0]} "
         try:
             mask = mask.repeat_interleave(token_word_lengths, dim=0)
         except RuntimeError as e:

@@ -203,7 +203,7 @@ class VMMD_od(VMMD, ODModule):
 
     def _plot_loss(self, path_to_directory, show=False):
         plot, ax = self._create_plot()
-        p_values = self.check_if_myopic(self.x_data.cpu().numpy(), count=1000)
+        p_values = self.check_if_myopic(self.x_data.cpu().numpy(), count=max(1000, self.batch_size))
         recomended_p_value = p_values[self.recommended_bandwidth_name].values[0]
         recommended_bandwidth = self.bandwidth.item()
 

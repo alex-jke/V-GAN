@@ -19,7 +19,8 @@ class TokenVAdapter(BaseVAdapter):
         self.space = space
         self.inlier_label = inlier_label
         self.output_path = output_path
-        self.adapter = VMMDAdapter(generator=generator, export_generator=True, max_batch_size=500)
+        self.adapter = VMMDAdapter(generator=generator, export_generator=True, max_batch_size=3000, penalty_weight=0.0)
+        self.amount_subspaces = 10
         self.generator = generator
         self.space = space
 
@@ -29,10 +30,14 @@ class TokenVAdapter(BaseVAdapter):
         self.adapter.init_model(token_data, self.output_path, self.space)
         self.adapter.train()
 
-    def get_subspaces(self, num_subspaces: int = 50) -> ndarray[float]:
+    def get_subspaces(self, num_subspaces: int = None) -> ndarray[float]:
+        if num_subspaces is None:
+            num_subspaces = self.amount_subspaces
         return self.adapter.get_subspaces(num_subspaces)
 
-    def get_probabilities(self, num_subspaces: int = 50) -> ndarray[float]:
+    def get_probabilities(self, num_subspaces: int = None) -> ndarray[float]:
+        if num_subspaces is None:
+            num_subspaces = self.amount_subspaces
         return self.adapter.get_probabilities(num_subspaces)
 
     def get_name(self) -> str:

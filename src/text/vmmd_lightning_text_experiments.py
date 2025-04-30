@@ -242,7 +242,7 @@ class VMMDLightningTextExperiment:
         trainer.fit(model, train_dataloaders=data_loader)
 
         if self.export:
-            self.visualize(epoch=epochs, model=model, sentences=np.array(x_train))
+            self.visualize(epoch=self.epochs, model=model, sentences=np.array(x_train))
         return model
 
 

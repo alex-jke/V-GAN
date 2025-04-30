@@ -48,7 +48,7 @@ class EmbeddingSpace(Space):
 
     def _create_data(self, dataset: Dataset, inlier_label) -> PreparedData:
         # Get tokenized data and corresponding labels
-        token_space = TokenSpace(self.model, self.train_size, self.test_size)
+        token_space = TokenSpace(model=self.model, train_size=self.train_size, test_size=self.test_size)
         #token_data = token_space.transform_dataset(dataset, use_cached=False, inlier_label=inlier_label)
 
         x_train, y_train, x_test, y_test = token_space.get_tokenized(dataset, inlier_label)
