@@ -139,7 +139,7 @@ class Experiment:
         """
         bases = [
             pyod_LUNAR,
-            pyod_ECOD,
+            #pyod_ECOD,
             pyod_LOF]
         models = []
 

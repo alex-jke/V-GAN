@@ -72,7 +72,7 @@ class TextVMMDAdapter(BaseVAdapter):
             lr=1e-3,
             weight_decay=0.0,
             penalty_weight=0,
-            batch_size=10,
+            batch_size=100,
             epochs=epochs,
             export_path=self.output_path,
             export=self.output_path is not None,
