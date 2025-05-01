@@ -98,7 +98,10 @@ class Embedding(ABC):
         assert stacked.shape[1] == 1
         stacked = stacked.mean(dim=1) #dim one just contains 1 entry
         return stacked
-
+        # TODO: Currently, the Embedding based approach means and normalizes the embeddings.
+        # Would that make sense here? The main problem is that the stacked tensor might be 3D, if the padding strategy is used.
+        # Since it is unclear, what the downstream task is, it is not clear, if this is the right approach.
+        # If for example, the downstream task then means the embeddings, the vectors are not normalized.
 
 
     def _get_sentence_embeddings(self, sentences: np.ndarray[str], seperator: str = " ", masks: Optional[Tensor] = None,
