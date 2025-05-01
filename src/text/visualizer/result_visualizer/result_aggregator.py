@@ -1,8 +1,9 @@
 from pathlib import Path
 import os
 import pandas as pd
-from text.consts.columns import EMB_MODEL_COL, DATASET_COL
+from text.consts.columns import EMB_MODEL_COL, DATASET_COL, RANK_COL
 from text.outlier_detection.odm import METHOD_COL, SPACE_COL, AUC_COL, PRAUC_COL, F1_COL, TIME_TAKEN_COL, BASE_COL
+from text.visualizer.result_visualizer.rank import RankVisualizer
 
 class ResultAggregator():
 
@@ -59,10 +60,23 @@ class ResultAggregator():
         avg_df = df.groupby(group_by_columns).mean().reset_index()
 
         # Group by dataset and create rankings from the average AUC, where the best AUC is ranked 1
-        avg_df["rank"] = avg_df.groupby(DATASET_COL)[AUC_COL].rank(ascending=False, method='first')
+        avg_df[RANK_COL] = avg_df.groupby(DATASET_COL)[AUC_COL].rank(ascending=False, method='first')
+        ranked_df = avg_df.sort_values(by=[DATASET_COL, AUC_COL], ascending=[True, False])
 
         export_path = self.version_path / "ranked_results.csv"
-        avg_df.to_csv(export_path, index=False)
+        ranked_df.to_csv(export_path, index=False)
+        self._create_rank_plot(ranked_df)
+
+    def _create_rank_plot(self, ranked_df):
+        """
+        Creates a box plot of the ranks for each method and metric, grouped by base method.
+        """
+
+        rank_visualizer = RankVisualizer([], self.version_path)
+        rank_visualizer.create_box_plot(data=ranked_df,
+                                        method_col=METHOD_COL,
+                                        metric_col=AUC_COL,
+                                        group_by=BASE_COL)
 
 
 if __name__ == "__main__":
