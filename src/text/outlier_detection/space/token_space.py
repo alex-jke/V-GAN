@@ -50,6 +50,9 @@ class TokenSpace(Space):
             for i in range(tokenized.shape[0]):
                 ui.update(f"Embedding {i}/{tokenized.shape[0]}")
                 sample = tokenized[i]
+                # Remove padding tokens
+                sample = sample[sample != self.model.padding_token]
+
                 embedded_tokens = self.model.fully_embed_tokenized(sample)
                 embedding = embedded_tokens.mean(dim=0)
                 embeddings.append(embedding)
