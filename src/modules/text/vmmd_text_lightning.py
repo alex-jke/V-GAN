@@ -11,12 +11,15 @@ from pytorch_lightning.utilities import grad_norm
 from torch import Tensor
 import pytorch_lightning as pl
 from models.Generator import GeneratorSigmoidSTE
-from models.Mmd_loss_constrained import MMDLossConstrained, RBF as RBFConstrained, MixtureRQLinear
+from models.Mmd_loss_constrained import MMDLossConstrained, RBF as RBFConstrained, MixtureRQLinear, EfficientRBF
 from VMMDBase import VMMDBase
 from models.mse_loss import MSELoss
 from modules.od_module import ODModule
 from modules.text.vmmd_lightning import VMMDLightningBase
 from text.Embedding.unification_strategy import StrategyInstance, UnificationStrategy
+from text.UI import cli
+
+ui = cli.get()
 
 
 class VMMDTextLightningBase(VMMDLightningBase, ODModule):
@@ -36,7 +39,7 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         self.add_nan_hook()
         # Create loss function.
         #kernel = MixtureRQLinear()#
-        kernel = RBFConstrained()
+        kernel = EfficientRBF()
         self.loss_function = MMDLossConstrained(weight=self.hparams.get("weight", 1.0), kernel=kernel) if use_mmd else MSELoss(weight=self.hparams.get("weight", 1.0))
 
     def add_nan_hook(self):
@@ -75,6 +78,9 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
             #self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
 
     def training_step(self, batch, batch_idx):
+
+        ui.update(f"Training Epoch {self.current_epoch}/{self.epochs}")
+
         # Assume batch is a numpy array of sentences or similar.
         # Prepare noise and subspaces.
         noise_tensor = self._get_noise_tensor(self._latent_size)

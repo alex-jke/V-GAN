@@ -147,9 +147,10 @@ class Embedding(ABC):
         if masks is not None:
             mask = masks[i] if len(masks.shape) > 1 else masks
             if len(words) > mask.shape[0]:
-                words = words[ :mask.shape[0]]  # TODO: this now only applies if mask is set, as if everything after is masked
+                words = words[ :mask.shape[0]]  #this now only applies if mask is set, as if everything after is masked
             elif len(words) < mask.shape[0]:
                 mask = mask[:len(words)]
+            assert len(words) == mask.shape[0], "Mask and Words should have same length, after being trimmed."
 
         if padding_length is not None and len(words) > padding_length:
             words = words[:padding_length]

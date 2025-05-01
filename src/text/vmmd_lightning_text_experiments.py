@@ -10,7 +10,8 @@ from pytorch_lightning import Trainer, Callback
 from pytorch_lightning.loggers import TensorBoardLogger, CSVLogger
 from torch.utils.data import DataLoader
 
-from models.Generator import GeneratorSpectralSigmoidSTE, GeneratorSigmoidSTE, GeneratorSoftmaxSTE, Generator_big
+from models.Generator import GeneratorSpectralSigmoidSTE, GeneratorSigmoidSTE, GeneratorSoftmaxSTE, Generator_big, \
+    GeneratorUpperSoftmax
 from modules.text.vmmd_text import VMMDTextLightning
 from modules.text.vmmd_text_base import VMMDTextBase
 from modules.text.vmmd_text_lightning import VMMDTextLightningBase
@@ -19,6 +20,7 @@ from text.Embedding.LLM.llama import LLama1B, LLama3B
 from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.dataset.dataset import Dataset, AggregatableDataset
 from text.dataset.emotions import EmotionDataset
+from text.dataset.nlp_adbench import NLPADBenchN24News
 from text.dataset_converter.dataset_preparer import DatasetPreparer
 from text.visualizer.collective_visualizer import CollectiveVisualizer
 from text.visualizer.lightning.callback import VisualizationCallback
@@ -242,17 +244,17 @@ class VMMDLightningTextExperiment:
         trainer.fit(model, train_dataloaders=data_loader)
 
         if self.export:
-            self.visualize(epoch=epochs, model=model, sentences=np.array(x_train))
+            self.visualize(epoch=self.epochs, model=model, sentences=np.array(x_train))
         return model
 
 
 if __name__ == "__main__":
 
     emb_model = LLama3B()
-    dataset = EmotionDataset()
-    generator = GeneratorSoftmaxSTE
-    version = "0.056"
-    sampless = [300]
+    dataset = NLPADBenchN24News()
+    generator = GeneratorUpperSoftmax
+    version = "0.057"
+    sampless = [100]
     yield_epochs = 1
     batch_size = 100
     penalty_weights = [0.0]

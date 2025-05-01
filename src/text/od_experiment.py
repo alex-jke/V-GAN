@@ -151,12 +151,15 @@ class Experiment:
         ])
 
         if not self.run_cachable:
+            amount_subspaces_text = 10
+            amount_token_subspaces = 10
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
             #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
             #               for base in bases
             #               for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create())
+            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create(),
+                                    amount_subspaces=amount_subspaces_text)
                            for base in bases
                            for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only subspace distance.
@@ -167,7 +170,8 @@ class Experiment:
             # VMMD Text ODM with subspace distance and ensemble outlier detection.
             for base in bases:
                 models.extend([#TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path)),
-                               TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path)),
+                               TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path),
+                                        amount_subspaces=amount_token_subspaces),
                                #TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, classifier_delta=0.0, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path))
                                ])
 
@@ -183,7 +187,7 @@ class Experiment:
         model_types = [lambda generator: VMMDAdapter(generator=generator, export_generator=self.use_cached)]#, VGANAdapter()]
         generators = [#GeneratorSigmoidAnnealing, #GeneratorSoftmaxAnnealing,
                       GeneratorUpperSoftmax,
-                      GeneratorSoftmaxSTE, GeneratorSigmoidSTE#, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid,
+                      #GeneratorSoftmaxSTE, #GeneratorSigmoidSTE#, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid,
                       #GeneratorSigmoidSTEMBD,
                       #GeneratorSoftmaxSTESpectralNorm,
                       #GeneratorSoftmaxSTEMBD
@@ -269,7 +273,7 @@ class Experiment:
                 "error": [str(e)],
                 "traceback": [str(traceback.format_exc())]
             })
-            print(f"{model._get_name()} encountered an error.")
+            print(f"{model._get_name()} encountered an error. {e}")
             return pd.DataFrame(), error_record
 
     def _visualize_and_save_results(self, run: int) -> None:
@@ -409,8 +413,8 @@ if __name__ == '__main__':
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
-    test_samples = 3000
-    train_samples = 15_000
+    test_samples = 2_000
+    train_samples = 5_000
     datasets = NLP_ADBench.get_all_datasets()
     datasets.sort(key=lambda d: d.average_length)
     emb_model = LLama3B()
@@ -418,8 +422,8 @@ if __name__ == '__main__':
     with ui.display():
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
-            exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                                experiment_name="0.42", use_cached=True, runs=5, run_cachable=False)
+            exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
+                                experiment_name="0.44", use_cached=True, runs=5, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
             csv_path = aggregated_path / "aggregated.csv"
 

@@ -98,14 +98,16 @@ class Generator_big(nn.Module):
         self.final_activation_function = activation_function
         self.avg_mask = ValueExtractor()
 
+        print("creating Generator with dimensions:", end=" ")
         layers = [self.get_layer(layer) for layer in range(1, amount_layers)]
         layers += [self.get_layer(amount_layers, last=True)]
+        print()
         self.main = nn.Sequential(*layers)
 
     def get_layer(self, layer_num: int, last=False):
         input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
         output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
-
+        print(f"({input_size} -> {output_size})", end=" | ")
         layer = nn.Sequential(
             nn.Linear(input_size, output_size),
             nn.LeakyReLU(0.2),
