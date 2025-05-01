@@ -289,7 +289,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         aggregated = embeddings.mean(dim=-1)
         return aggregated
 
-    def get_embedding_fun(self, batch_first = False) -> Callable[[Tensor], Tensor]:
+    def get_embedding_fun(self, batch_first = False, remove_padding = False) -> Callable[[Tensor], Tensor]:
         def embedding(data: Tensor) -> Tensor:
             """
             This method takes a tensor of tokenized datapoints and returns the embeddings.
@@ -307,6 +307,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                 for (i, partial_review) in enumerate(data):
                     ui.update(f"Embedding {i+1}/{len(data)}")
                     partial_review: Tensor
+
+                    if remove_padding:
+                        # Remove padding tokens
+                        partial_review = partial_review[partial_review != self.padding_token]
 
                     embedded: Tensor = self.fully_embed_tokenized(partial_review).T #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension

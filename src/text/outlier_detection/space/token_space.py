@@ -54,7 +54,8 @@ class TokenSpace(Space):
                 sample = sample[sample != self.model.padding_token]
 
                 embedded_tokens = self.model.fully_embed_tokenized(sample)
-                embedding = embedded_tokens.mean(dim=0)
+                #embedding = embedded_tokens.mean(dim=0)
+                embedding = self.model.aggregateEmbeddings(embedded_tokens)
                 embeddings.append(embedding)
         return torch.stack(embeddings)
 
