@@ -53,9 +53,10 @@ class TokenSpace(Space):
                 # Remove padding tokens
                 sample = sample[sample != self.model.padding_token]
 
-                embedded_tokens = self.model.fully_embed_tokenized(sample)
-                #embedding = embedded_tokens.mean(dim=0)
-                embedding = self.model.aggregateEmbeddings(embedded_tokens)
+                embedded_tokens = self.model.fully_embed_tokenized(sample) # TODO: normalize?
+                embedding = embedded_tokens.mean(dim=0)
+                #embedding = self.model.aggregateEmbeddings(embedded_tokens)
+                assert len(embedding.shape) == 1, "Embedding should be 1D."
                 embeddings.append(embedding)
         return torch.stack(embeddings)
 

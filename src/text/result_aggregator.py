@@ -5,7 +5,7 @@ from typing import List, Tuple
 import pandas as pd
 
 
-class ResultAggregator():
+class FullResultAggregator():
     """
     A class to aggregate the results of multiple experiments. The results are stored in a nested folder structure, where each folder contains the results of one experiment.
     This class traverses the folder structure and reads the results of each experiment. The results are stored in a list of dataframes, where each dataframe contains two cross joined dataframes: one with the common metrics and one with the results of the experiment.

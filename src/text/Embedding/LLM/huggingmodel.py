@@ -202,7 +202,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask)
         aggregated = self._aggregate_token_to_word_embedding(embeddings, tokenized)
 
-        aggregated = torch.nn.functional.normalize(aggregated, dim=1)
+        #aggregated = torch.nn.functional.normalize(aggregated, dim=1)
 
         # Apply the mask to the embeddings, so that the masked tokens are zeroed out
         masked = aggregated * mask.unsqueeze(1).expand_as(aggregated) if mask is not None else aggregated
@@ -232,9 +232,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     def embed_words(self, words: List[str], mask: Optional[Tensor] = None, strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create()) -> Tensor:
         if strategy.equals(UnificationStrategy.TRANSFORMER):
-            return self._embed_words_last(words, mask)
+            return torch.nn.functional.normalize(self._embed_words_last(words, mask), dim=1)
         if strategy.equals(UnificationStrategy.MEAN):
-            return self._embed_words_full(words, mask).mean(dim=0).unsqueeze(0)
+            return torch.nn.functional.normalize(self._embed_words_full(words, mask).mean(dim=0).unsqueeze(0), dim=1)
         if strategy.equals(UnificationStrategy.PADDING):
             return self._embed_words_full(words, mask)
         raise NotImplementedError(f"The strategy {strategy} is not implemented for huggingmodels.")
@@ -325,9 +325,11 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                 #aggregated = self.aggregateEmbeddings(embeddings = embeddings)
             if batch_first:
                 transposed = embeddings.T
-                meaned = transposed - transposed.mean(dim=0)
-                normed = torch.nn.functional.normalize(meaned, dim=1)
+                #meaned = transposed - transposed.mean(dim=0)
+                normed = torch.nn.functional.normalize(transposed, dim=1)
+
                 return normed
+                #return transposed
             return embeddings
         return embedding
 

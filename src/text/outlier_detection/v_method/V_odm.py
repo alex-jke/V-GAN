@@ -29,7 +29,7 @@ class V_ODM(EnsembleODM):
 
         # The number of subspaces to sample from the random operator. Currently set to 50, as the runtime rises rapidly with more subspaces.
         # Since the subspaces are sorted by probability this means the 50 most likely subspaces are sampled
-        self.num_subspaces = 50
+        self.num_subspaces = 200
 
         if odm_model is None:
             odm_model = VMMDAdapter()

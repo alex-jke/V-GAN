@@ -94,16 +94,16 @@ class TextVOdm(EnsembleODM):
         return ensemble_scores
 
     def _predict(self):
-        subspace_dists = torch.zeros_like(self.y_test).cpu()
+        subspace_dists = torch.zeros_like(self.embedded_data[0].y_test).cpu()
         if self.subspace_distance_lambda != 0:
             subspace_dists = self._calculate_distances(self.x_test, self.embedded_data, self.space).cpu()
 
-        ensemble_scores = torch.zeros_like(self.y_test).cpu()
+        ensemble_scores = torch.zeros_like(self.embedded_data[0].y_test).cpu()
         if self.classifier_delta != 0:
             ensemble_scores = self._predict_ensemble().cpu()
         # Combine the two scores
         combined_scores = self.classifier_delta * ensemble_scores + self.subspace_distance_lambda * subspace_dists
-        assert len(combined_scores.shape) == 1 and combined_scores.shape == self.y_test.shape
+        assert len(combined_scores.shape) == 1 and combined_scores.shape == self.embedded_data[0].y_test.shape
         self.predictions = combined_scores
 
     def _get_name(self) -> str:

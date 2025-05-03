@@ -40,7 +40,7 @@ from text.outlier_detection.v_method.ensembe_v_odm import EnsembleV_ODM
 from text.outlier_detection.v_method.vmmd_adapter import VMMDAdapter
 from text.outlier_detection.word_based_v_method.text_v_odm import TextVOdm
 from text.outlier_detection.word_based_v_method.token_v_adapter import TokenVAdapter
-from text.result_aggregator import ResultAggregator
+from text.visualizer.result_visualizer.result_aggregator import ResultAggregator
 from text.visualizer.result_visualizer.rank import RankVisualizer
 from text.visualizer.result_visualizer.result_visualizer import ResultVisualizer
 
@@ -158,10 +158,10 @@ class Experiment:
             #               for base in bases
             #               for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only ensemble outlier detection.
-            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create(),
-                                    amount_subspaces=amount_subspaces_text)
-                           for base in bases
-                           for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
+            #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create(),
+            #                        amount_subspaces=amount_subspaces_text)
+            #               for base in bases
+            #               for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
             # VMMD Text ODM with only subspace distance.
             #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, classifier_delta=0.0, aggregation_strategy=strategy.create())
             #                for base in bases
@@ -347,7 +347,7 @@ class Experiment:
                         del model
                     if len(self.result_df) > 0:
                         results.append(self.result_df)
-                        self._visualize_ranks(results)
+                        #self._visualize_ranks(results)
 
                 self._visualize_and_save_results(run=run)
         aggregated_results = pd.concat(results, ignore_index=True)
@@ -417,17 +417,19 @@ if __name__ == '__main__':
     train_samples = 5_000
     datasets = NLP_ADBench.get_all_datasets()
     datasets.sort(key=lambda d: d.average_length)
+    #datasets = datasets[1:] + datasets[:1]
     emb_model = LLama3B()
     ui = cli.get()
     with ui.display():
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
             exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
-                                experiment_name="0.44", use_cached=True, runs=5, run_cachable=False)
+                                experiment_name="0.45", use_cached=True, runs=5, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
-            csv_path = aggregated_path / "aggregated.csv"
+            #csv_path = aggregated_path / "aggregated.csv"
+            aggregator = ResultAggregator(version_path=aggregated_path)
+            aggregator.aggregate()
 
             results = exp.run()
             results[MODEL] = emb_model.model_name
             results[DATASET] = dataset.name
-            results.to_csv(csv_path , index=False, header= not csv_path.exists(), mode="a")
