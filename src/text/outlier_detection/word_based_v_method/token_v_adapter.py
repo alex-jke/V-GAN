@@ -25,7 +25,10 @@ class TokenVAdapter(BaseVAdapter):
         self.space = space
 
     def train(self):
-        token_data = PreparedData(*self.space.get_tokenized(self.dataset, inlier_label=self.inlier_label), space=self.space.name,
+        token_x_train, y_train, token_x_test, y_test = self.space.get_tokenized(self.dataset, inlier_label=self.inlier_label)
+        token_x_test = token_x_test[:, :self.space.model.max_token_length()]
+        token_x_train = token_x_train[:, :self.space.model.max_token_length()]
+        token_data = PreparedData(x_train=token_x_train, y_train=y_train, x_test=token_x_test, y_test=y_test, space=self.space.name,
                                        inlier_labels=[self.inlier_label])
         self.adapter.init_model(token_data, self.output_path, self.space)
         self.adapter.train()

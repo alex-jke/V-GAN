@@ -117,6 +117,6 @@ class FullResultAggregator():
             print("No aggregated results to save.")
 
 if __name__ == "__main__":
-    aggregator = ResultAggregator(result_name="results.csv",
+    aggregator = FullResultAggregator(result_name="results.csv",
                                   common_metrics_name="comon_metrics.csv")
     aggregator.run_aggregation()

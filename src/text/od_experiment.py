@@ -11,7 +11,7 @@ from pyod.models.lunar import LUNAR as pyod_LUNAR
 from pyod.models.ecod import ECOD as pyod_ECOD
 from pyod.models.lof import LOF as pyod_LOF
 
-from models.Generator import GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD
+from src.models.Generator import GeneratorSigmoidAnnealing, GeneratorSoftmaxAnnealing, GeneratorUpperSoftmax, GeneratorSoftmaxSTE, GeneratorSigmoidSTE, GeneratorSpectralSigmoidSTE, GeneratorSigmoidSoftmaxSTE, GeneratorSigmoidSoftmaxSigmoid, GeneratorSigmoidSTEMBD, GeneratorSoftmaxSTESpectralNorm, GeneratorSoftmaxSTEMBD
 from text.Embedding.LLM.bert import Bert
 from text.Embedding.LLM.deepseek import DeepSeek1B, DeepSeek14B, DeepSeek7B
 from text.Embedding.LLM.gpt2 import GPT2
@@ -183,7 +183,7 @@ class Experiment:
 
 
         # VGAN ODM models with both use_embedding False and True.
-        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER], self.text_params[UnificationStrategy.MEAN]]
+        params = [self.emb_params, self.text_params[UnificationStrategy.TRANSFORMER]]
         model_types = [lambda generator: VMMDAdapter(generator=generator, export_generator=self.use_cached)]#, VGANAdapter()]
         generators = [#GeneratorSigmoidAnnealing, #GeneratorSoftmaxAnnealing,
                       GeneratorUpperSoftmax,
@@ -211,19 +211,21 @@ class Experiment:
 
 
         # VGAN ODM with only ensemble outlier detection.
-        models.extend([EnsembleV_ODM(**param, output_path=self.output_path, odm_model=model_type(generator))
-                       for param in params
-                       for model_type in model_types
-                       for generator in generators
-                       ])
+        if False:
+            models.extend([EnsembleV_ODM(**param, output_path=self.output_path, odm_model=model_type(generator))
+                           for param in params
+                           for model_type in model_types
+                           for generator in generators
+                           ])
 
-        # VGAN ODM with only subspace distance.
-        models.extend([DistanceV_ODM(**param, output_path=self.output_path,
-                                     odm_model=model_type(generator))
-                       for model_type in model_types
-                       for param in params
-                       for generator in generators
-                       ])
+        if False:
+            # VGAN ODM with only subspace distance.
+            models.extend([DistanceV_ODM(**param, output_path=self.output_path,
+                                         odm_model=model_type(generator))
+                           for model_type in model_types
+                           for param in params
+                           for generator in generators
+                           ])
 
         models.extend([
             FeatureBagging(**param, base_detector=base)
@@ -231,7 +233,7 @@ class Experiment:
             for param in params
         ])
 
-        for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]:
+        for strategy in [UnificationStrategy.TRANSFORMER]:
             models.extend([
                 LOF(**self.text_params[strategy]),
                 LUNAR(**self.text_params[strategy]),
@@ -424,7 +426,7 @@ if __name__ == '__main__':
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
             exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
-                                experiment_name="0.45", use_cached=True, runs=5, run_cachable=False)
+                                experiment_name="0.45", use_cached=True, runs=1, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
             #csv_path = aggregated_path / "aggregated.csv"
             aggregator = ResultAggregator(version_path=aggregated_path)

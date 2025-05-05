@@ -32,6 +32,7 @@ not_initizalied_error_msg = "The train data has not been set. Have you called us
 
 METHOD_COL = "method"
 SPACE_COL = "space"
+SPACE_TYPE_COL = "space_type"
 AUC_COL = "auc"
 PRAUC_COL = "prauc"
 F1_COL = "f1"
@@ -178,8 +179,8 @@ class OutlierDetectionModel(ABC):
 
 
         # Calculate percentage of inliers and outliers
-        percentage_inlier = sum(y_test) / len(y_test) * 100
-        percentage_outlier = 100 - percentage_inlier
+        percentage_outlier = sum(y_test) / len(y_test) * 100
+        percentage_inlier = 100 - percentage_outlier
 
         self.results = pd.DataFrame({
             "actual": y_test,
@@ -193,7 +194,8 @@ class OutlierDetectionModel(ABC):
             PRAUC_COL: [prauc],
             F1_COL: [f1],
             TIME_TAKEN_COL: [self.time_elapsed],
-            BASE_COL: [self.base_method.__name__]
+            BASE_COL: [self.base_method.__name__],
+            #SPACE_TYPE_COL: [self.get_space_type()]
         })
 
         self.common_parameters = pd.DataFrame({

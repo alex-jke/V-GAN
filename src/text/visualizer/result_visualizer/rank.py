@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Callable
 
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -34,27 +34,39 @@ class RankVisualizer():
             dfs.append(df_run)
         data = pd.concat(dfs, ignore_index=True)
 
-        self.create_box_plot(data, method_col, metric_col, group_by)
+        self.create_box_plot(data, method_col, metric_col, [group_by])
 
-    def create_box_plot(self, data: pd.DataFrame, method_col: str, metric_col: str, group_by: str):
+    def create_box_plot(self, data: pd.DataFrame, method_col: str, metric_col: str, group_by: str or list, name: Optional[str]= None, method_color: Callable[[str], str] = None):
         # Use a modern style
         plt.style.use('seaborn-v0_8-whitegrid')
 
+        # Handle both single column and list of columns for group_by
+        if isinstance(group_by, list):
+            # Get unique combinations of values in the groupby columns
+            groups = list(data.groupby(group_by).groups.keys())
+            # Sort groups for consistent display
+            groups = sorted(groups, key=str)
+        else:
+            groups = sorted(data[group_by].unique())
 
-        # Identify unique groups and methods
-        groups = sorted(data[group_by].unique())
         n_groups = len(groups)
         unique_methods = data[method_col].unique()
 
+        def default_color_mapping(method: str) -> str:
+            if "VMMD" in method:
+                return colors.VGAN_GREEN
+            elif "FeatureBagging" in method:
+                return colors.TRIADIC[0]
+            else:
+                return colors.TRIADIC[1]
+
         # Create custom color mapping based on method names
         color_map = {}
+        color_func = default_color_mapping if method_color is None else method_color
         for method in unique_methods:
-            if "VMMD" in method:
-                color_map[method] = colors.VGAN_GREEN
-            elif "FeatureBagging" in method:
-                color_map[method] = colors.TRIADIC[0]
-            else:
-                color_map[method] = colors.TRIADIC[1]
+            color_map[method] = color_func(method)
+
+
 
         # Dynamically size figure based on content
         fig_width = max(12, len(max(unique_methods, key=len)) * 0.3)
@@ -62,7 +74,7 @@ class RankVisualizer():
 
         # Create figure with subplots stacked vertically
         fig, axes = plt.subplots(n_groups, 1, figsize=(fig_width, fig_height),
-                                sharex=True, constrained_layout=True)
+                                 sharex=True, constrained_layout=True)
 
         # Handle single group case
         axes = [axes] if n_groups == 1 else axes
@@ -73,7 +85,16 @@ class RankVisualizer():
             csv_path.mkdir(parents=True)
 
         for ax, group in zip(axes, groups):
-            group_data = data[data[group_by] == group]
+            # Filter data based on whether group_by is a list or single column
+            if isinstance(group_by, list):
+                # For tuple of values from multiple columns
+                mask = pd.Series(True, index=data.index)
+                for col, val in zip(group_by, group):
+                    mask &= (data[col] == val)
+                group_data = data[mask]
+            else:
+                # Original behavior for single column
+                group_data = data[data[group_by] == group]
 
             # Create horizontal boxplot with methods on y-axis
             seaborn.boxplot(
@@ -88,8 +109,13 @@ class RankVisualizer():
                 orient='h'
             )
 
-            # Add group title and style axis labels
-            ax.set_title(f'{group}', fontsize=14, fontweight='bold')
+            # Create title based on group_by type
+            if isinstance(group_by, list):
+                title = ", ".join([f"{col}={val}" for col, val in zip(group_by, group)])
+            else:
+                title = f"{group}"
+
+            ax.set_title(title, fontsize=14, fontweight='bold')
             ax.set_ylabel('')
             ax.set_xlabel('Rank', fontsize=12)
 
@@ -102,13 +128,20 @@ class RankVisualizer():
             ax.tick_params(axis='y', labelsize=11)
             ax.tick_params(axis='x', labelsize=11)
 
-            # Set y-tick labels to be fully visible with increased margin
+            # Set y-tick labels to be fully visible
             plt.setp(ax.get_yticklabels(), wrap=True)
 
             for i, artist in enumerate(ax.artists):
                 artist.set_edgecolor('black')
                 artist.set_linewidth(0.8)
 
-        plt.savefig(self.output_dir / f"rank_{method_col}_{metric_col}_{group_by}.png",
-                   dpi=300, bbox_inches='tight')
+        # Create a descriptive filename
+        if isinstance(group_by, list):
+            group_str = "_".join(group_by)
+        else:
+            group_str = group_by
+
+        name = f"rank_{method_col}_{metric_col}_{group_str}" if name is None else name
+        plt.savefig(self.output_dir / (name + ".png"),
+                    dpi=300, bbox_inches='tight')
         plt.close()
