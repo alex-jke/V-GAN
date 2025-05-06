@@ -97,7 +97,6 @@ datasets
 staticvectors
 torchviz
 pytorch-lightning
-deepspeed
 lightning_transformers
 tensorboard
 accelerate

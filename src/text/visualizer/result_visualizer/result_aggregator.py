@@ -10,14 +10,27 @@ from text.outlier_detection.odm import METHOD_COL, SPACE_COL, AUC_COL, PRAUC_COL
 from text.visualizer.result_visualizer.rank import RankVisualizer
 
 FEATURE_BAGGING = "Feature-Bagging"
-V_GAN_AVG = "V-GAN-Avg"
-V_GAN_NPTE = "V-GAN-NPTE"
+#V_GAN_AVG = "V-GAN-Avg"
+#V_GAN_NPTE = "V-GAN-NPTE"
+V_GAN = "V-GAN"
 V_GAN_TOKEN = "V-GAN-Token"
 V_GAN_TEXT = "V-GAN-Text"
 FULL_SPACE = "Full-Space"
 TRIVIAL = "Trivial"
 AVG_SPACE = "Avg"
 NTPE_SPACE = "NPTE"
+
+
+def coloring(method_name: str) -> str:
+    """
+    Coloring function for the methods after renaming.
+    """
+    if "V-GAN" in method_name:
+        return colors.VGAN_GREEN
+    elif FEATURE_BAGGING in method_name or "FB" in method_name:
+        return colors.TRIADIC[0]
+    else:
+        return colors.TRIADIC[1]
 
 class ResultAggregator():
 
@@ -100,14 +113,6 @@ class ResultAggregator():
         ranked_df[SPACE_COL] = ranked_df[SPACE_COL].replace("Embedding", "Avg").replace("Token-space", "Avg").replace("Word NPTE", "NPTE")
         ranked_df.to_csv(self.version_path / "ranked_results_filterd_renamed.csv", index=False)
 
-        def coloring(method_name: str) -> str:
-            if "V-GAN" in method_name:
-                return colors.VGAN_GREEN
-            elif FEATURE_BAGGING in method_name:
-                return colors.TRIADIC[0]
-            else:
-                return colors.TRIADIC[1]
-
         self._create_rank_plot(ranked_df, group_by=[BASE_COL, SPACE_COL] , name="ranked_renamed", method_color=coloring)
         return
         rank = RankVisualizer([], self.version_path)
@@ -124,14 +129,14 @@ class ResultAggregator():
         method_name = method_name.replace("+ Word NPTE", "NPTE")
 
         if method_name.startswith("FeatureBagging"):
-            method_name = FEATURE_BAGGING + " " + method_name.split(" ")[-1]
+            method_name = FEATURE_BAGGING# + " " + method_name.split(" ")[-1]
             return method_name
 
         if method_name.startswith("VMMD") and "E" in method_name:
-            return  V_GAN_AVG
+            return  V_GAN
 
-        if method_name.startswith("VMMD") and "W" in method_name:
-            return V_GAN_NPTE
+        #if method_name.startswith("VMMD") and "W" in method_name:
+            #return V_GAN_NPTE
 
         if method_name.startswith("TokenVMMD"):
             return V_GAN_TOKEN
@@ -142,7 +147,7 @@ class ResultAggregator():
         if method_name == TRIVIAL:
             return TRIVIAL
 
-        return FULL_SPACE + " " + method_name.split(" ")[-1]
+        return FULL_SPACE# + " " + method_name.split(" ")[-1]
 
 
     def _create_rank_plot(self, ranked_df, group_by: str or list, name:Optional[str] = None, method_color: Optional[Callable[[str], str]] = None):
