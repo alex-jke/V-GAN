@@ -55,9 +55,9 @@ class CausalLLM(HuggingModel, ABC):
             model = AutoModelForCausalLM.from_pretrained(
             self._model_prefix + self._model_name,
             trust_remote_code=True,
-            device_map='cuda',
+            #device_map='cuda',
             attn_implementation="eager",
-        )
+        ).to(self.device)
         else:
             model = AutoModelForCausalLM.from_pretrained(
                 self._model_prefix + self._model_name,
