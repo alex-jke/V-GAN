@@ -68,6 +68,8 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
             warnings.warn("Generator did not return any parameters.")
         else:
             norm = avg_norm / len(norms)
+        if norm.abs().sum() == 0.0:
+            print("No gradient.")
         self.log(self.gradient_key, norm, prog_bar=True)
         self.log_dict(norms)
 

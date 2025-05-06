@@ -49,7 +49,7 @@ class CausalLLM(HuggingModel, ABC):
         return self._dtype
 
     @property
-    def _model(self):
+    def _model(self) -> AutoModelForCausalLM:
         dtype = self.get_dtype()
         if dtype is None:
             model = AutoModelForCausalLM.from_pretrained(
@@ -79,18 +79,23 @@ class CausalLLM(HuggingModel, ABC):
             expanded_mask = mask.T.expand_as(input_embeds)
             input_embeds = input_embeds * expanded_mask
             input_embeds = input_embeds.unsqueeze(0)
-            with torch.no_grad():
-                #causal_mask = self._get_4d_causal_mask(mask)
-                input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
+            #with torch.no_grad():
+            if True:
+                mask_passed = mask.int().float() + (mask - mask.detach())
+                causal_mask = self._get_4d_causal_mask(mask_passed)
+                input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.dtype)
                 torch.backends.cuda.enable_mem_efficient_sdp(False)
                 torch.backends.cuda.enable_flash_sdp(False)
+                #self.model: AutoModelForCausalLM = self.model
                 outputs = self.model(inputs_embeds=input_embeds,
-                                     #attention_mask=causal_mask,
-                                     attention_mask=mask.int().float(),
+                                     attention_mask=causal_mask,
+                                     #attention_mask=mask.int().float(),
                                      use_cache=False,
-                                     output_hidden_states=True)
+                                     output_hidden_states=True
+                                     )
+
             embeddings = outputs.hidden_states
-            last_layer = embeddings[-1] + (input_embeds - input_embeds.detach())# TODO: check if this is correct.
+            last_layer = embeddings[-1]# + (input_embeds - input_embeds.detach())# TODO: check if this is correct.
             de_batched = last_layer[0]
             assert de_batched.shape[0] == mask.shape[1], "Debatch was not successful."
             normalized = torch.nn.functional.normalize(de_batched)

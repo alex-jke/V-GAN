@@ -66,7 +66,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
     def model(self):
         if self.__model is None:
             self.__model = self._model
-            self.__model.eval()
+            #self.__model.eval()
+            self.__model.train()
+            self.model.gradient_checkpointing_enable()
             for param in self.__model.parameters():
                 param.requires_grad = False
         return self.__model

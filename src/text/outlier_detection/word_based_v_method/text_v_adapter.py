@@ -38,7 +38,8 @@ class TextVMMDAdapter(BaseVAdapter):
                  aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  use_mmd: bool = False,
                  generator: Type[Generator_big]  = GeneratorUpperSoftmax,
-                 epochs = 25):
+                 epochs = 25,
+                 batch_size = 10):
         self.dataset = dataset
         self.space = space
         agg_str = aggregation_strategy.key()
@@ -53,6 +54,7 @@ class TextVMMDAdapter(BaseVAdapter):
         self.inlier_label = inlier_label
         self.generator = generator
         self.epochs = epochs
+        self.batch_size = batch_size
 
     def _get_params(self):
         NotImplementedError("Change params based on use_mmd and transformer_aggregation")
@@ -72,7 +74,7 @@ class TextVMMDAdapter(BaseVAdapter):
             lr=1e-3,
             weight_decay=0.0,
             penalty_weight=0,
-            batch_size=100,
+            batch_size=self.batch_size,
             epochs=epochs,
             export_path=self.output_path,
             export=self.output_path is not None,
