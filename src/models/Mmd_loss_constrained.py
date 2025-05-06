@@ -104,7 +104,7 @@ class EfficientRBF(nn.Module):
         # μ_i = mul_factor ** (i - n_kernels//2) for i∈[0..K)
         bw_mult = mul_factor ** (torch.arange(n_kernels) - n_kernels//2)
         self.bandwidth_multipliers = bw_mult
-        self.register_buffer("bw_mult", bw_mult.float().to(self.device))
+        self.register_buffer("bw_mult", bw_mult.float())
 
     def forward(self, X: torch.Tensor, Y: torch.Tensor):
         """
@@ -140,6 +140,8 @@ class EfficientRBF(nn.Module):
         # exact same denominator (4B^2 – 2B)
         base_bw = all_offdiag.sum() / all_offdiag.numel()
         self.bandwidth = base_bw
+        if base_bw.device != self.bw_mult.device:
+            base_bw = base_bw.to(self.bw_mult.device)
         bws = base_bw * self.bw_mult  # (K,)
 
         # accumulate sum over kernels K)

@@ -72,10 +72,9 @@ class VMMDTextLightningBase(VMMDLightningBase, ODModule):
         self.log_dict(norms)
 
     def on_after_backward(self):
-        pass
-        #for name, param in self.named_parameters():
-            #self.logger.experiment.add_histogram(f"gradients/{name}", param.grad, self.global_step)
-            #self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
+        for name, param in self.named_parameters():
+            self.logger.experiment.add_histogram(f"gradients/{name}", param.grad, self.global_step)
+            self.logger.experiment.add_histogram(f"weights/{name}", param, self.global_step)
 
     def training_step(self, batch, batch_idx):
 

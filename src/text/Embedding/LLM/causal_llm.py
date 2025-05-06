@@ -55,7 +55,7 @@ class CausalLLM(HuggingModel, ABC):
             model = AutoModelForCausalLM.from_pretrained(
             self._model_prefix + self._model_name,
             trust_remote_code=True,
-            device_map='auto',
+            device_map='cuda',
             attn_implementation="eager",
         )
         else:
@@ -63,7 +63,7 @@ class CausalLLM(HuggingModel, ABC):
                 self._model_prefix + self._model_name,
                 trust_remote_code=True,
                 torch_dtype=self.get_dtype(),
-                device_map='auto',
+                device_map='cuda',
                 attn_implementation="eager",
             )
         print(f"Loaded {self._model_name} model.")

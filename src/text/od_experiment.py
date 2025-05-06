@@ -157,11 +157,11 @@ class Experiment:
             #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, aggregation_strategy=strategy.create())
             #               for base in bases
             #               for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
-            # VMMD Text ODM with only ensemble outlier detection.
-            #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create(),
-            #                        amount_subspaces=amount_subspaces_text)
-            #               for base in bases
-            #               for strategy in [UnificationStrategy.TRANSFORMER, UnificationStrategy.MEAN]])
+             #VMMD Text ODM with only ensemble outlier detection.
+            models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, subspace_distance_lambda=0.0, aggregation_strategy=strategy.create(),
+                                    amount_subspaces=amount_subspaces_text)
+                           for base in bases
+                           for strategy in [UnificationStrategy.TRANSFORMER]])
             # VMMD Text ODM with only subspace distance.
             #models.extend([TextVOdm(**self.text_params[strategy], base_detector=base, output_path=self.output_path, classifier_delta=0.0, aggregation_strategy=strategy.create())
             #                for base in bases
@@ -258,10 +258,10 @@ class Experiment:
             #model.start_timer()
             #if self.emb_model.model_name == DeepSeek1B().model_name and "VMMD + LUNAR + T" in model._get_name():
                 #raise Exception("Skipping DeepSeek1B with VMMD + LUNAR + T, due to high runtime")
-            with ui.display():
-                ui.update("training (1/2)")
+            with self.ui.display():
+                self.ui.update("training (1/2)")
                 model.train()
-                ui.update("predicting (2/2)")
+                self.ui.update("predicting (2/2)")
                 model.predict()
             #model.stop_timer()
             evaluation, self.comon_metrics = model.evaluate(self.output_path)
@@ -313,7 +313,7 @@ class Experiment:
             if model._get_name() not in run:
                 not_run.append(model)
         #print(f"Not run: {len(not_run)} models")
-        random.shuffle(not_run)
+        #random.shuffle(not_run)
         self.models = not_run
         self.result_df = result_df
 
@@ -425,7 +425,7 @@ if __name__ == '__main__':
     with ui.display():
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
-            exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
+            exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
                                 experiment_name="0.45", use_cached=True, runs=5, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
             #csv_path = aggregated_path / "aggregated.csv"

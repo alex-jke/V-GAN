@@ -78,6 +78,7 @@ class VMMDLightningBase(pl.LightningModule, IVMMDBase):
     def model_snapshot(self, path_to_directory=None, x_data: Optional[np.ndarray[str]] = None):
         self._plot_loss(path_to_directory, x_data)
 
+
     def load_models(self, path_to_generator, ndims, device=None):
         if device is None:
             device = self.device()

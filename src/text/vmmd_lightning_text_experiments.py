@@ -236,7 +236,7 @@ class VMMDLightningTextExperiment:
             callbacks=callbacks,
             default_root_dir=self.export_path,
             log_every_n_steps=1, # Log every step, as the visualizer loads the csv file created by the logger.
-            accelerator="gpu",
+            accelerator="auto",
             logger=loggers,
             gradient_clip_val=0.5 if self.apply_gradient_clipping else 0
         )
