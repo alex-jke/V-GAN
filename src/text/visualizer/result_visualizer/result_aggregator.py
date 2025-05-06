@@ -109,6 +109,13 @@ class ResultAggregator():
                 return colors.TRIADIC[1]
 
         self._create_rank_plot(ranked_df, group_by=[BASE_COL, SPACE_COL] , name="ranked_renamed", method_color=coloring)
+        return
+        rank = RankVisualizer([], self.version_path)
+        rank.create_box_plot_vertical(data=ranked_df,
+                                      method_col=METHOD_COL,
+                                      metric_col=AUC_COL,
+                                      group_by=[BASE_COL, SPACE_COL],
+                                      method_color=coloring, name="ranked_renamed_vertical")
 
     def rename(self, method_name: str) -> str:
         #if method_name.endswith("+ Embedding"):

@@ -426,7 +426,7 @@ if __name__ == '__main__':
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
             exp = Experiment(dataset, emb_model, skip_error=True, train_size=train_samples, test_size=test_samples,
-                                experiment_name="0.45", use_cached=True, runs=1, run_cachable=False)
+                                experiment_name="0.45", use_cached=True, runs=5, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
             #csv_path = aggregated_path / "aggregated.csv"
             aggregator = ResultAggregator(version_path=aggregated_path)
