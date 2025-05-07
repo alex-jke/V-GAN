@@ -63,6 +63,7 @@ class IVMMDBase(ABC):
 
     def _check_if_myopic(self, x_sample, ux_sample, u_subspaces, bandwidth: float | List[float] = 0.01, count=500):
 
+        x_sample = x_sample.to(ux_sample.device)
         results = []
 
         if type(bandwidth) == float:
@@ -77,6 +78,7 @@ class IVMMDBase(ABC):
         bandwidth.sort()
         for bw in bandwidth:
             mmd = tts.MMDStatistic(count, count)
+
             _, distances = mmd(x_sample, ux_sample, alphas=[
                 bw], ret_matrix=True)
             results.append(mmd.pval(distances))

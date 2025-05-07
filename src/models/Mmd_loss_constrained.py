@@ -112,7 +112,7 @@ class EfficientRBF(nn.Module):
         Returns three (B,B) blocks K_xx, K_xy, K_yy that match the original RBF.
         """
         X = self.embedding(X)
-        Y = self.embedding(Y)
+        Y = self.embedding(Y).to(X.device)
         B = X.size(0)
 
         # squared norms
