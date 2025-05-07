@@ -239,7 +239,7 @@ class VMMDLightningTextExperiment:
             accelerator="auto",
             logger=loggers,
             gradient_clip_val=0.5 if self.apply_gradient_clipping else 0,
-            devices=1
+            #devices=1
         )
         # Start training.
         trainer.fit(model, train_dataloaders=data_loader)

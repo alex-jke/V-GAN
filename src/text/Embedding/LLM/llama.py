@@ -42,8 +42,8 @@ class LLama(HuggingModel, ABC):
         # TODO: switching the model to run on bfloat16 causes infinite gradient norms.
         model = AutoModel.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True, torch_dtype=torch.float16,
                                           attn_implementation="eager",
-                                          #device_map="auto")
-                                          ).to(self.device)
+                                          device_map="auto")
+                                          #).to(self.device)
         return model
 
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:

@@ -136,7 +136,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
             As an example, if the word "example" is tokenized to "['ex', 'amp', 'le']" and the embeddings of the tokens are
             {'ex': [1, 2], 'amp': [3, 4], 'le': [5, 6]}, the word embedding would be [3, 4].
         """
-        word_embeddings = Tensor().to(self.device)
+        word_embeddings = Tensor().to(embedded.device)
         start_index = 0
         for i, tokens in enumerate(tokenized):
             n_embeddings = tokens.shape[0]
@@ -207,7 +207,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         #aggregated = torch.nn.functional.normalize(aggregated, dim=1)
 
         # Apply the mask to the embeddings, so that the masked tokens are zeroed out
-        masked = aggregated * mask.unsqueeze(1).expand_as(aggregated) if mask is not None else aggregated
+        masked = aggregated * mask.to(aggregated.device).unsqueeze(1).expand_as(aggregated) if mask is not None else aggregated
         return masked
 
     def get_prefix_mask(self) -> Tensor:
@@ -253,7 +253,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         token_vec = tokenized[:max_length]
         input_embeds_mat = self.model.get_input_embeddings().weight.data
         one_hot = (F.one_hot(token_vec.long(), input_embeds_mat.shape[0]).float() + (
-                    token_vec - token_vec.detach()).unsqueeze(1)).to(input_embeds_mat.dtype)
+                    token_vec - token_vec.detach()).unsqueeze(1)).to(input_embeds_mat.dtype).to(input_embeds_mat.device)
         inputs_embeds = one_hot @ input_embeds_mat
         return inputs_embeds
 
