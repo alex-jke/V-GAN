@@ -17,9 +17,11 @@ from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 class DatasetEmbedder:
     def __init__(self, dataset: Dataset, model: HuggingModel):
-        self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun(batch_first=True)
+        remove_padding = False
+        self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun(batch_first=True, remove_padding=remove_padding)
         self.ui = cli.get()
-        self.dir_path = Path(os.path.dirname(__file__)) / '..' / 'resources' / dataset.name / "embedding" / f"{model._model_name}"
+        embedding = "embedding" if remove_padding else "embedding!"
+        self.dir_path = Path(os.path.dirname(__file__)) / '..' / 'resources' / dataset.name / embedding / f"{model._model_name}"
         self.dataset = dataset
         self.model = model
         self.desired_labels = None
@@ -78,7 +80,7 @@ class DatasetEmbedder:
             #return dataset
 
         step_size = 100
-        with self.ui.display():
+        with self.ui.display(), torch.no_grad():
             for i in range(start_index, len(tokenized_dataset), step_size):
                 self.ui.update(data=f"Creating embedded dataset... {i}/{len(tokenized_dataset)}")
                 end_index = i + step_size if i + step_size < len(tokenized_dataset) else len(tokenized_dataset)

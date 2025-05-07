@@ -69,6 +69,15 @@ class CausalLLM(HuggingModel, ABC):
         print(f"Loaded {self._model_name} model.")
         return model
 
+    def output_to_debatched(self, outputs):
+        embeddings = outputs.hidden_states
+        if embeddings is None:
+            raise RuntimeError(f"Model returned NoneType. This should not happen and means, that something is not"
+                               f"behaving as expected.")
+        last_layer = embeddings[-1]  # + (input_embeds - input_embeds.detach())# TODO: check if this is correct.
+        de_batched = last_layer[0]
+        return de_batched
+
     def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         mask = mask.unsqueeze(0) if mask is not None else None
         if mask is not None:
@@ -93,10 +102,7 @@ class CausalLLM(HuggingModel, ABC):
                                      use_cache=False,
                                      output_hidden_states=True
                                      )
-
-            embeddings = outputs.hidden_states
-            last_layer = embeddings[-1]# + (input_embeds - input_embeds.detach())# TODO: check if this is correct.
-            de_batched = last_layer[0]
+            de_batched = self.output_to_debatched(outputs)
             assert de_batched.shape[0] == mask.shape[1], "Debatch was not successful."
             normalized = torch.nn.functional.normalize(de_batched)
             return normalized
@@ -115,12 +121,8 @@ class CausalLLM(HuggingModel, ABC):
                 unsqueezed = tokenized.int().unsqueeze(0)
                 outputs = self.model(input_ids=unsqueezed, use_cache=False, output_hidden_states=True)
             outputs = outputs # Otherwise the line below complains about usage before assignment.
-        embeddings = outputs.hidden_states
-        if embeddings is None:
-            raise RuntimeError(f"Model returned NoneType. This should not happen and means, that something is not"
-                               f"behaving as expected.")
-        last_layer = embeddings[-1] #TODO: check if this is correct.
-        de_batched = last_layer[0]
+        de_batched = self.output_to_debatched(outputs)
+        #return de_batched
         normalized = torch.nn.functional.normalize(de_batched)
         return normalized
 

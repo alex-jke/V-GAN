@@ -54,6 +54,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         self.suffix_mask: Optional[Tensor] = None
         self._token_length_warning_given = False
         self.debug = debug
+        self.exclamations = 50
 
     @property
     def padding_token(self):
@@ -201,6 +202,14 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         if tokenized_tensor.shape[0] > self.max_token_length():
             raise RuntimeError("Tokenized tensor is longer than max token length. This should not occur and signifies,"
                                "that something is wrong with the truncation process before.")
+
+
+        #tokens = Tensor([0]*self.exclamations).to(self.device)
+        #mask = Tensor([1.0]*exclamations).to(self.device)
+        #tokenized = tokenized + [Tensor([0]) for _ in range(self.exclamations)]
+        #tokenized_tensor = torch.concat([tokenized_tensor, tokens], dim=0).to(self.device).float()
+        #expanded_mask = torch.concat([expanded_mask, mask], dim=0).to(self.device).float()
+
         embeddings = self.fully_embed_tokenized(tokenized_tensor, expanded_mask)
         aggregated = self._aggregate_token_to_word_embedding(embeddings, tokenized)
 
@@ -313,7 +322,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
                     if remove_padding:
                         # Remove padding tokens
                         partial_review = partial_review[partial_review != self.padding_token]
-
+                    #detokenized = self.tokenizer.decode(partial_review)
+                    #print()
+                    #print("filtered: ", self.tokenizer.decode(partial_review[partial_review != self.padding_token]))
+                    #print("embedding: ", detokenized)
                     embedded: Tensor = self.fully_embed_tokenized(partial_review).T #returns a (embedding_size, num_tokens) tensor
                      #add extra third dimension
                     unsqueezed = embedded.unsqueeze(1)

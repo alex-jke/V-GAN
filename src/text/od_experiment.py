@@ -149,7 +149,24 @@ class Experiment:
             LUNAR(**self.emb_params),
             ECOD(**self.emb_params)
         ])
-
+        for base in bases:
+            models.extend([
+            # TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path)),
+            TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path,
+                     subspace_distance_lambda=0.0,
+                     v_adapter=TokenVAdapter(dataset, self.token_params["space"], self.inlier_label,
+                                             output_path=self.output_path),
+                     amount_subspaces=10),
+            # TextVOdm(**self.token_params, base_detector=base, output_path=self.output_path, classifier_delta=0.0, v_adapter=TokenVAdapter(dataset,self.token_params["space"], self.inlier_label, output_path=self.output_path))
+        ])
+        return models
+        for strategy in [UnificationStrategy.TRANSFORMER]:
+            models.extend([
+                LOF(**self.text_params[strategy]),
+                LUNAR(**self.text_params[strategy]),
+                ECOD(**self.text_params[strategy]),
+            ])
+        return models
         if not self.run_cachable:
             amount_subspaces_text = 10
             amount_token_subspaces = 10
@@ -233,12 +250,7 @@ class Experiment:
             for param in params
         ])
 
-        for strategy in [UnificationStrategy.TRANSFORMER]:
-            models.extend([
-                LOF(**self.text_params[strategy]),
-                LUNAR(**self.text_params[strategy]),
-                ECOD(**self.text_params[strategy]),
-            ])
+
 
         return models
 
@@ -415,10 +427,11 @@ if __name__ == '__main__':
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
-    test_samples = 2000
-    train_samples = 5000
+    test_samples = 1000
+    train_samples = 2000
     datasets = NLP_ADBench.get_all_datasets()
     datasets.sort(key=lambda d: d.average_length)
+    #datasets = datasets[2:]
     #datasets = datasets[1:] + datasets[:1]
     emb_model = LLama3B()
     ui = cli.get()
@@ -426,7 +439,7 @@ if __name__ == '__main__':
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
             exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                                experiment_name="0.45", use_cached=True, runs=5, run_cachable=False)
+                                experiment_name="0.45_test_AUC_cache", use_cached=True, runs=5, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
             #csv_path = aggregated_path / "aggregated.csv"
             results = exp.run()
