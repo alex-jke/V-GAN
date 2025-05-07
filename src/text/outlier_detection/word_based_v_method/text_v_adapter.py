@@ -37,7 +37,7 @@ class TextVMMDAdapter(BaseVAdapter):
                  output_path: Optional[Path] = None,
                  aggregation_strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(),
                  use_mmd: bool = False,
-                 generator: Type[Generator_big]  = GeneratorUpperSoftmax,
+                 generator: Type[Generator_big]  = GeneratorSigmoidSTE,
                  epochs = 25,
                  batch_size = 10):
         self.dataset = dataset
@@ -73,7 +73,7 @@ class TextVMMDAdapter(BaseVAdapter):
             yield_epochs=10,
             lr=1e-3,
             weight_decay=0.0,
-            penalty_weight=0,
+            penalty_weight=0.01,
             batch_size=self.batch_size,
             epochs=epochs,
             export_path=self.output_path,

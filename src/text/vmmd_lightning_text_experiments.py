@@ -238,7 +238,8 @@ class VMMDLightningTextExperiment:
             log_every_n_steps=1, # Log every step, as the visualizer loads the csv file created by the logger.
             accelerator="auto",
             logger=loggers,
-            gradient_clip_val=0.5 if self.apply_gradient_clipping else 0
+            gradient_clip_val=0.5 if self.apply_gradient_clipping else 0,
+            devices=1
         )
         # Start training.
         trainer.fit(model, train_dataloaders=data_loader)

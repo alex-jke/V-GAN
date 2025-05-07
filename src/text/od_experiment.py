@@ -415,8 +415,8 @@ if __name__ == '__main__':
                         torch.cuda.empty_cache()
                         memory_used_after = torch.cuda.memory_allocated()
                         print(f"freed cuda cache: {memory_used_before} -> {memory_used_after}")"""
-    test_samples = 50
-    train_samples = 100
+    test_samples = 2000
+    train_samples = 5000
     datasets = NLP_ADBench.get_all_datasets()
     datasets.sort(key=lambda d: d.average_length)
     #datasets = datasets[1:] + datasets[:1]
@@ -426,12 +426,11 @@ if __name__ == '__main__':
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
             exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                                experiment_name="0.45_test", use_cached=True, runs=5, run_cachable=False)
+                                experiment_name="0.45", use_cached=True, runs=5, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
             #csv_path = aggregated_path / "aggregated.csv"
+            results = exp.run()
             aggregator = ResultAggregator(version_path=aggregated_path)
             aggregator.aggregate()
-
-            results = exp.run()
             results[MODEL] = emb_model.model_name
             results[DATASET] = dataset.name

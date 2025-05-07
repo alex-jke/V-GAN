@@ -100,5 +100,5 @@ torchviz
 pytorch-lightning
 lightning_transformers
 tensorboard
-accelerate
+accelerate==1.6.0
 

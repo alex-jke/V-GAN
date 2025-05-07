@@ -313,7 +313,7 @@ class MMDLossConstrained(nn.Module):
         penalty = 0
         diversity_loss = 0
         if apply_penalty or self.weight != 0.0:
-            penalty = self.weight * torch.exp(avg)  # self.weight*(mean)
+            penalty = self.weight * avg #torch.exp(avg)  # self.weight*(mean)
             #diversity_loss = self.diversity_loss(U.float())
         #u_sizes = U.float().sum(dim=1)
         #median = u_sizes.median()
