@@ -44,4 +44,4 @@ class TokenVAdapter(BaseVAdapter):
         return self.adapter.get_probabilities(num_subspaces)
 
     def get_name(self) -> str:
-        return "TokenVMMD! + " + self.generator.__name__
+        return "TokenVMMD + " + self.generator.__name__

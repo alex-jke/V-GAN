@@ -1,4 +1,3 @@
-import logging
 from abc import abstractmethod, ABC
 from typing import List, Optional
 
@@ -14,7 +13,7 @@ from text.Embedding.LLM.huggingmodel import HuggingModel
 from text.Embedding.unification_strategy import UnificationStrategy
 
 
-class LLama(CausalLLM, ABC):
+class LLama(HuggingModel, ABC):
     """
     This class is a wrapper around the Llama model from Hugging Face's transformers library.
     """
@@ -43,13 +42,35 @@ class LLama(CausalLLM, ABC):
         # TODO: switching the model to run on bfloat16 causes infinite gradient norms.
         model = AutoModel.from_pretrained(self._model_prefix + self.get_model_name(), trust_remote_code=True, torch_dtype=torch.float16,
                                           attn_implementation="eager",
-                                          device_map="auto")
-                                          #).to(self.device)
+                                          #device_map="auto")
+                                          ).to(self.device)
         return model
 
-    def output_to_debatched(self, outputs):
+    def fully_embed_tokenized(self, tokenized: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+
+        mask = mask.unsqueeze(0) if mask is not None else None
+        if mask is not None:
+            input_embeds = self.embed_tokenized(tokenized).unsqueeze(0)
+
+            #Mask needs to contain either 1.0 or 0.0, if other values are present, they are rounded
+            if torch.logical_and(mask != 0.0, mask != 1.0).any():
+                rounded_mask = torch.round(mask) + (mask - mask.detach())
+            else:
+                rounded_mask = mask
+            causal_mask = self._get_4d_causal_mask(rounded_mask)
+            input_embeds = input_embeds.to(self.model.get_input_embeddings().weight.data.dtype)
+            torch.backends.cuda.enable_mem_efficient_sdp(False)
+            torch.backends.cuda.enable_flash_sdp(False)
+            #outputs = self.model(inputs_embeds=input_embeds, attention_mask=mask, output_attentions=True)
+            outputs = self.model(inputs_embeds=input_embeds, attention_mask=causal_mask, use_cache=False)
+
+        else:
+            with torch.no_grad():
+                outputs = self.model(input_ids=tokenized.int().unsqueeze(0), use_cache=False)
+            outputs = outputs # Otherwise the line below complains about usage before assignment.
         embeddings = outputs[0]
         de_batched = embeddings[0]
+        #de_batched = torch.nn.functional.normalize(de_batched, p=2, dim=-1)
         return de_batched
 
     def decode2tokenized(self, embedding: List[np.ndarray]) -> List[int]:
