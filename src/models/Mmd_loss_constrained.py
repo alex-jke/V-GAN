@@ -283,6 +283,8 @@ class MMDLossConstrained(nn.Module):
         #XY = K[:X_size, X_size:].mean()
         #YY = K[X_size:, X_size:].mean()
 
+        U = U.to(X.device)
+
 
         #kernel_eff = EfficientRBF()
         K_xx, K_xy, K_yy = self.kernel(X, Y)
