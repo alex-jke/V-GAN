@@ -17,7 +17,7 @@ from text.dataset_converter.dataset_tokenizer import DatasetTokenizer
 
 class DatasetEmbedder:
     def __init__(self, dataset: Dataset, model: HuggingModel):
-        self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun(batch_first=True, remove_padding = True)
+        self.embedding_function: Callable[[Tensor], Tensor] = model.get_embedding_fun(batch_first=True)
         self.ui = cli.get()
         self.dir_path = Path(os.path.dirname(__file__)) / '..' / 'resources' / dataset.name / "embedding" / f"{model._model_name}"
         self.dataset = dataset
