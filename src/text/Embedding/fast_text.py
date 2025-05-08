@@ -29,7 +29,7 @@ class FastText(Embedding):
         except ValueError as e:
             raise e
 
-    def embed_words(self, words: List[str], mask: Optional[Tensor], strategy: StrategyInstance) -> np.ndarray:
+    def embed_words(self, words: List[str], mask: Optional[Tensor], strategy: StrategyInstance, trim: bool = True) -> np.ndarray:
         if mask is not None:
             raise NotImplementedError("Masking is not implemented for FastText.")
         embeddings =  self.model.embeddings(words, normalize=self.normalize)

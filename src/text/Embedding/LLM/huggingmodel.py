@@ -13,6 +13,7 @@ from text.Embedding.tokenizer import Tokenizer
 from text.Embedding.unification_strategy import UnificationStrategy, StrategyInstance
 from text.UI import cli
 
+WORDS_TO_TOKENS_FACTOR = 1.5
 
 class HuggingModel(Tokenizer, Embedding, ABC):
 
@@ -184,6 +185,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
 
     def _embed_words_full(self, words: List[str], mask: Optional[Tensor] = None, suffix: Optional[List[str]] = None) -> Tensor:
+        if mask is not None and mask.shape[0] > self.max_word_length():
+            raise RuntimeError(f"A mask was passed, thats length is longer that the maximum amount: {mask.shape[0] > self.max_word_length()}")
+
         if suffix is not None:
             tokenized_suffix = self._tokenize_words(words=suffix)
             tokenized_suffix[0] = tokenized_suffix[0][1:] # Remove the beginning of sequence token.
@@ -232,7 +236,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         expanded = last_entry.unsqueeze(0)
         return expanded
 
-    def embed_words(self, words: List[str], mask: Optional[Tensor] = None, strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create()) -> Tensor:
+    def embed_words(self, words: List[str], mask: Optional[Tensor] = None, strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(), trim: bool = True) -> Tensor:
+        if trim:
+            words = words[:self.max_word_length()]
         if strategy.equals(UnificationStrategy.TRANSFORMER):
             return torch.nn.functional.normalize(self._embed_words_last(words, mask), dim=1)
         if strategy.equals(UnificationStrategy.MEAN):
@@ -337,6 +343,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
 
     def max_token_length(self) -> int:
         return min(self.tokenizer.model_max_length, self._max_token_length)
+
+    def max_word_length(self) -> int:
+        return int(self.max_token_length() / WORDS_TO_TOKENS_FACTOR)
 
     def _get_4d_causal_mask(self, attention_mask: Tensor) -> Tensor:
         """

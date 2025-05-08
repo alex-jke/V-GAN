@@ -104,6 +104,23 @@ class Generator_big(nn.Module):
         print()
         self.main = nn.Sequential(*layers)
 
+        def print_param_tree(module, name=None, indent=0):
+            """
+            Recursively prints each submodule and the total # of params
+            (including its children) in a tree-like form.
+            """
+            # Compute total params in this module (includes all submodules)
+            total = sum(p.numel() for p in module.parameters())
+            # Module name: use given name (from parent) or fallback to class name
+            layer_name = name or module.__class__.__name__
+            # Indentation
+            print('  ' * indent + f"{layer_name}: {total:,} params")
+            # Recurse into children
+            for child_name, child_module in module.named_children():
+                print_param_tree(child_module, child_name, indent + 1)
+
+        print_param_tree(self)
+
     def get_layer(self, layer_num: int, last=False):
         input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
         output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)

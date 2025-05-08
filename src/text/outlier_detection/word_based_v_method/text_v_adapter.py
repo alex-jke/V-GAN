@@ -20,8 +20,6 @@ from text.vmmd_lightning_text_experiments import VMMDLightningTextExperiment
 
 ui = cli.get()
 
-WORDS_TO_TOKENS_FACTOR = 1.3
-
 class TextVMMDAdapter(BaseVAdapter):
     """
     A class to adapt the VMMD model for text data.
@@ -65,7 +63,7 @@ class TextVMMDAdapter(BaseVAdapter):
         self._get_params()
         epochs = self.epochs
         sequence_length = DatasetPreparer.get_max_sentence_length(np.array(self.dataset.get_training_data()[0].tolist()))
-        max_sequence_length = int(self.space.model.max_token_length() / WORDS_TO_TOKENS_FACTOR)
+        max_sequence_length = self.space.model.max_word_length() - self.dataset.prompt.prompt_length
         if sequence_length > max_sequence_length:
             print(f"Trimming sequence length (words) from {sequence_length} to {max_sequence_length}.")
             sequence_length = max_sequence_length

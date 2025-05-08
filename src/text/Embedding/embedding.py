@@ -35,12 +35,13 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def embed_words(self, words: List[str], mask: Optional[Tensor], strategy: StrategyInstance) -> np.ndarray:
+    def embed_words(self, words: List[str], mask: Optional[Tensor], strategy: StrategyInstance, trim: bool = True) -> np.ndarray:
         """
         Embeds a list of words into vectors.
         :param words: The list of words to embed.
         :param mask: The mask to use. If None, all words are embedded.
         :param strategy: The unification strategy to use.
+        :param trim: Whether to trim the amount words list, if exceeding the maximum amount of words.
         :return: The embeddings of the words, as a numpy array, representing a list of vectors.
             The shape of the array should be (n_words, n_dim).
         """
