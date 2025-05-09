@@ -95,7 +95,8 @@ class ResultAggregator():
             #else:
                 #print(f"{method} not present in all runs ({present_in} / {amount_runs}).")
 
-        df = df[df[METHOD_COL].isin(included_methods)]
+        # Include only the methods present in all runs or if the name contains "TextVMMD"
+        df = df[df[METHOD_COL].isin(included_methods) | df[METHOD_COL].str.contains("TextVMMD")]
 
         # Average over the runs
         avg_df = df.groupby(group_by_columns).mean().reset_index()

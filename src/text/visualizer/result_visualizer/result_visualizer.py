@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from colors import VGAN_GREEN, COMPLIMENTARY
+from src.colors import VGAN_GREEN, COMPLIMENTARY
 
 
 class ResultVisualizer():

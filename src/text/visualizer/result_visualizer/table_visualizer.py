@@ -50,7 +50,7 @@ def generate_ieeetran_table(df, caption, label):
     return code
 
 if __name__ == "__main__":
-    version_path = Path(__file__).parent.parent.parent.parent.parent / "experiments" / "0.45"
+    version_path = Path(__file__).parent.parent.parent.parent.parent / "experiments" / "0.45" / "rank_csv"
     ranked_df = pd.read_csv(version_path / "ranked_results_filterd_renamed.csv")
 
 
