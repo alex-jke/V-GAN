@@ -90,7 +90,7 @@ class ResultAggregator():
         included_methods = []
         for method in df[METHOD_COL].unique():
             present_in = len(df[df[METHOD_COL] == method].index)
-            if present_in + 5 > amount_runs:
+            if present_in + 10 > amount_runs:
                 included_methods.append(method)
             #else:
                 #print(f"{method} not present in all runs ({present_in} / {amount_runs}).")
@@ -133,8 +133,8 @@ class ResultAggregator():
             method_name = FEATURE_BAGGING# + " " + method_name.split(" ")[-1]
             return method_name
 
-        if method_name.startswith("VMMD") and "E" in method_name:
-            return  V_GAN
+        if method_name.startswith("VMMD"):# and "E" in method_name:
+            return V_GAN
 
         #if method_name.startswith("VMMD") and "W" in method_name:
             #return V_GAN_NPTE
