@@ -63,6 +63,10 @@ class TextVMMDAdapter(BaseVAdapter):
         self._get_params()
         epochs = self.epochs
         sequence_length = DatasetPreparer.get_max_sentence_length(np.array(self.dataset.get_training_data()[0].tolist()))
+        max_sequence_length = self.space.model.max_word_length() - self.dataset.prompt.prompt_length
+        if sequence_length > max_sequence_length:
+            print(f"Trimming sequence length (words) from {sequence_length} to {max_sequence_length}.")
+            sequence_length = max_sequence_length
         model_run = VMMDLightningTextExperiment(
             emb_model=self.emdedding_model,
             vmmd_model=VMMDTextLightning,
