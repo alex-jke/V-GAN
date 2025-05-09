@@ -9,17 +9,28 @@ import numpy as np
 
 from text.consts.columns import RANK_COL, DATASET_COL
 from text.dataset.nlp_adbench import NLP_ADBench
-from text.outlier_detection.odm import METHOD_COL, SPACE_COL, BASE_COL
+from text.outlier_detection.odm import METHOD_COL, SPACE_COL, BASE_COL, AUC_COL
 from text.visualizer.result_visualizer.result_aggregator import V_GAN, V_GAN_TEXT, V_GAN_TOKEN, \
-    FULL_SPACE, FEATURE_BAGGING
+    FULL_SPACE, FEATURE_BAGGING, AVG_SPACE
 
 # Specify the odm
-fully_myopic_datasets = [NLP_ADBench.sms_spam().name, NLP_ADBench.n24news().name, NLP_ADBench.yelp_review_polarity().name]
+fully_myopic_datasets_NPTE = [NLP_ADBench.sms_spam().name,
+                              NLP_ADBench.n24news().name,
+                              NLP_ADBench.yelp_review_polarity().name,
+                              #NLP_ADBench.agnews().name
+                              ]
+fully_myopic_datasets_avg = [NLP_ADBench.sms_spam().name,
+                              NLP_ADBench.n24news().name,
+                              NLP_ADBench.yelp_review_polarity().name,
+                              #NLP_ADBench.movie_review().name
+                             ]
+all_datasets = [ds.name for ds in NLP_ADBench.get_all_datasets()]
 
 
 def conover_iman_table_generator(odm, u_type, df: pd.DataFrame, space: str, export_path: Optional[Path]=None):
     # Load the data
     #df = pd.read_csv(f'experiments/Outlier_Detection/COMPETITORS/full_tables_with_rank/{odm}_res.csv', delimiter=',')s
+    fully_myopic_datasets = fully_myopic_datasets_NPTE if space == "NPTE" else fully_myopic_datasets_avg
 
     if u_type == "lense":
         df = df[df[DATASET_COL].isin(fully_myopic_datasets)]
@@ -31,11 +42,16 @@ def conover_iman_table_generator(odm, u_type, df: pd.DataFrame, space: str, expo
     df = df[df[SPACE_COL] == space]
     df = df[df[BASE_COL] == odm]
 
-    methods = [V_GAN, V_GAN_TEXT, V_GAN_TOKEN, FULL_SPACE, FEATURE_BAGGING, "Trivial"]
+    methods = [V_GAN, V_GAN_TEXT, V_GAN_TOKEN, FULL_SPACE, FEATURE_BAGGING]#, "Trivial"]
 
     methods = [method for method in methods if method in df[METHOD_COL].values]
 
     #ranks_vgan_avg = df[RANK_COL][df[METHOD_COL] == "V-GAN-Avg"]
+    #ranks = {}
+    #Rerank for the given group
+    #for method in methods:
+    df[RANK_COL] = df.groupby(DATASET_COL)[AUC_COL].rank(ascending=False, method='min')
+
     ranks = {method: df[RANK_COL][df[METHOD_COL] == method] for method in methods}
 
     kruskal_result = stats.kruskal(*ranks.values())
@@ -53,6 +69,8 @@ def conover_iman_table_generator(odm, u_type, df: pd.DataFrame, space: str, expo
     avg_ranks.columns = ['Average Rank']
     avg_ranks = avg_ranks.sort_values(by='Average Rank')  # Sort by rank if necessary
 
+    #conover_result.columns = [col if col != FEATURE_BAGGING else "FB" for col in conover_result.columns]
+
     # Create a matrix for storing the + and ++ symbols
     symbol_matrix = pd.DataFrame('', index=conover_result.index, columns=conover_result.columns)
 
@@ -68,7 +86,7 @@ def conover_iman_table_generator(odm, u_type, df: pd.DataFrame, space: str, expo
                         symbol_matrix.loc[row, col] = '+'
                 if p_value <= 0.10 and avg_ranks.loc[row, 'Average Rank'] > avg_ranks.loc[col, 'Average Rank']:
                     if p_value <= 0.05:
-                        symbol_matrix.loc[row, col] = '--'
+                        symbol_matrix.loc[row, col] = '- -'
                     else:
                         symbol_matrix.loc[row, col] = '-'
             if row == col:
@@ -76,6 +94,9 @@ def conover_iman_table_generator(odm, u_type, df: pd.DataFrame, space: str, expo
 
     print(f"\nThis leads to a symbolic matrix of:\n {symbol_matrix}")
     #symbol_matrix.to_csv(f"experiments/Outlier_Detection/COMPETITORS/conover-iman/{odm}_{u_type}.csv")
+    symbol_matrix.columns = [col if col != FEATURE_BAGGING else "FB" for col in symbol_matrix.columns]
+    first_column = symbol_matrix.columns[0]
+    #symbol_matrix[first_column] = symbol_matrix[first_column].apply(lambda method: method if method != FEATURE_BAGGING else FEATURE_BAGGING + " (FB)")
     symbol_matrix.to_csv(export_path / f"symbol_matrix_{odm}.csv")
     return symbol_matrix, conover_result
 
@@ -97,12 +118,24 @@ def symbol_matrices_to_latex(symbol_matrices: List[pd.DataFrame], odms: List[str
 
     # Get the methods (rows) from the first matrix
     methods = symbol_matrices[0].index.tolist()
+    myopic_datasets = fully_myopic_datasets_avg if space == AVG_SPACE else fully_myopic_datasets_NPTE
+    lense = u_type == "lense"
+    all_ds = u_type == "all"
 
+    if lense:
+        datasets = myopic_datasets
+    elif all_ds:
+        datasets = all_datasets
+    else:
+        datasets = [ds for ds in all_datasets if ds not in myopic_datasets]
+
+    datasets = [ds.replace("NLP_ADBench ", "") for ds in datasets]
+    datasets = [ds.replace("_", " ") for ds in datasets]
     # Start building the LaTeX table with table* environment for double column
     latex = "\\begin{table*}[t]\n"  # t for top placement
     latex += "\\centering\n"
     latex += "\\footnotesize\n"  # Reduce font size to fit wide table
-    latex += "\\caption{Conover-Iman test results}\n"
+    latex += "\\caption{Conover-Iman test results. "+f"Space: {space}, type: {u_type}, datasets: {', '.join(datasets)}" +"}\n"
 
     # Create column specification
     col_count = sum(len(matrix.columns) for matrix in symbol_matrices)
@@ -141,8 +174,10 @@ def symbol_matrices_to_latex(symbol_matrices: List[pd.DataFrame], odms: List[str
     # Close the table
     latex += "\\hline\n"
     latex += "\\end{tabular}\n"
-    latex += "\\label{tab:conover_iman_results}\n"
+    latex += "\\label{tab:conover_iman_results" + f"_{space}_{u_type}" + "}\n"
     latex += "\\end{table*}\n"
+
+    latex = latex.replace("Feature-Bagging", "Feature-Bagging (FB)")
 
     return latex
 
@@ -151,17 +186,31 @@ if __name__ == "__main__":
     version_path = Path(__file__).parent.parent.parent.parent / "experiments" / "0.45"
     df_path = version_path / "ranked_results_filterd_renamed.csv"
     ranked_results = pd.read_csv(df_path)
-    symbol_matrices: list = []
-    results = []
-    space = "Avg"
-    odms = ["LUNAR", "LOF"]
-    for odm in odms:
-    #odm = "LUNAR"
-        ranked_results = ranked_results[ranked_results[DATASET_COL] != NLP_ADBench.n24news().name]
 
-        symbol_matrix, conover_results = conover_iman_table_generator(odm, "all", ranked_results, space, export_path=version_path)
-        symbol_matrices.append(symbol_matrix)
-        results.append(conover_results)
-    #concated_matrix = concatenate_symbol_matrices(symbol_matrices, odms)
-    latex_table = symbol_matrices_to_latex(symbol_matrices, odms)
-    print(latex_table)
+    #space = "Avg"
+    #u_type = "lense"
+    spaces = ["Avg",
+              "NPTE"
+              ]
+    u_types = ["lense",
+               #"non-lense"
+               ]
+    odms = ["LUNAR", "LOF"]
+    latex_tables = []
+    for space in spaces:
+        for u_type in u_types:
+            symbol_matrices: list = []
+            results = []
+            for odm in odms:
+            #odm = "LUNAR"
+                ranked_results = ranked_results[ranked_results[DATASET_COL] != NLP_ADBench.n24news().name]
+
+                symbol_matrix, conover_results = conover_iman_table_generator(odm, u_type, ranked_results, space, export_path=version_path)
+                symbol_matrices.append(symbol_matrix)
+                results.append(conover_results)
+            #concated_matrix = concatenate_symbol_matrices(symbol_matrices, odms)
+            latex_table = symbol_matrices_to_latex(symbol_matrices, odms)
+            latex_tables.append(latex_table)
+    print("----------------------\n")
+    seperator = "\n\n%---------------------------------------------\n\n"
+    print(seperator.join(latex_tables))

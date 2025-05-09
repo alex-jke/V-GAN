@@ -6,9 +6,12 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn
+from pandas import DataFrame
+from pandas.core.groupby import GroupBy
 
 import colors
-from text.consts.columns import RANK_COL
+from text.consts.columns import RANK_COL, DATASET_COL
+from text.outlier_detection.odm import METHOD_COL
 
 
 class RankVisualizer():
@@ -245,13 +248,17 @@ class RankVisualizer():
                         mask &= (filtered_data[col] == val)
                     group_data = filtered_data[mask]
                 else:
-                    group_data = filtered_data[filtered_data[group_by] == group]
+                    group_data: DataFrame = filtered_data[filtered_data[group_by] == group]
+
+                # Rank the methods within this group by their place within the datasets
+                reranked = group_data.copy()
+                reranked[RANK_COL] = group_data.groupby(DATASET_COL)[metric_col].rank(ascending=False, method='min')
 
                 # Create vertical boxplot
                 seaborn.boxplot(
                     x=method_col,
                     y=RANK_COL,
-                    data=group_data,
+                    data=reranked,
                     ax=ax,
                     hue=method_col,
                     palette=color_map,
@@ -306,7 +313,7 @@ def manual_ranking():
     from src.text.outlier_detection.odm import METHOD_COL, AUC_COL, BASE_COL, SPACE_COL
     from src.text.visualizer.result_visualizer.result_aggregator import coloring
 
-    version_path = Path(__file__).parent.parent.parent.parent.parent / "experiments" / "0.45"
+    version_path = Path(__file__).parent.parent.parent.parent.parent / "experiments" / "0.45" / "rank_csv"
     ranked_df = pd.read_csv(version_path / "ranked_results_filterd_renamed.csv")
     ranked_df[METHOD_COL] = ranked_df[METHOD_COL].replace("Feature-Bagging", "FB").replace("V-GAN-Token", "V-GAN-T").replace("V-GAN-Text", "V-GAN-TX").replace("Full-Space", "Full")
     rank = RankVisualizer([], version_path)
