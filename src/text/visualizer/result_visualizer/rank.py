@@ -152,161 +152,138 @@ class RankVisualizer():
         plt.close()
 
     def create_box_plot_vertical(self, data: pd.DataFrame, method_col: str, metric_col: str, group_by: str or list,
-                                     name: Optional[str] = None, method_color: Callable[[str], str] = None,
-                                     n_rows: Optional[int] = None, n_cols: Optional[int] = None):
-            """
-            Creates vertical box plots comparing method ranks within specified groups in a grid layout.
-            Only includes methods present in all groups.
+                                 name: Optional[str] = None, method_color: Callable[[str], str] = None,
+                                 n_rows: Optional[int] = None, n_cols: Optional[int] = None):
+        """
+        Creates vertical box plots comparing method ranks within specified groups in a grid layout.
+        Only includes methods present in all groups.
 
-            :param data: DataFrame containing the data
-            :param method_col: Column specifying the method name
-            :param metric_col: Column specifying the metric
-            :param group_by: Column(s) to group by
-            :param name: Optional custom name for the output file
-            :param method_color: Optional function to determine colors for methods
-            :param n_rows: Number of rows in the plot grid (default: auto-calculated)
-            :param n_cols: Number of columns in the plot grid (default: auto-calculated)
-            """
-            # Use a modern style
-            plt.style.use('seaborn-v0_8-whitegrid')
+        :param data: DataFrame containing the data
+        :param method_col: Column specifying the method name
+        :param metric_col: Column specifying the metric
+        :param group_by: Column(s) to group by
+        :param name: Optional custom name for the output file
+        :param method_color: Optional function to determine colors for methods
+        :param n_rows: Number of rows in the plot grid (default: auto-calculated)
+        :param n_cols: Number of columns in the plot grid (default: auto-calculated)
+        """
+        plt.style.use('seaborn-v0_8-whitegrid')
 
-            # Determine groups
-            if isinstance(group_by, list):
-                groups = list(data.groupby(group_by).groups.keys())
-                groups = sorted(groups, key=str)
+        # Determine groups
+        if isinstance(group_by, list):
+            groups = sorted(list(data.groupby(group_by).groups.keys()), key=str)
+        else:
+            groups = sorted(data[group_by].unique())
+
+        common_methods = set(data[method_col].unique())
+        filtered_data = data[data[method_col].isin(common_methods)].copy()
+        unique_methods = sorted(common_methods)
+        n_groups = len(groups)
+
+        # Determine grid layout
+        if n_rows is None and n_cols is None:
+            n_rows, n_cols = n_groups, 1
+        elif n_rows is None:
+            n_rows = (n_groups + n_cols - 1) // n_cols
+        elif n_cols is None:
+            n_cols = (n_groups + n_rows - 1) // n_rows
+
+        if n_rows * n_cols < n_groups:
+            print(f"Warning: Grid size ({n_rows}x{n_cols}) too small for {n_groups} groups.")
+            groups = groups[:n_rows * n_cols]
+
+        # Color mapping
+        def default_color_mapping(method: str) -> str:
+            if "VMMD" in method:
+                return colors.VGAN_GREEN
+            elif "FeatureBagging" in method:
+                triadic_0 = colors.TRIADIC[0]
+                return triadic_0 if triadic_0.startswith('#') else f"#{triadic_0}"
             else:
-                groups = sorted(data[group_by].unique())
+                triadic_1 = colors.TRIADIC[1]
+                return triadic_1 if triadic_1.startswith('#') else f"#{triadic_1}"
 
-            common_methods = set(data[method_col].unique())
-            filtered_data = data[data[method_col].isin(common_methods)].copy()
-            unique_methods = sorted(list(common_methods))
+        color_func = default_color_mapping if method_color is None else method_color
+        color_map = {m: color_func(m) for m in unique_methods}
 
-            n_groups = len(groups)
+        fig_w = max(5, n_cols * len(unique_methods) * 0.4)
+        fig_h = max(4, n_rows * 2)
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(fig_w, fig_h),
+                                 sharey=True, constrained_layout=True)
 
-            # Determine grid layout
-            if n_rows is None and n_cols is None:
-                # Default to single column layout for backward compatibility
-                n_rows = n_groups
-                n_cols = 1
-            elif n_rows is None:
-                # Calculate rows based on columns
-                n_rows = (n_groups + n_cols - 1) // n_cols
-            elif n_cols is None:
-                # Calculate columns based on rows
-                n_cols = (n_groups + n_rows - 1) // n_rows
+        # Normalize axes array
+        if n_rows == 1 and n_cols == 1:
+            axes = np.array([[axes]])
+        elif n_rows == 1:
+            axes = axes.reshape(1, -1)
+        elif n_cols == 1:
+            axes = axes.reshape(-1, 1)
 
-            # Check if we have enough cells for all groups
-            if n_rows * n_cols < n_groups:
-                print(f"Warning: Grid size ({n_rows}x{n_cols}) is too small for {n_groups} groups. Some groups won't be displayed.")
-                groups = groups[:n_rows * n_cols]
+        # Ensure CSV output dir
+        csv_path = self.output_dir / "rank_csv"
+        csv_path.mkdir(parents=True, exist_ok=True)
 
-            def default_color_mapping(method: str) -> str:
-                if "VMMD" in method:
-                    return colors.VGAN_GREEN
-                elif "FeatureBagging" in method:
-                    triadic_0 = colors.TRIADIC[0]
-                    return triadic_0 if triadic_0.startswith('#') else f"#{triadic_0}"
-                else:
-                    triadic_1 = colors.TRIADIC[1]
-                    return triadic_1 if triadic_1.startswith('#') else f"#{triadic_1}"
-
-            # Create custom color mapping based on method names
-            color_map = {}
-            color_func = default_color_mapping if method_color is None else method_color
-            for method in unique_methods:
-                color_map[method] = color_func(method) + "55"  # Add transparency to colors
-
-            # Dynamically size figure based on content and grid layout
-            fig_width = max(5, n_cols * len(unique_methods) * 0.4)
-            fig_height = max(4, n_rows * 2)
-
-            # Create figure with subplot grid
-            fig, axes = plt.subplots(n_rows, n_cols, figsize=(fig_width, fig_height),
-                                     sharey=True, constrained_layout=True)
-
-            # Handle different dimensions of axes
-            if n_rows == 1 and n_cols == 1:
-                axes = np.array([[axes]])
-            elif n_rows == 1:
-                axes = axes.reshape(1, -1)
-            elif n_cols == 1:
-                axes = axes.reshape(-1, 1)
-
-            # Create CSV directory if needed
-            csv_path = self.output_dir / "rank_csv"
-            if not csv_path.exists():
-                csv_path.mkdir(parents=True)
-
-            # Flatten axes for easier iteration
-            axes_flat = axes.flatten()
-
-            for ax_idx, (ax, group) in enumerate(zip(axes_flat, groups)):
-                # Filter data for this group
-                if isinstance(group_by, list):
-                    mask = pd.Series(True, index=filtered_data.index)
-                    for col, val in zip(group_by, group):
-                        mask &= (filtered_data[col] == val)
-                    group_data = filtered_data[mask]
-                else:
-                    group_data: DataFrame = filtered_data[filtered_data[group_by] == group]
-
-                # Rank the methods within this group by their place within the datasets
-                reranked = group_data.copy()
-                reranked[RANK_COL] = group_data.groupby(DATASET_COL)[metric_col].rank(ascending=False, method='min')
-
-                # Create vertical boxplot
-                seaborn.boxplot(
-                    x=method_col,
-                    y=RANK_COL,
-                    data=reranked,
-                    ax=ax,
-                    hue=method_col,
-                    palette=color_map,
-                    order=unique_methods,
-                    width=0.7,
-                    legend=False,
-                    orient='v'
-                )
-
-                # Create title based on group_by type
-                if isinstance(group_by, list):
-                    #title = ", ".join([f"{col}={val}" for col, val in zip(group_by, group)])
-                    title = ", ".join([f"{val}" for col, val in zip(group_by, group)])
-                else:
-                    title = f"{group}"
-
-                ax.set_title(title, fontsize=11, fontweight='bold')
-                ax.set_xlabel('')
-                ax.set_ylabel('Rank', fontsize=12)
-
-                # Improve appearance
-                ax.spines['top'].set_visible(False)
-                ax.spines['right'].set_visible(False)
-                ax.grid(axis='y', linestyle='--', alpha=0.6)
-
-                # Rotate x-axis labels for better visibility
-                ax.tick_params(axis='x', labelsize=10, rotation=45)
-                ax.tick_params(axis='y', labelsize=10)
-
-                for i, artist in enumerate(ax.artists):
-                    artist.set_edgecolor('black')
-                    artist.set_linewidth(0.8)
-
-            # Hide unused subplots
-            for i in range(len(groups), len(axes_flat)):
-                axes_flat[i].set_visible(False)
-
-            # Create a descriptive filename
+        axes_flat = axes.flatten()
+        for ax, group in zip(axes_flat, groups):
+            # Filter per‐group
             if isinstance(group_by, list):
-                group_str = "_".join(group_by)
+                mask = pd.Series(True, index=filtered_data.index)
+                for col, val in zip(group_by, group):
+                    mask &= filtered_data[col] == val
+                group_df = filtered_data[mask]
+                space_val = group[1]
             else:
-                group_str = group_by
+                group_df = filtered_data[filtered_data[group_by] == group]
+                space_val = None
 
-            base_name = f"rank_{method_col}_{metric_col}_{group_str}" if name is None else name
-            plot_name = f"{base_name}_grid_{n_rows}x{n_cols}"
-            plt.savefig(self.output_dir / (plot_name + ".pdf"),
-                        dpi=300, bbox_inches='tight')
-            plt.close()
+            # Compute ranks
+            reranked = group_df.copy()
+            reranked[RANK_COL] = group_df.groupby(DATASET_COL)[metric_col] \
+                .rank(ascending=False, method='min')
+
+            # Select methods for this subplot
+            methods_plot = unique_methods.copy()
+            if space_val == "Avg":
+                methods_plot = [m for m in methods_plot if "Text" not in m]
+            elif space_val == "NPTE":
+                methods_plot = [m for m in methods_plot if "Token" not in m]
+
+            plot_df = reranked[reranked[method_col].isin(methods_plot)]
+            plot_palette = {m: color_map[m] for m in methods_plot}
+
+            # Draw boxplot
+            seaborn.boxplot(
+                x=method_col, y=RANK_COL, data=plot_df, ax=ax,
+                hue=method_col, palette=plot_palette,
+                order=methods_plot, width=0.7, legend=False, orient='v'
+            )
+
+            # Title & labels
+            title = ", ".join(map(str, group)) if isinstance(group_by, list) else str(group)
+            ax.set_title(title, fontsize=11, fontweight='bold')
+            ax.set_xlabel('')
+            ax.set_ylabel('Rank', fontsize=12)
+
+            # Styling
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.grid(axis='y', linestyle='--', alpha=0.6)
+            ax.tick_params(axis='x', labelsize=10, rotation=45)
+            ax.tick_params(axis='y', labelsize=10)
+            for artist in ax.artists:
+                artist.set_edgecolor('black')
+                artist.set_linewidth(0.8)
+
+        # Hide extra subplots
+        for ax in axes_flat[len(groups):]:
+            ax.set_visible(False)
+
+        # Save
+        group_str = "_".join(group_by) if isinstance(group_by, list) else group_by
+        base = name or f"rank_{method_col}_{metric_col}_{group_str}"
+        fname = f"{base}_grid_{n_rows}x{n_cols}.pdf"
+        plt.savefig(self.output_dir / fname, dpi=300, bbox_inches='tight')
+        plt.close()
 
 
 def manual_ranking():
@@ -315,7 +292,10 @@ def manual_ranking():
 
     version_path = Path(__file__).parent.parent.parent.parent.parent / "experiments" / "0.45" / "rank_csv"
     ranked_df = pd.read_csv(version_path / "ranked_results_filterd_renamed.csv")
-    ranked_df[METHOD_COL] = ranked_df[METHOD_COL].replace("Feature-Bagging", "FB").replace("V-GAN-Token", "V-GAN-T").replace("V-GAN-Text", "V-GAN-TX").replace("Full-Space", "Full")
+    ranked_df[METHOD_COL] = ranked_df[METHOD_COL].replace("Feature-Bagging", "FB").replace("V-GAN-Token", "V-GAN-\nToken").replace("V-GAN-Text", "V-GAN-\nText").replace("Full-Space", "Full")
+    ranked_df = ranked_df[ranked_df[BASE_COL] != "ECOD"]
+    ranked_df = ranked_df[ranked_df[METHOD_COL] != "Trivial"]
+
     rank = RankVisualizer([], version_path)
 
     rank.create_box_plot_vertical(data=ranked_df,

@@ -17,7 +17,8 @@ from text.visualizer.result_visualizer.result_aggregator import V_GAN, V_GAN_TEX
 fully_myopic_datasets_NPTE = [NLP_ADBench.sms_spam().name,
                               NLP_ADBench.n24news().name,
                               NLP_ADBench.yelp_review_polarity().name,
-                              #NLP_ADBench.agnews().name
+                              #NLP_ADBench.agnews().name,
+                              #NLP_ADBench.emotion().name
                               ]
 fully_myopic_datasets_avg = [NLP_ADBench.sms_spam().name,
                               NLP_ADBench.n24news().name,
@@ -97,7 +98,7 @@ def conover_iman_table_generator(odm, u_type, df: pd.DataFrame, space: str, expo
     symbol_matrix.columns = [col if col != FEATURE_BAGGING else "FB" for col in symbol_matrix.columns]
     first_column = symbol_matrix.columns[0]
     #symbol_matrix[first_column] = symbol_matrix[first_column].apply(lambda method: method if method != FEATURE_BAGGING else FEATURE_BAGGING + " (FB)")
-    symbol_matrix.to_csv(export_path / f"symbol_matrix_{odm}.csv")
+    #symbol_matrix.to_csv(export_path / f"symbol_matrix_{odm}.csv")
     return symbol_matrix, conover_result
 
 
@@ -108,82 +109,53 @@ def conover_iman_table_generator(odm, u_type, df: pd.DataFrame, space: str, expo
         df = df[df['p-value'] < 0.10]
 
 
-def symbol_matrices_to_latex(symbol_matrices: List[pd.DataFrame], odms: List[str]) -> str:
-    """
-    Convert the symbol matrices to a LaTeX table format that spans both columns in IEEE format.
-    The table will be positioned at the top of the page.
-    """
-    if not symbol_matrices or len(symbol_matrices) != len(odms):
-        return "Error: Symbol matrices and ODMs lists must be non-empty and have the same length"
-
-    # Get the methods (rows) from the first matrix
+def symbol_matrices_to_latex(symbol_matrices: List[pd.DataFrame],
+                             odms: List[str],
+                             space: str,
+                             u_type: str,
+                             datasets: List[str]) -> str:
+    blocks = [m.columns.tolist() for m in symbol_matrices]
     methods = symbol_matrices[0].index.tolist()
-    myopic_datasets = fully_myopic_datasets_avg if space == AVG_SPACE else fully_myopic_datasets_NPTE
-    lense = u_type == "lense"
-    all_ds = u_type == "all"
 
-    if lense:
-        datasets = myopic_datasets
-    elif all_ds:
-        datasets = all_datasets
-    else:
-        datasets = [ds for ds in all_datasets if ds not in myopic_datasets]
+    # 1) table header
+    col_spec = "l" + "".join(f"|{'c'*len(b)}" for b in blocks) + "|"
+    lines = [
+        r"\begin{table*}[t]",
+        r"\centering",
+        r"\footnotesize",
+        rf"\caption{{Conover–Iman test results. Space: {space}, type: {u_type}, datasets: {', '.join(datasets)}}}",
+        rf"\label{{tab:conover_iman_{space}_{u_type}}}",
+        rf"\begin{{tabular}}{{{col_spec}}}",
+        r"\hline",
+        # First header row: ODM names
+        " & " + " & ".join(
+            rf"\multicolumn{{{len(blocks[i])}}}{{c}}{{\textbf{{{odm}}}}}"
+            for i, odm in enumerate(odms)
+        ) + r" \\ \hline",
+        # Second header row: method names
+        " & " + " & ".join(
+            " & ".join(rf"\textbf{{{col}}}" for col in blocks[i])
+            for i in range(len(blocks))
+        ) + r" \\ \hline",
+    ]
 
-    datasets = [ds.replace("NLP_ADBench ", "") for ds in datasets]
-    datasets = [ds.replace("_", " ") for ds in datasets]
-    # Start building the LaTeX table with table* environment for double column
-    latex = "\\begin{table*}[t]\n"  # t for top placement
-    latex += "\\centering\n"
-    latex += "\\footnotesize\n"  # Reduce font size to fit wide table
-    latex += "\\caption{Conover-Iman test results. "+f"Space: {space}, type: {u_type}, datasets: {', '.join(datasets)}" +"}\n"
+    # 2) data rows with grey‐shading for row_idx == col_idx
+    for ri, method in enumerate(methods):
+        row_cells = []
+        for bi, cols in enumerate(blocks):
+            for ci, col in enumerate(cols):
+                if ri == ci:
+                    row_cells.append(r"\cellcolor{gray!25}{}")
+                else:
+                    row_cells.append(symbol_matrices[bi].loc[method, col])
+        lines.append(f"{method} & " + " & ".join(row_cells) + r" \\")
+    lines += [r"\hline", r"\end{tabular}", r"\end{table*}"]
 
-    # Create column specification
-    col_count = sum(len(matrix.columns) for matrix in symbol_matrices)
-    latex += "\\begin{tabular}{l" + "|" + "c" * col_count + "}\n"
-    latex += "\\hline\n"
-
-    # Add the header with ODM names spanning their respective columns
-    latex += " & "
-    for i, odm in enumerate(odms):
-        cols = len(symbol_matrices[i].columns)
-        latex += f"\\multicolumn{{{cols}}}{{c|}}{{{odm}}}" if i < len(odms) - 1 else f"\\multicolumn{{{cols}}}{{c}}{{{odm}}}"
-        if i < len(odms) - 1:
-            latex += " & "
-    latex += " \\\\\n\\hline\n"
-
-    # Add the column headers (method names)
-    latex += "Method & "
-    for i, matrix in enumerate(symbol_matrices):
-        cols = matrix.columns.tolist()
-        latex += " & ".join(cols)
-        if i < len(symbol_matrices) - 1:
-            latex += " & "
-    latex += " \\\\\n\\hline\n"
-
-    # Add the data rows
-    for method in methods:
-        latex += f"{method} & "
-        for i, matrix in enumerate(symbol_matrices):
-            cols = matrix.columns.tolist()
-            row_values = [str(matrix.loc[method, col]) for col in cols]
-            latex += " & ".join(row_values)
-            if i < len(symbol_matrices) - 1:
-                latex += " & "
-        latex += " \\\\\n"
-
-    # Close the table
-    latex += "\\hline\n"
-    latex += "\\end{tabular}\n"
-    latex += "\\label{tab:conover_iman_results" + f"_{space}_{u_type}" + "}\n"
-    latex += "\\end{table*}\n"
-
-    latex = latex.replace("Feature-Bagging", "Feature-Bagging (FB)")
-
-    return latex
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
-    version_path = Path(__file__).parent.parent.parent.parent / "experiments" / "0.45"
+    version_path = Path(__file__).parent.parent.parent.parent / "experiments" / "0.45" / "rank_csv"
     df_path = version_path / "ranked_results_filterd_renamed.csv"
     ranked_results = pd.read_csv(df_path)
 
@@ -192,8 +164,9 @@ if __name__ == "__main__":
     spaces = ["Avg",
               "NPTE"
               ]
-    u_types = ["lense",
+    u_types = [#"lense",
                #"non-lense"
+                "all",
                ]
     odms = ["LUNAR", "LOF"]
     latex_tables = []
@@ -203,13 +176,13 @@ if __name__ == "__main__":
             results = []
             for odm in odms:
             #odm = "LUNAR"
-                ranked_results = ranked_results[ranked_results[DATASET_COL] != NLP_ADBench.n24news().name]
+                #ranked_results = ranked_results[ranked_results[DATASET_COL] != NLP_ADBench.n24news().name]
 
                 symbol_matrix, conover_results = conover_iman_table_generator(odm, u_type, ranked_results, space, export_path=version_path)
                 symbol_matrices.append(symbol_matrix)
                 results.append(conover_results)
             #concated_matrix = concatenate_symbol_matrices(symbol_matrices, odms)
-            latex_table = symbol_matrices_to_latex(symbol_matrices, odms)
+            latex_table = symbol_matrices_to_latex(symbol_matrices, odms, space=space, u_type=u_type, datasets=odms)
             latex_tables.append(latex_table)
     print("----------------------\n")
     seperator = "\n\n%---------------------------------------------\n\n"

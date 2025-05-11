@@ -56,10 +56,11 @@ if __name__ == "__main__":
 
     # Set dtype of the time column to int
     ranked_df[TIME_TAKEN_COL] = ranked_df[TIME_TAKEN_COL].astype(int)
-
-    ranked_df.columns = [col.replace("time_taken", "time_taken (s)") for col in ranked_df.columns]
-    ranked_df.columns = [col.replace("_", " ") for col in ranked_df.columns]
     ranked_df = ranked_df[ranked_df[BASE_COL] != "ECOD"]
+
+    ranked_df.columns = [col.replace("time_taken", "Average Time taken (s)") for col in ranked_df.columns]
+    ranked_df.columns = [col.replace("_", " ") for col in ranked_df.columns]
+
 
     #Remove last column
     ranked_df = ranked_df.iloc[:, :-1]
@@ -81,6 +82,13 @@ if __name__ == "__main__":
         caption = f"Ranked results for {dataset}."
         label = f"tab:ranked_results_{dataset}"
         latex_table = generate_ieeetran_table(chunk, caption, label)
+        latex_table = (latex_table.replace("emb_model", "Embedding Model")
+                         .replace("method", "Method")
+                            .replace("space", "Space")
+                            .replace("base", "Base")
+                         .replace("auc", "AUC")
+                            .replace("pauc", "PRAUC")
+                            .replace("f1", "F1"))
         print("\n\n\n")
         print(latex_table)
         #with open(version_path / f"ranked_results_chunk_{i+1}.tex", 'w') as f:
