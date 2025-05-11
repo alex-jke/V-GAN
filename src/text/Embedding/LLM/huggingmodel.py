@@ -369,9 +369,9 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         # Apply the cache condition (1 for masked positions, 0 for allowed positions)
         cache_cond = (torch.arange(target_length, device=device, dtype=dtype) > cache_position.reshape(-1, 1))
         causal_mask = causal_mask * cache_cond.to(dtype)
-        # Convert binary mask to additive mask: 0 becomes min_dtype and 1 becomes 0
+        # Convert binary mask to additive mask: 1 becomes min_dtype and 0 stays 0
         min_dtype = torch.finfo(dtype).min
-        causal_mask = (1 - causal_mask) * min_dtype
+        causal_mask = causal_mask * (min_dtype - 0)
         # Expand to 4D
         causal_mask = causal_mask.unsqueeze(0).unsqueeze(0).expand(batch_size, 1, -1, -1)
         if attention_mask is not None:
