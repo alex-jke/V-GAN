@@ -221,15 +221,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         return masked
 
     def get_prefix_mask(self) -> Tensor:
-        if self.prefix_mask is None:
-            self.prefix_mask = torch.ones(len(self.prefix)).to(self.device)
-        assert self.prefix_mask.shape[0] == len(self.prefix), f"Length of prefix and prefix mask do not agree: mask: {self.prefix_mask.shape[0]}, prefix words: {len(self.prefix)}"
-        return self.prefix_mask
+        return torch.ones(len(self.prefix)).to(self.device)
 
     def get_suffix_mask(self) -> Tensor:
-        if self.suffix_mask is None:
-            self.suffix_mask = torch.ones(len(self.suffix)).to(self.device)
-        return self.suffix_mask
+        return torch.ones(len(self.suffix)).to(self.device)
 
     def _embed_words_last(self, words: List[str], mask: Optional[Tensor] = None) -> Tensor:
 
