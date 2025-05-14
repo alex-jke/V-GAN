@@ -99,7 +99,7 @@ class ResultAggregator():
         df = df[df[METHOD_COL].isin(included_methods) | df[METHOD_COL].str.contains("TextVMMD")]
 
         # Average over the runs
-        avg_df = df.groupby(group_by_columns).mean().reset_index()
+        avg_df: pd.DataFrame = df.groupby(group_by_columns).mean().reset_index()
 
         # Group by dataset and create rankings from the average AUC, where the best AUC is ranked 1
         avg_df[RANK_COL] = avg_df.groupby(DATASET_COL)[AUC_COL].rank(ascending=False, method='first')

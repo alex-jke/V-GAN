@@ -188,15 +188,21 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         if mask is not None and mask.shape[0] > self.max_word_length():
             raise RuntimeError(f"A mask was passed, thats length is longer that the maximum amount: {mask.shape[0] > self.max_word_length()}")
 
+        if mask is not None:
+            assert len(words) + len(suffix) == mask.shape[0], f"The provided word mask and amount of words do not match up, mask: {mask.shape[0]}, words: {len(words)}\n{mask}\n{words}"
+
         if suffix is not None:
             tokenized_suffix = self._tokenize_words(words=suffix)
             tokenized_suffix[0] = tokenized_suffix[0][1:] # Remove the beginning of sequence token.
             suffix_length = sum([tokens.shape[0] for tokens in tokenized_suffix])
             tokenized_sample = self._tokenize_words(words=words, max_token_length= self.max_token_length() - suffix_length)
             tokenized = tokenized_sample + tokenized_suffix
+            if mask is not None:
+                assert len(tokenized) == mask.shape[0], f"The amount of tokenized words and word mask do not match up, tokenized: {len(tokenized)}, mask: {mask.shape[0]}"
         else:
             tokenized = self._tokenize_words(words=words, max_token_length=self.max_token_length())
-
+            if mask is not None:
+                assert len(tokenized) == mask.shape[0], f"The amount of tokenized words and word mask do not match up, tokenized: {len(tokenized)}, mask: {mask.shape[0]}"
         expanded_mask = self._convert_word_to_token_mask(tokenized, mask) if mask is not None else None
         if expanded_mask is not None and expanded_mask.shape[0] > self.max_token_length():
             raise ValueError(f"Passed a mask that is longer, than the maximum token length. {self.max_token_length()}.")
@@ -217,6 +223,7 @@ class HuggingModel(Tokenizer, Embedding, ABC):
     def get_prefix_mask(self) -> Tensor:
         if self.prefix_mask is None:
             self.prefix_mask = torch.ones(len(self.prefix)).to(self.device)
+        assert self.prefix_mask.shape[0] == len(self.prefix), f"Length of prefix and prefix mask do not agree: mask: {self.prefix_mask.shape[0]}, prefix words: {len(self.prefix)}"
         return self.prefix_mask
 
     def get_suffix_mask(self) -> Tensor:
@@ -231,6 +238,10 @@ class HuggingModel(Tokenizer, Embedding, ABC):
         prefix_mask = self.get_prefix_mask()
         suffix_mask = self.get_suffix_mask()
         classification_added_mask = torch.concat((prefix_mask, mask, suffix_mask)) if mask is not None else None
+        if mask is not None:
+            assert prefix_mask.shape[0] == len(self.prefix), f"Length of prefix and prefix mask do not agree: mask: {prefix_mask.shape[0]}, prefix words: {len(self.prefix)}"
+            assert suffix_mask.shape[0] == len(self.suffix), f"Length of suffix and suffix mask do not agree: mask: {suffix_mask.shape[0]}, suffix words: {len(self.prefix)}"
+            assert mask.shape[0] == len(words), f"The amount of words and length of mask do not align: mask: {mask.shape[0]}, words: {len(words)}"
         masked = self._embed_words_full(self.prefix + words, classification_added_mask, suffix=self.suffix)
         last_entry = masked[-1]
         expanded = last_entry.unsqueeze(0)

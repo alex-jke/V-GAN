@@ -43,15 +43,21 @@ class TokenSpace(Space):
 
         return x_train, y_train, x_test, y_test
 
-    def embed_tokenized(self, tokenized) -> Tensor:
+    def embed_tokenized(self, tokenized: Tensor) -> Tensor:
         embeddings = []
         assert len(tokenized.shape) == 2, f"Tokenized data should be 2D (batch, sequence length), but got {tokenized.shape}"
         with ui.display():
             for i in range(tokenized.shape[0]):
                 ui.update(f"Embedding {i}/{tokenized.shape[0]}")
-                sample = tokenized[i]
+                org_sample = tokenized[i]
                 # Remove padding tokens
-                sample = sample[sample != self.model.padding_token]
+                sample = org_sample[org_sample != self.model.padding_token]
+
+
+                assert len(sample.shape) == 1, f"Sample does not contain the correct shape, expected: (token_length), got: {sample.shape}."
+                if sample.shape[0] == 0:
+                    sample = Tensor([self.model.padding_token]).to(sample.device)
+                assert sample.shape[0] > 0, f"A sample needs to contain at least one non-padding token. Got: {sample}, sample with padding: {org_sample}."
 
                 embedded_tokens = self.model.fully_embed_tokenized(sample) # TODO: normalize?
                 embedding = embedded_tokens.mean(dim=0)
