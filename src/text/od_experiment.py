@@ -419,14 +419,14 @@ if __name__ == '__main__':
     train_samples = 5000
     datasets = NLP_ADBench.get_all_datasets()
     datasets.sort(key=lambda d: d.average_length)
-    #datasets = datasets[1:] + datasets[:1]
+    #datasets = datasets[6:] + datasets[:6]
     emb_model = LLama3B()
     ui = cli.get()
     with ui.display():
         for i, dataset in enumerate(datasets):
             ui.update(dataset.name + f" ({i+1}/{len(datasets)})")
             exp = Experiment(dataset, emb_model, skip_error=False, train_size=train_samples, test_size=test_samples,
-                                experiment_name="0.45", use_cached=True, runs=1, run_cachable=False)
+                                experiment_name="0.45", use_cached=True, runs=5, run_cachable=False)
             aggregated_path = exp.output_path.parent.parent # directory of the current version
             #csv_path = aggregated_path / "aggregated.csv"
             results = exp.run()

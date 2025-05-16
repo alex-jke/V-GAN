@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod, ABC
 from typing import List, Optional
 
@@ -66,7 +67,17 @@ class LLama(HuggingModel, ABC):
 
         else:
             with torch.no_grad():
-                outputs = self.model(input_ids=tokenized.int().unsqueeze(0), use_cache=False)
+                if tokenized.shape[0] > self.max_token_length():
+                    if not self._token_length_warning_given:
+                        logging.warning(
+                            f"Input contains token sequences of length larger than the maximum length {self.max_token_length()}. "
+                            f"Found: {tokenized.shape[0]}. This token tensor and further token tensors of length"
+                            f"larger than {self.max_token_length()} will be trimmed. No further warnings will be given.")
+                        self._token_length_warning_given = True
+                    tokenized = tokenized[:self.max_token_length()]
+                unsqueezed = tokenized.int().unsqueeze(0)
+                outputs = self.model(input_ids=unsqueezed, use_cache=False)
+                #outputs = self.model(inputs_embeds=input_embeds, use_cache=False)
             outputs = outputs # Otherwise the line below complains about usage before assignment.
         embeddings = outputs[0]
         de_batched = embeddings[0]
