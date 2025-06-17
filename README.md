@@ -37,8 +37,10 @@ pip install torch==2.2.1+cu118 --extra-index-url https://download.pytorch.org/wh
 
 # Running
 
-There are several pipelines available for running the experiments. The main ones are:
-- `vmmd_experiments.py`: This script runs V-GAN without kernel learning.
-- `vgan_experiments.py`: This script runs V-GAN with kernel learning.
+There are several pipelines available for running the experiments. These are located in the `src/text` directory:
+- `vmmd_experiments.py`: This script runs V-GAN without kernel learning on numeric data.
+- `vgan_experiments.py`: This script runs V-GAN with kernel learning on numeric data.
 - `od_experiments.py`: This script runs the Outlier Detection experiments.
-- `
+- `vmmd_lightning_text_experiments.py`: This script runs V-GAN without kernel learning using PyTorch Lightning on textual data.
+
+All of these scripts include a sample usage in the `if __name__ == "__main__":` section. There, the parameters for the experiments can be set, such as the dataset to use, the number of epochs, and other hyperparameters.
