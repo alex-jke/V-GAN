@@ -3,9 +3,9 @@ from typing import List
 import numpy as np
 import ollama
 
-from Embedding.embedding import Embedding
+from text.Embedding.embedding import Embedding
 
-from vocabulary.vocabulary import Vocabulary
+from text.vocabulary.vocabulary import Vocabulary
 
 from sklearn.metrics.pairwise import cosine_similarity
 

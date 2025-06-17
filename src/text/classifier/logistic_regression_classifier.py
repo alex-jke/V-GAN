@@ -2,8 +2,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
-from classifier.classifier import Classifier
-from dataset.dataset import Dataset
+from text.classifier.classifier import Classifier
+from text.dataset.dataset import Dataset
 
 
 class LogisticRegressionClassifier(Classifier):

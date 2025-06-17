@@ -2,7 +2,7 @@ from abc import abstractmethod, ABC
 
 import pandas as pd
 
-from vocabulary.vocabulary import Vocabulary
+from text.vocabulary.vocabulary import Vocabulary
 
 
 class ModifiableVocabulary(Vocabulary, ABC):

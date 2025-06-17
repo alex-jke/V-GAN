@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from Embedding.embedding import Embedding
-from vocabulary.modifiable_vocabulary import ModifiableVocabulary
+from text.Embedding.embedding import Embedding
+from text.vocabulary.modifiable_vocabulary import ModifiableVocabulary
 
 
 class EmbeddingVocabulary(ModifiableVocabulary):

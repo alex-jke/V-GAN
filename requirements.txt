@@ -101,4 +101,5 @@ pytorch-lightning
 lightning_transformers
 tensorboard
 accelerate==1.6.0
-
+ollama
+enchant

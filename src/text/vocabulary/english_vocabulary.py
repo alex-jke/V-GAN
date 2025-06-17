@@ -1,7 +1,7 @@
 import enchant
 import numpy as np
 
-from vocabulary import Vocabulary
+from text.vocabulary.vocabulary import Vocabulary
 
 
 class EnglishVocabulary(Vocabulary):

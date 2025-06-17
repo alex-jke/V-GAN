@@ -21,14 +21,24 @@ cd torch-two-sample
 pip install .
 ```
 
-# Running
+Furthermore, when using the PyCharm IDE, the src folder should be marked as a source root. This can be done by right-clicking on the src folder in the PyCharm project explorer and selecting "Mark Directory as" -> "Sources Root". This will allow PyCharm to recognize the modules in the src folder correctly.
+Otherwise, errors might ocur when trying to import modules from the src folder.
+
 If running the LLama models, which are run by some experiments, make sure you are logged in into Huggingface and have 
 access to the LLama models used here (meta-llama/Llama-3.2-1B and meta-llama/Llama-3.2-3B). To do so, you can use the following command:
 ```
 huggingface-cli login
 ```
 
-Torch version in requirements not correct, will give error. To install proper version:
+The version of Torch in requirements not quite correct and might give error. If that is the case, the proper version can be installed via:
 ```
 pip install torch==2.2.1+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
 ```
+
+# Running
+
+There are several pipelines available for running the experiments. The main ones are:
+- `vmmd_experiments.py`: This script runs V-GAN without kernel learning.
+- `vgan_experiments.py`: This script runs V-GAN with kernel learning.
+- `od_experiments.py`: This script runs the Outlier Detection experiments.
+- `
