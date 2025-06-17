@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.modules.text.vmmd_text_lightning API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.modules.text.vmmd_text_lightning</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase"><code class="flex name class">
+<span>class <span class="ident">VMMDTextLightningBase</span></span>
+<span>(</span><span>sequence_length: int,<br>seperator: str = ' ',<br>strategy: text.Embedding.unification_strategy.StrategyInstance = TRANSFORMER,<br>use_mmd: bool = True,<br>**kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VMMDTextLightningBase(VMMDLightningBase, ODModule):
+    def __init__(self, sequence_length: int, seperator: str = &#34; &#34;, strategy: StrategyInstance = UnificationStrategy.TRANSFORMER.create(), use_mmd: bool = True, **kwargs):
+        # Assume necessary hyperparameters (e.g., lr, weight_decay, weight, epochs) are in kwargs.
+        if &#39;generator&#39; not in kwargs:
+            kwargs[&#39;generator&#39;] = GeneratorSigmoidSTE
+        super().__init__(**kwargs)
+        self.sequence_length = sequence_length
+        self.seperator = seperator
+        # In Lightning, we assume the sequence length is known beforehand.
+        self.n_dims = sequence_length
+        self._latent_size = max(self.n_dims // 16, 1)
+        self.strategy = strategy
+        # Create generator network using base class method.
+        self.generator = self.get_the_networks(self.n_dims, self._latent_size, device=self.device())
+        self.add_nan_hook()
+        # Create loss function.
+        #kernel = MixtureRQLinear()#
+        kernel = EfficientRBF()
+        self.loss_function = MMDLossConstrained(weight=self.hparams.get(&#34;weight&#34;, 1.0), kernel=kernel) if use_mmd else MSELoss(weight=self.hparams.get(&#34;weight&#34;, 1.0))
+
+    def add_nan_hook(self):
+        torch.autograd.set_detect_anomaly(True)
+        def nan_hook(module, inp, out):
+            if torch.isnan(out).any():
+                raise RuntimeError(f&#34;NaNs in {module!r}&#34;)
+
+
+        for m in self.generator.modules():
+            m.register_forward_hook(nan_hook)
+
+    def on_before_optimizer_step(self, optimizer):
+        # Compute the 2-norm for each layer
+        for n, p in self.generator.named_parameters():
+            if p.grad is not None and (torch.isnan(p.grad).any() or torch.isinf(p.grad).any()):
+                p.grad.data = torch.nan_to_num(p.grad.data, nan=0.0, posinf=1e3, neginf=-1e3)
+                print(f&#34;NaN or Infs in gradient of {n} of generator&#34;)
+
+        norms = grad_norm(self.generator, norm_type=2)
+        avg_norm = 0
+        for _, norm in norms.items():
+            avg_norm += norm
+        if len(norms) == 0:
+            norm = Tensor([0])
+            warnings.warn(&#34;Generator did not return any parameters.&#34;)
+        else:
+            norm = avg_norm / len(norms)
+        if norm.abs().sum() == 0.0:
+            print(&#34;No gradient.&#34;)
+        self.log(self.gradient_key, norm, prog_bar=True)
+        self.log_dict(norms)
+
+    def on_after_backward(self):
+        for name, param in self.named_parameters():
+            self.logger.experiment.add_histogram(f&#34;gradients/{name}&#34;, param.grad, self.global_step)
+            self.logger.experiment.add_histogram(f&#34;weights/{name}&#34;, param, self.global_step)
+
+    def training_step(self, batch, batch_idx):
+
+        ui.update(f&#34;Training Epoch {self.current_epoch}/{self.epochs}&#34;)
+
+        # Assume batch is a numpy array of sentences or similar.
+        # Prepare noise and subspaces.
+        noise_tensor = self._get_noise_tensor(self._latent_size)
+        noise_tensor.normal_()  # Sample noise
+        subspaces = self.generator(noise_tensor)
+        if subspaces is None or torch.isnan(subspaces).any():
+            raise RuntimeError(&#34;Generator produced Nan values.&#34;)
+
+        # Convert the batch to embeddings.
+        embeddings = self._convert_batch(batch, self.embedding, None)
+        masked_embeddings = self._convert_batch(batch, self.embedding, subspaces)
+
+        # Compute loss.
+        loss = self.loss_function(embeddings, masked_embeddings, subspaces)
+        self.log(self.generator_loss_key, loss, prog_bar=True)
+        mmd_loss = self.loss_function.mmd_loss
+        self.log(self.mmd_loss_key, mmd_loss, prog_bar=True)
+
+        return loss
+
+    def configure_optimizers(self):
+        optimizer = torch.optim.Adam(
+            self.generator.parameters(),
+            lr=self.hparams.get(&#34;lr&#34;, 1e-2),
+            weight_decay=self.hparams.get(&#34;weight_decay&#34;, 0)
+        )
+        return optimizer
+
+    def _plot_loss(self, path_to_directory, x_data: Optional[np.ndarray[str]] = None):
+        plot, ax = self._create_plot()
+
+        p_values = self.check_if_myopic(x_data, count=1000)
+        recomended_p_value = p_values[self.recommended_bandwidth_name].values[0]
+        recommended_bandwidth = self.bandwidth.item()
+
+        # add the p-value to the plot in the top right corner
+        plt.text(0.5, 0.99, f&#39;{self.recommended_bandwidth_name}\n({recommended_bandwidth}): {recomended_p_value}&#39;,
+                 ha=&#39;center&#39;, va=&#39;top&#39;,
+                 transform=ax.transAxes, color=&#39;black&#39;, fontsize=8)
+        plot.savefig(Path(path_to_directory) / &#34;train_history.png&#34;, format=&#34;png&#34;, dpi=1200)
+        plot.close()
+
+    # The following methods remain abstract or utility; implement as needed:
+    @abstractmethod
+    def _convert_batch(self, batch, embedding, mask) -&gt; Tensor:
+        &#34;&#34;&#34;
+        Convert a batch to a tensor.
+        Must be implemented.
+        &#34;&#34;&#34;
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_training_data(self, x_data, embedding, n_dims):
+        &#34;&#34;&#34;
+        Prepare training data.
+        Must be implemented.
+        &#34;&#34;&#34;
+        raise NotImplementedError
+
+    @abstractmethod
+    def check_if_myopic(self, x_data: Optional[ndarray], count=500, bandwidth: float | Tensor = 0.01):
+        &#34;&#34;&#34;
+        Custom evaluation method.
+        Must be implemented.
+        &#34;&#34;&#34;
+        raise NotImplementedError</code></pre>
+</details>
+<div class="desc"><p>Hooks to be used in LightningModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>modules.text.vmmd_lightning.VMMDLightningBase</li>
+<li>pytorch_lightning.core.module.LightningModule</li>
+<li>lightning_fabric.utilities.device_dtype_mixin._DeviceDtypeModuleMixin</li>
+<li>pytorch_lightning.core.mixins.hparams_mixin.HyperparametersMixin</li>
+<li>pytorch_lightning.core.hooks.ModelHooks</li>
+<li>pytorch_lightning.core.hooks.DataHooks</li>
+<li>pytorch_lightning.core.hooks.CheckpointHooks</li>
+<li>torch.nn.modules.module.Module</li>
+<li>i_vmmd_base.IVMMDBase</li>
+<li>modules.od_module.ODModule</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.add_nan_hook"><code class="name flex">
+<span>def <span class="ident">add_nan_hook</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_nan_hook(self):
+    torch.autograd.set_detect_anomaly(True)
+    def nan_hook(module, inp, out):
+        if torch.isnan(out).any():
+            raise RuntimeError(f&#34;NaNs in {module!r}&#34;)
+
+
+    for m in self.generator.modules():
+        m.register_forward_hook(nan_hook)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.check_if_myopic"><code class="name flex">
+<span>def <span class="ident">check_if_myopic</span></span>(<span>self,<br>x_data: numpy.ndarray | None,<br>count=500,<br>bandwidth: float | torch.Tensor = 0.01)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def check_if_myopic(self, x_data: Optional[ndarray], count=500, bandwidth: float | Tensor = 0.01):
+    &#34;&#34;&#34;
+    Custom evaluation method.
+    Must be implemented.
+    &#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+<div class="desc"><p>Custom evaluation method.
+Must be implemented.</p></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.configure_optimizers"><code class="name flex">
+<span>def <span class="ident">configure_optimizers</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def configure_optimizers(self):
+    optimizer = torch.optim.Adam(
+        self.generator.parameters(),
+        lr=self.hparams.get(&#34;lr&#34;, 1e-2),
+        weight_decay=self.hparams.get(&#34;weight_decay&#34;, 0)
+    )
+    return optimizer</code></pre>
+</details>
+<div class="desc"><p>Choose what optimizers and learning-rate schedulers to use in your optimization. Normally you'd need one.
+But in the case of GANs or similar you might have multiple. Optimization with multiple optimizers only works in
+the manual optimization mode.</p>
+<h2 id="return">Return</h2>
+<p>Any of these 6 options.</p>
+<ul>
+<li><strong>Single optimizer</strong>.</li>
+<li><strong>List or Tuple</strong> of optimizers.</li>
+<li><strong>Two lists</strong> - The first list has multiple optimizers, and the second has multiple LR schedulers
+(or multiple <code>lr_scheduler_config</code>).</li>
+<li><strong>Dictionary</strong>, with an <code>"optimizer"</code> key, and (optionally) a <code>"lr_scheduler"</code>
+key whose value is a single LR scheduler or <code>lr_scheduler_config</code>.</li>
+<li><strong>None</strong> - Fit will run without any optimizer.</li>
+</ul>
+<p>The <code>lr_scheduler_config</code> is a dictionary which contains the scheduler and its associated configuration.
+The default configuration is shown below.</p>
+<p>.. code-block:: python</p>
+<pre><code>lr_scheduler_config = {
+    # REQUIRED: The scheduler instance
+    "scheduler": lr_scheduler,
+    # The unit of the scheduler's step size, could also be 'step'.
+    # 'epoch' updates the scheduler on epoch end whereas 'step'
+    # updates it after a optimizer update.
+    "interval": "epoch",
+    # How many epochs/steps should pass between calls to
+    # &lt;code&gt;scheduler.step()&lt;/code&gt;. 1 corresponds to updating the learning
+    # rate after every epoch/step.
+    "frequency": 1,
+    # Metric to monitor for schedulers like &lt;code&gt;ReduceLROnPlateau&lt;/code&gt;
+    "monitor": "val_loss",
+    # If set to &lt;code&gt;True&lt;/code&gt;, will enforce that the value specified 'monitor'
+    # is available when the scheduler is updated, thus stopping
+    # training if not found. If set to &lt;code&gt;False&lt;/code&gt;, it will only produce a warning
+    "strict": True,
+    # If using the &lt;code&gt;LearningRateMonitor&lt;/code&gt; callback to monitor the
+    # learning rate progress, this keyword can be used to specify
+    # a custom logged name
+    "name": None,
+}
+</code></pre>
+<p>When there are schedulers in which the <code>.step()</code> method is conditioned on a value, such as the
+:class:<code>torch.optim.lr_scheduler.ReduceLROnPlateau</code> scheduler, Lightning requires that the
+<code>lr_scheduler_config</code> contains the keyword <code>"monitor"</code> set to the metric name that the scheduler
+should be conditioned on.</p>
+<div class="admonition testcode">
+<p class="admonition-title">Testcode</p>
+<h1 id="the-reducelronplateau-scheduler-requires-a-monitor">The ReduceLROnPlateau scheduler requires a monitor</h1>
+<p>def configure_optimizers(self):
+optimizer = Adam(&hellip;)
+return {
+"optimizer": optimizer,
+"lr_scheduler": {
+"scheduler": ReduceLROnPlateau(optimizer, &hellip;),
+"monitor": "metric_to_track",
+"frequency": "indicates how often the metric is updated",
+# If "monitor" references validation metrics, then "frequency" should be set to a
+# multiple of "trainer.check_val_every_n_epoch".
+},
+}</p>
+<h1 id="in-the-case-of-two-optimizers-only-one-using-the-reducelronplateau-scheduler">In the case of two optimizers, only one using the ReduceLROnPlateau scheduler</h1>
+<p>def configure_optimizers(self):
+optimizer1 = Adam(&hellip;)
+optimizer2 = SGD(&hellip;)
+scheduler1 = ReduceLROnPlateau(optimizer1, &hellip;)
+scheduler2 = LambdaLR(optimizer2, &hellip;)
+return (
+{
+"optimizer": optimizer1,
+"lr_scheduler": {
+"scheduler": scheduler1,
+"monitor": "metric_to_track",
+},
+},
+{"optimizer": optimizer2, "lr_scheduler": scheduler2},
+)</p>
+</div>
+<p>Metrics can be made available to monitor by simply logging it using
+<code>self.log('metric_to_track', metric_val)</code> in your :class:<code>~pytorch_lightning.core.LightningModule</code>.</p>
+<h2 id="note">Note</h2>
+<p>Some things to know:</p>
+<ul>
+<li>Lightning calls <code>.backward()</code> and <code>.step()</code> automatically in case of automatic optimization.</li>
+<li>If a learning rate scheduler is specified in <code>configure_optimizers()</code> with key
+<code>"interval"</code> (default "epoch") in the scheduler configuration, Lightning will call
+the scheduler's <code>.step()</code> method automatically in case of automatic optimization.</li>
+<li>If you use 16-bit precision (<code>precision=16</code>), Lightning will automatically handle the optimizer.</li>
+<li>If you use :class:<code>torch.optim.LBFGS</code>, Lightning handles the closure function automatically for you.</li>
+<li>If you use multiple optimizers, you will have to switch to 'manual optimization' mode and step them
+yourself.</li>
+<li>If you need to control how often the optimizer steps, override the :meth:<code>optimizer_step</code> hook.</li>
+</ul></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.get_training_data"><code class="name flex">
+<span>def <span class="ident">get_training_data</span></span>(<span>self, x_data, embedding, n_dims)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def get_training_data(self, x_data, embedding, n_dims):
+    &#34;&#34;&#34;
+    Prepare training data.
+    Must be implemented.
+    &#34;&#34;&#34;
+    raise NotImplementedError</code></pre>
+</details>
+<div class="desc"><p>Prepare training data.
+Must be implemented.</p></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.on_after_backward"><code class="name flex">
+<span>def <span class="ident">on_after_backward</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def on_after_backward(self):
+    for name, param in self.named_parameters():
+        self.logger.experiment.add_histogram(f&#34;gradients/{name}&#34;, param.grad, self.global_step)
+        self.logger.experiment.add_histogram(f&#34;weights/{name}&#34;, param, self.global_step)</code></pre>
+</details>
+<div class="desc"><p>Called after <code>loss.backward()</code> and before optimizers are stepped.</p>
+<h2 id="note">Note</h2>
+<p>If using native AMP, the gradients will not be unscaled at this point.
+Use the <code>on_before_optimizer_step</code> if you need the unscaled gradients.</p></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.on_before_optimizer_step"><code class="name flex">
+<span>def <span class="ident">on_before_optimizer_step</span></span>(<span>self, optimizer)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def on_before_optimizer_step(self, optimizer):
+    # Compute the 2-norm for each layer
+    for n, p in self.generator.named_parameters():
+        if p.grad is not None and (torch.isnan(p.grad).any() or torch.isinf(p.grad).any()):
+            p.grad.data = torch.nan_to_num(p.grad.data, nan=0.0, posinf=1e3, neginf=-1e3)
+            print(f&#34;NaN or Infs in gradient of {n} of generator&#34;)
+
+    norms = grad_norm(self.generator, norm_type=2)
+    avg_norm = 0
+    for _, norm in norms.items():
+        avg_norm += norm
+    if len(norms) == 0:
+        norm = Tensor([0])
+        warnings.warn(&#34;Generator did not return any parameters.&#34;)
+    else:
+        norm = avg_norm / len(norms)
+    if norm.abs().sum() == 0.0:
+        print(&#34;No gradient.&#34;)
+    self.log(self.gradient_key, norm, prog_bar=True)
+    self.log_dict(norms)</code></pre>
+</details>
+<div class="desc"><p>Called before <code>optimizer.step()</code>.</p>
+<p>If using gradient accumulation, the hook is called once the gradients have been accumulated.
+See: :paramref:<code>~pytorch_lightning.trainer.trainer.Trainer.accumulate_grad_batches</code>.</p>
+<p>If using AMP, the loss will be unscaled before calling this hook.
+See these <code>docs &lt;https://pytorch.org/docs/stable/notes/amp_examples.html#working-with-unscaled-gradients&gt;</code>__
+for more information on the scaling of gradients.</p>
+<p>If clipping gradients, the gradients will not have been clipped yet.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>optimizer</code></strong></dt>
+<dd>Current optimizer being used.</dd>
+</dl>
+<p>Example::</p>
+<pre><code>def on_before_optimizer_step(self, optimizer):
+    # example to inspect gradient information in tensorboard
+    if self.trainer.global_step % 25 == 0:  # don't make the tf file huge
+        for k, v in self.named_parameters():
+            self.logger.experiment.add_histogram(
+                tag=k, values=v.grad, global_step=self.trainer.global_step
+            )
+</code></pre></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.training_step"><code class="name flex">
+<span>def <span class="ident">training_step</span></span>(<span>self, batch, batch_idx)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def training_step(self, batch, batch_idx):
+
+    ui.update(f&#34;Training Epoch {self.current_epoch}/{self.epochs}&#34;)
+
+    # Assume batch is a numpy array of sentences or similar.
+    # Prepare noise and subspaces.
+    noise_tensor = self._get_noise_tensor(self._latent_size)
+    noise_tensor.normal_()  # Sample noise
+    subspaces = self.generator(noise_tensor)
+    if subspaces is None or torch.isnan(subspaces).any():
+        raise RuntimeError(&#34;Generator produced Nan values.&#34;)
+
+    # Convert the batch to embeddings.
+    embeddings = self._convert_batch(batch, self.embedding, None)
+    masked_embeddings = self._convert_batch(batch, self.embedding, subspaces)
+
+    # Compute loss.
+    loss = self.loss_function(embeddings, masked_embeddings, subspaces)
+    self.log(self.generator_loss_key, loss, prog_bar=True)
+    mmd_loss = self.loss_function.mmd_loss
+    self.log(self.mmd_loss_key, mmd_loss, prog_bar=True)
+
+    return loss</code></pre>
+</details>
+<div class="desc"><p>Here you compute and return the training loss and some additional metrics for e.g. the progress bar or
+logger.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>batch</code></strong></dt>
+<dd>The output of your data iterable, normally a :class:<code>~torch.utils.data.DataLoader</code>.</dd>
+<dt><strong><code>batch_idx</code></strong></dt>
+<dd>The index of this batch.</dd>
+<dt><strong><code>dataloader_idx</code></strong></dt>
+<dd>The index of the dataloader that produced this batch.
+(only if multiple dataloaders used)</dd>
+</dl>
+<h2 id="return">Return</h2>
+<ul>
+<li>:class:<code>~torch.Tensor</code> - The loss tensor</li>
+<li><code>dict</code> - A dictionary which can include any keys, but must include the key <code>'loss'</code> in the case of
+automatic optimization.</li>
+<li><code>None</code> - In automatic optimization, this will skip to the next batch (but is not supported for
+multi-GPU, TPU, or DeepSpeed). For manual optimization, this has no special meaning, as returning
+the loss is not required.</li>
+</ul>
+<p>In this step you'd normally do the forward pass and calculate the loss for a batch.
+You can also do fancier things like multiple forward passes or something model specific.</p>
+<p>Example::</p>
+<pre><code>def training_step(self, batch, batch_idx):
+    x, y, z = batch
+    out = self.encoder(x)
+    loss = self.loss(out, x)
+    return loss
+</code></pre>
+<p>To use multiple optimizers, you can switch to 'manual optimization' and control their stepping:</p>
+<p>.. code-block:: python</p>
+<pre><code>def __init__(self):
+    super().__init__()
+    self.automatic_optimization = False
+
+
+# Multiple optimizers (e.g.: GANs)
+def training_step(self, batch, batch_idx):
+    opt1, opt2 = self.optimizers()
+
+    # do training_step with encoder
+    ...
+    opt1.step()
+    # do training_step with decoder
+    ...
+    opt2.step()
+</code></pre>
+<h2 id="note">Note</h2>
+<p>When <code>accumulate_grad_batches</code> &gt; 1, the loss returned here will be automatically
+normalized by <code>accumulate_grad_batches</code> internally.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.modules.text" href="index.html">src.modules.text</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase">VMMDTextLightningBase</a></code></h4>
+<ul class="">
+<li><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.add_nan_hook" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.add_nan_hook">add_nan_hook</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.check_if_myopic" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.check_if_myopic">check_if_myopic</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.configure_optimizers" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.configure_optimizers">configure_optimizers</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.get_training_data" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.get_training_data">get_training_data</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.on_after_backward" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.on_after_backward">on_after_backward</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.on_before_optimizer_step" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.on_before_optimizer_step">on_before_optimizer_step</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.training_step" href="#src.modules.text.vmmd_text_lightning.VMMDTextLightningBase.training_step">training_step</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

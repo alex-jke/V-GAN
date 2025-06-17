@@ -1,0 +1,2359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.models.Generator API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.models.Generator</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.models.Generator.AnnealingSigmoid"><code class="flex name class">
+<span>class <span class="ident">AnnealingSigmoid</span></span>
+<span>(</span><span>alpha: float = 1.0, beta: float = 0.5, gamma: float = 0.0)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AnnealingSigmoid(nn.Module):
+    def __init__(self, alpha: float = 1.0, beta: float = 0.5, gamma: float = 0.0):
+        super().__init__()
+        self.register_buffer(&#34;alpha&#34;, Tensor([alpha]))
+        self.register_buffer(&#34;beta&#34;, Tensor([beta]))
+        self.register_buffer(&#34;gamma&#34;, Tensor([gamma]))
+
+    def forward(self, x):
+        # Sigmoid function with annealing
+        sigmoid = torch.sigmoid(self.alpha * (x - self.gamma))
+        # Update alpha and beta for annealing
+        self.alpha = self.alpha + self.beta
+        return sigmoid</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.AnnealingSigmoid.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    # Sigmoid function with annealing
+    sigmoid = torch.sigmoid(self.alpha * (x - self.gamma))
+    # Update alpha and beta for annealing
+    self.alpha = self.alpha + self.beta
+    return sigmoid</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.BinaryStraightThrough"><code class="flex name class">
+<span>class <span class="ident">BinaryStraightThrough</span></span>
+<span>(</span><span>threshold=0.5)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BinaryStraightThrough(nn.Module):
+    def __init__(self, threshold=0.5):
+        super().__init__()
+        self.threshold = threshold
+
+    def forward(self, x):
+        # Forward: Threshold to 0/1
+        x_binary = (x &gt; self.threshold).int()
+        # Backward: Pass gradients through threshold
+        x_binary = x_binary + (x - x.detach())
+        return x_binary</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.BinaryStraightThrough.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    # Forward: Threshold to 0/1
+    x_binary = (x &gt; self.threshold).int()
+    # Backward: Pass gradients through threshold
+    x_binary = x_binary + (x - x.detach())
+    return x_binary</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.DyT"><code class="flex name class">
+<span>class <span class="ident">DyT</span></span>
+<span>(</span><span>size: int, init_alpha=0.5)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DyT(nn.Module):
+    &#34;&#34;&#34;
+    A dynamic hyperbolic tangent function that can learn the scaling factor.
+    See paper: https://arxiv.org/pdf/2503.10622
+    Name: Transformers without Normalization
+    &#34;&#34;&#34;
+    def __init__(self, size: int, init_alpha=0.5):
+        super().__init__()
+        self.tanh = nn.Tanh()
+        self.alpha = nn.Parameter(torch.tensor(init_alpha))
+        self.gamma = nn.Parameter(torch.ones(size))
+        self.beta = nn.Parameter(torch.zeros(size))
+
+    def forward(self, x):
+        &#34;&#34;&#34;
+        Calculates the output of the dynamic hyperbolic tangent function.
+        Uses the formula:  γ * tanh(α * x) + β
+        :param x: The input tensor.
+        :return: The output tensor.
+        &#34;&#34;&#34;
+        tanh =  self.tanh(self.alpha * x)
+        return self.gamma * tanh + self.beta</code></pre>
+</details>
+<div class="desc"><p>A dynamic hyperbolic tangent function that can learn the scaling factor.
+See paper: <a href="https://arxiv.org/pdf/2503.10622">https://arxiv.org/pdf/2503.10622</a>
+Name: Transformers without Normalization</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.DyT.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    &#34;&#34;&#34;
+    Calculates the output of the dynamic hyperbolic tangent function.
+    Uses the formula:  γ * tanh(α * x) + β
+    :param x: The input tensor.
+    :return: The output tensor.
+    &#34;&#34;&#34;
+    tanh =  self.tanh(self.alpha * x)
+    return self.gamma * tanh + self.beta</code></pre>
+</details>
+<div class="desc"><p>Calculates the output of the dynamic hyperbolic tangent function.
+Uses the formula:
+γ * tanh(α * x) + β
+:param x: The input tensor.
+:return: The output tensor.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.FakeGenerator"><code class="flex name class">
+<span>class <span class="ident">FakeGenerator</span></span>
+<span>(</span><span>subspaces: List[Tuple[List[int], float]])</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FakeGenerator(nn.Module):
+    def __init__(self, subspaces: List[Tuple[List[int], float]]):
+        super(FakeGenerator, self).__init__()
+        self.subspaces = []
+        self.device = torch.device(&#39;cuda&#39; if torch.cuda.is_available()
+                                   else &#39;mps:0&#39; if torch.backends.mps.is_available() else &#39;cpu&#39;)
+
+        for subspace, proba in subspaces:
+            for _ in range(int(proba * 100)):
+                self.subspaces.append(torch.tensor(subspace, dtype=torch.float32, requires_grad=True))
+
+        #shuffle the subspaces
+        random.shuffle(self.subspaces)
+        self.main = nn.Sequential(
+            nn.Linear(1, 1)
+        )
+
+    def forward(self, input):
+        batch_size = input.shape[0]
+        # Use torch.stack to create a tensor with gradient tracking
+        subspaces = torch.stack([self.subspaces[i % len(self.subspaces)] for i in range(batch_size)]).to(self.device)
+        # shuffle the subspaces
+        subspaces = subspaces[torch.randperm(subspaces.size()[0])]
+        return subspaces</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.FakeGenerator.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    batch_size = input.shape[0]
+    # Use torch.stack to create a tensor with gradient tracking
+    subspaces = torch.stack([self.subspaces[i % len(self.subspaces)] for i in range(batch_size)]).to(self.device)
+    # shuffle the subspaces
+    subspaces = subspaces[torch.randperm(subspaces.size()[0])]
+    return subspaces</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.Generator"><code class="flex name class">
+<span>class <span class="ident">Generator</span></span>
+<span>(</span><span>img_size, latent_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Generator(nn.Module):
+    def __init__(self, img_size, latent_size):
+        super(Generator, self).__init__()
+        self.main = nn.Sequential(
+            nn.Linear(img_size, img_size * 2),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(img_size * 2),
+            nn.Linear(img_size * 2, img_size),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(img_size),
+            nn.Linear(img_size, img_size // 2),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(img_size // 2),
+            nn.Linear(img_size // 2, img_size),
+            upper_softmax()
+        )
+
+    def forward(self, input):
+        return self.main(input)</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.Generator.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    return self.main(input)</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.GeneratorSTEMBD"><code class="flex name class">
+<span>class <span class="ident">GeneratorSTEMBD</span></span>
+<span>(</span><span>generator: <a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a>,<br>mbd_out_features,<br>mbd_kernel_dim,<br>binarize: <a title="src.models.Generator.BinaryStraightThrough" href="#src.models.Generator.BinaryStraightThrough">BinaryStraightThrough</a> | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSTEMBD(nn.Module):
+    def __init__(self, generator: Generator_big, mbd_out_features, mbd_kernel_dim, binarize: BinaryStraightThrough | None = None):
+        &#34;&#34;&#34;
+            Args:
+                mbd_out_features (int): Number of output features for mini-batch discrimination.
+                mbd_kernel_dim (int): Dimensionality of the kernels for mini-batch discrimination.
+                generator (Generator_big): Generator model.
+                binarize (BinaryStraightThrough | None): Binarization model.
+            &#34;&#34;&#34;
+        super(GeneratorSTEMBD, self).__init__()
+        self.binarize = binarize
+
+        # In our network (built in Generator_big), the final layer is the last element in self.main.
+        # It is defined as: nn.Sequential(nn.Linear(in_features, img_size), final_activation_function)
+        # We extract the input size of that linear layer.
+        final_layer = generator.main[-1]
+        in_features = final_layer[0].in_features
+
+        # Create the mini-batch discrimination module.
+        self.mbd = MiniBatchDiscrimination(in_features, mbd_out_features, mbd_kernel_dim)
+
+        # Create a new final layer that accepts the concatenated features.
+        self.new_final_layer = nn.Sequential(
+            nn.Linear(in_features + mbd_out_features, generator.img_size),
+            generator.final_activation_function
+        )
+
+        # Build a feature extractor by removing the original final layer from self.main.
+        self.feature_extractor = nn.Sequential(*list(generator.main.children())[:-1])
+
+    def forward(self, input):
+        # Pass input through the feature extractor to get intermediate features.
+        features = self.feature_extractor(input)
+        # Apply mini-batch discrimination: this concatenates extra features to the original ones.
+        features_with_mbd = self.mbd(features)
+        # Pass the augmented features through the new final layer.
+        out = self.new_final_layer(features_with_mbd)
+        # Finally, apply the straight-through binarization.
+        if self.binarize is not None:
+            return self.binarize(out)
+        return out</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>mbd_out_features</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of output features for mini-batch discrimination.</dd>
+<dt><strong><code>mbd_kernel_dim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimensionality of the kernels for mini-batch discrimination.</dd>
+<dt><strong><code>generator</code></strong> :&ensp;<code><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></code></dt>
+<dd>Generator model.</dd>
+<dt><strong><code>binarize</code></strong> :&ensp;<code>BinaryStraightThrough | None</code></dt>
+<dd>Binarization model.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.GeneratorSTEMBD.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    # Pass input through the feature extractor to get intermediate features.
+    features = self.feature_extractor(input)
+    # Apply mini-batch discrimination: this concatenates extra features to the original ones.
+    features_with_mbd = self.mbd(features)
+    # Pass the augmented features through the new final layer.
+    out = self.new_final_layer(features_with_mbd)
+    # Finally, apply the straight-through binarization.
+    if self.binarize is not None:
+        return self.binarize(out)
+    return out</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.GeneratorSigmoid"><code class="flex name class">
+<span>class <span class="ident">GeneratorSigmoid</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSigmoid(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, nn.Sigmoid())</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSigmoidSTE" href="#src.models.Generator.GeneratorSigmoidSTE">GeneratorSigmoidSTE</a></li>
+<li><a title="src.models.Generator.GeneratorSigmoidSTEMBD" href="#src.models.Generator.GeneratorSigmoidSTEMBD">GeneratorSigmoidSTEMBD</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSigmoidAnnealing"><code class="flex name class">
+<span>class <span class="ident">GeneratorSigmoidAnnealing</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSigmoidAnnealing(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, activation_function=AnnealingSigmoid())</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSigmoidSTE"><code class="flex name class">
+<span>class <span class="ident">GeneratorSigmoidSTE</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSigmoidSTE(GeneratorSigmoid):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size)
+        self.binarize = BinaryStraightThrough()
+
+    def forward(self, input):
+        x = super().forward(input)
+        binarized = self.binarize(x)
+        if torch.isnan(binarized).any():
+            x = super().forward(input)
+            raise RuntimeError(&#34;SigmoidSTE generator produced NaN values.&#34;)
+        return binarized</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSigmoid" href="#src.models.Generator.GeneratorSigmoid">GeneratorSigmoid</a></li>
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSpectralSigmoidSTE" href="#src.models.Generator.GeneratorSpectralSigmoidSTE">GeneratorSpectralSigmoidSTE</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.GeneratorSigmoid" href="#src.models.Generator.GeneratorSigmoid">GeneratorSigmoid</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.GeneratorSigmoid.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSigmoidSTEMBD"><code class="flex name class">
+<span>class <span class="ident">GeneratorSigmoidSTEMBD</span></span>
+<span>(</span><span>latent_size, img_size, mbd_out_features=16, mbd_kernel_dim=8)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSigmoidSTEMBD(GeneratorSigmoid):
+    &#34;&#34;&#34;
+    A subclass of GeneratorSTEBD that integrates a mini-batch discrimination
+    module right before the final output layer. This aims to help reduce mode collapse
+    by letting the generator “sense” the diversity in the mini-batch.
+    &#34;&#34;&#34;
+    def __init__(self, latent_size, img_size, mbd_out_features=16, mbd_kernel_dim=8):
+        super().__init__(latent_size, img_size)
+        self.batch_discrimination = GeneratorSTEMBD(generator=self, mbd_out_features=mbd_out_features, mbd_kernel_dim=mbd_kernel_dim,
+                         binarize=BinaryStraightThrough(threshold=0.5))
+    def forward(self, input):
+        return self.batch_discrimination(input)</code></pre>
+</details>
+<div class="desc"><p>A subclass of GeneratorSTEBD that integrates a mini-batch discrimination
+module right before the final output layer. This aims to help reduce mode collapse
+by letting the generator “sense” the diversity in the mini-batch.</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSigmoid" href="#src.models.Generator.GeneratorSigmoid">GeneratorSigmoid</a></li>
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.GeneratorSigmoid" href="#src.models.Generator.GeneratorSigmoid">GeneratorSigmoid</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.GeneratorSigmoid.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSigmoidSoftmaxSTE"><code class="flex name class">
+<span>class <span class="ident">GeneratorSigmoidSoftmaxSTE</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSigmoidSoftmaxSTE(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, activation_function=SigmoidSoftmax())
+        self.binarize = BinaryStraightThrough(threshold=1 / img_size)
+
+    def forward(self, input):
+        x = super().forward(input)
+        return self.binarize(x)</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSigmoidSoftmaxSigmoid"><code class="flex name class">
+<span>class <span class="ident">GeneratorSigmoidSoftmaxSigmoid</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSigmoidSoftmaxSigmoid(Generator_big):
+    def __init__(self, latent_size, img_size):
+        self.exp = 1
+        super().__init__(latent_size, img_size, activation_function = SigmoidSoftmax())
+
+    def forward(self, input):
+        x = super().forward(input) * 100
+        sig = nn.functional.sigmoid(x - 100/self.img_size)
+        powed = sig ** self.exp
+        self.exp += 0.01
+        return powed</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSoftmax"><code class="flex name class">
+<span>class <span class="ident">GeneratorSoftmax</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSoftmax(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, nn.Softmax(dim=1))</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSoftmaxSTE" href="#src.models.Generator.GeneratorSoftmaxSTE">GeneratorSoftmaxSTE</a></li>
+<li><a title="src.models.Generator.GeneratorSoftmaxSTEMBD" href="#src.models.Generator.GeneratorSoftmaxSTEMBD">GeneratorSoftmaxSTEMBD</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSoftmaxAnnealing"><code class="flex name class">
+<span>class <span class="ident">GeneratorSoftmaxAnnealing</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSoftmaxAnnealing(Generator_big):
+    def __init__(self, latent_size, img_size):
+        activation_function = nn.Sequential(
+            nn.Softmax(),
+            AnnealingSigmoid(beta= 1.0, gamma= 1/img_size)
+        )
+        super().__init__(latent_size, img_size, activation_function)</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSoftmaxSTE"><code class="flex name class">
+<span>class <span class="ident">GeneratorSoftmaxSTE</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSoftmaxSTE(GeneratorSoftmax):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size)
+        self.binarize = BinaryStraightThrough(threshold=1/img_size)
+
+    def forward(self, input):
+        x = super().forward(input)
+        return self.binarize(x)</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSoftmax" href="#src.models.Generator.GeneratorSoftmax">GeneratorSoftmax</a></li>
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSoftmaxSTESpectralNorm" href="#src.models.Generator.GeneratorSoftmaxSTESpectralNorm">GeneratorSoftmaxSTESpectralNorm</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.GeneratorSoftmax" href="#src.models.Generator.GeneratorSoftmax">GeneratorSoftmax</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.GeneratorSoftmax.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSoftmaxSTEMBD"><code class="flex name class">
+<span>class <span class="ident">GeneratorSoftmaxSTEMBD</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSoftmaxSTEMBD(GeneratorSoftmax):
+
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size)
+        binarize = BinaryStraightThrough(threshold=1.0/img_size)
+        self.batch_discrimination = GeneratorSTEMBD(generator=self, mbd_out_features=1, mbd_kernel_dim=1,
+                         binarize=binarize)
+
+    def forward(self, input):
+        return self.batch_discrimination(input)</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSoftmax" href="#src.models.Generator.GeneratorSoftmax">GeneratorSoftmax</a></li>
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.GeneratorSoftmax" href="#src.models.Generator.GeneratorSoftmax">GeneratorSoftmax</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.GeneratorSoftmax.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSoftmaxSTESpectralNorm"><code class="flex name class">
+<span>class <span class="ident">GeneratorSoftmaxSTESpectralNorm</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSoftmaxSTESpectralNorm(GeneratorSoftmaxSTE):
+
+    def get_layer(self, layer_num: int, last=False):
+        input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+        output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+
+        layer = nn.Sequential(
+            nn.utils.spectral_norm(
+                nn.Linear(input_size, output_size)
+            ),
+            #nn.Sigmoid(),
+            nn.LeakyReLU(0.2),
+            nn.BatchNorm1d(output_size)
+        )
+        last_layer = nn.Sequential(
+            nn.Linear(input_size, self.img_size),
+            self.avg_mask,
+            self.final_activation_function
+        )
+        return last_layer if last else layer</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSoftmaxSTE" href="#src.models.Generator.GeneratorSoftmaxSTE">GeneratorSoftmaxSTE</a></li>
+<li><a title="src.models.Generator.GeneratorSoftmax" href="#src.models.Generator.GeneratorSoftmax">GeneratorSoftmax</a></li>
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.GeneratorSoftmaxSTESpectralNorm.get_layer"><code class="name flex">
+<span>def <span class="ident">get_layer</span></span>(<span>self, layer_num: int, last=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_layer(self, layer_num: int, last=False):
+    input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+    output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+
+    layer = nn.Sequential(
+        nn.utils.spectral_norm(
+            nn.Linear(input_size, output_size)
+        ),
+        #nn.Sigmoid(),
+        nn.LeakyReLU(0.2),
+        nn.BatchNorm1d(output_size)
+    )
+    last_layer = nn.Sequential(
+        nn.Linear(input_size, self.img_size),
+        self.avg_mask,
+        self.final_activation_function
+    )
+    return last_layer if last else layer</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.GeneratorSoftmaxSTE" href="#src.models.Generator.GeneratorSoftmaxSTE">GeneratorSoftmaxSTE</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.GeneratorSoftmaxSTE.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorSpectralSigmoidSTE"><code class="flex name class">
+<span>class <span class="ident">GeneratorSpectralSigmoidSTE</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorSpectralSigmoidSTE(GeneratorSigmoidSTE):
+    def get_layer(self, layer_num: int, last=False):
+        input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+        output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+
+        layer = nn.Sequential(
+            nn.utils.spectral_norm(
+                nn.Linear(input_size, output_size)
+            ),
+            DyT(output_size),
+            #nn.BatchNorm1d(output_size),
+            nn.LeakyReLU(0.2),
+        )
+        last_layer = nn.Sequential(
+            nn.Linear(input_size, self.img_size),
+            self.avg_mask,
+            self.final_activation_function
+        )
+        return last_layer if last else layer</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSigmoidSTE" href="#src.models.Generator.GeneratorSigmoidSTE">GeneratorSigmoidSTE</a></li>
+<li><a title="src.models.Generator.GeneratorSigmoid" href="#src.models.Generator.GeneratorSigmoid">GeneratorSigmoid</a></li>
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.GeneratorSpectralSigmoidSTE.get_layer"><code class="name flex">
+<span>def <span class="ident">get_layer</span></span>(<span>self, layer_num: int, last=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_layer(self, layer_num: int, last=False):
+    input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+    output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+
+    layer = nn.Sequential(
+        nn.utils.spectral_norm(
+            nn.Linear(input_size, output_size)
+        ),
+        DyT(output_size),
+        #nn.BatchNorm1d(output_size),
+        nn.LeakyReLU(0.2),
+    )
+    last_layer = nn.Sequential(
+        nn.Linear(input_size, self.img_size),
+        self.avg_mask,
+        self.final_activation_function
+    )
+    return last_layer if last else layer</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.GeneratorSigmoidSTE" href="#src.models.Generator.GeneratorSigmoidSTE">GeneratorSigmoidSTE</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.GeneratorSigmoidSTE.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.GeneratorUpperSoftmax"><code class="flex name class">
+<span>class <span class="ident">GeneratorUpperSoftmax</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeneratorUpperSoftmax(Generator_big):
+    def __init__(self, latent_size, img_size):
+        super().__init__(latent_size, img_size, upper_softmax())</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.models.Generator.Generator_big"><code class="flex name class">
+<span>class <span class="ident">Generator_big</span></span>
+<span>(</span><span>latent_size,<br>img_size,<br>activation_function: torch.nn.modules.module.Module = upper_softmax())</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Generator_big(nn.Module):
+    def __init__(self, latent_size, img_size, activation_function: nn.Module=upper_softmax()):
+        super(Generator_big, self).__init__()
+        rel_size = int(img_size/latent_size)
+        self.latent_size = latent_size
+        self.img_size = img_size
+        amount_layers = 4
+        self.increase = log(rel_size, amount_layers).real
+        self.final_activation_function = activation_function
+        self.avg_mask = ValueExtractor()
+
+        print(&#34;creating Generator with dimensions:&#34;, end=&#34; &#34;)
+        layers = [self.get_layer(layer) for layer in range(1, amount_layers)]
+        layers += [self.get_layer(amount_layers, last=True)]
+        print()
+        self.main = nn.Sequential(*layers)
+
+        def print_param_tree(module, name=None, indent=0):
+            &#34;&#34;&#34;
+            Recursively prints each submodule and the total # of params
+            (including its children) in a tree-like form.
+            &#34;&#34;&#34;
+            # Compute total params in this module (includes all submodules)
+            total = sum(p.numel() for p in module.parameters())
+            # Module name: use given name (from parent) or fallback to class name
+            layer_name = name or module.__class__.__name__
+            # Indentation
+            print(&#39;  &#39; * indent + f&#34;{layer_name}: {total:,} params&#34;)
+            # Recurse into children
+            for child_name, child_module in module.named_children():
+                print_param_tree(child_module, child_name, indent + 1)
+
+        print_param_tree(self)
+
+    def get_layer(self, layer_num: int, last=False):
+        input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+        output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+        print(f&#34;({input_size} -&gt; {output_size})&#34;, end=&#34; | &#34;)
+        layer = nn.Sequential(
+            nn.Linear(input_size, output_size),
+            nn.LeakyReLU(0.2),
+            #nn.Sigmoid(),
+            nn.BatchNorm1d(output_size)
+            #DyT(output_size)
+        )
+        last_layer = nn.Sequential(
+            nn.Linear(input_size, self.img_size),
+            self.avg_mask,
+            self.final_activation_function
+        )
+        return last_layer if last else layer
+
+    def forward(self, input):
+        with torch.autograd.detect_anomaly(check_nan=True):
+            output = self.main(input)
+            if torch.isnan(output).any():
+                raise RuntimeError(&#34;Generator produced NaN values.&#34;)
+            return output</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.models.Generator.GeneratorSigmoid" href="#src.models.Generator.GeneratorSigmoid">GeneratorSigmoid</a></li>
+<li><a title="src.models.Generator.GeneratorSigmoidAnnealing" href="#src.models.Generator.GeneratorSigmoidAnnealing">GeneratorSigmoidAnnealing</a></li>
+<li><a title="src.models.Generator.GeneratorSigmoidSoftmaxSTE" href="#src.models.Generator.GeneratorSigmoidSoftmaxSTE">GeneratorSigmoidSoftmaxSTE</a></li>
+<li><a title="src.models.Generator.GeneratorSigmoidSoftmaxSigmoid" href="#src.models.Generator.GeneratorSigmoidSoftmaxSigmoid">GeneratorSigmoidSoftmaxSigmoid</a></li>
+<li><a title="src.models.Generator.GeneratorSoftmax" href="#src.models.Generator.GeneratorSoftmax">GeneratorSoftmax</a></li>
+<li><a title="src.models.Generator.GeneratorSoftmaxAnnealing" href="#src.models.Generator.GeneratorSoftmaxAnnealing">GeneratorSoftmaxAnnealing</a></li>
+<li><a title="src.models.Generator.GeneratorUpperSoftmax" href="#src.models.Generator.GeneratorUpperSoftmax">GeneratorUpperSoftmax</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.Generator_big.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    with torch.autograd.detect_anomaly(check_nan=True):
+        output = self.main(input)
+        if torch.isnan(output).any():
+            raise RuntimeError(&#34;Generator produced NaN values.&#34;)
+        return output</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+<dt id="src.models.Generator.Generator_big.get_layer"><code class="name flex">
+<span>def <span class="ident">get_layer</span></span>(<span>self, layer_num: int, last=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_layer(self, layer_num: int, last=False):
+    input_size = max(round(pow(self.increase, layer_num - 1) * self.latent_size), 1)
+    output_size = max(round(pow(self.increase, layer_num) * self.latent_size), 1)
+    print(f&#34;({input_size} -&gt; {output_size})&#34;, end=&#34; | &#34;)
+    layer = nn.Sequential(
+        nn.Linear(input_size, output_size),
+        nn.LeakyReLU(0.2),
+        #nn.Sigmoid(),
+        nn.BatchNorm1d(output_size)
+        #DyT(output_size)
+    )
+    last_layer = nn.Sequential(
+        nn.Linear(input_size, self.img_size),
+        self.avg_mask,
+        self.final_activation_function
+    )
+    return last_layer if last else layer</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.MiniBatchDiscrimination"><code class="flex name class">
+<span>class <span class="ident">MiniBatchDiscrimination</span></span>
+<span>(</span><span>in_features, out_features, kernel_dim)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MiniBatchDiscrimination(nn.Module):
+    &#34;&#34;&#34;
+    Implements mini-batch discrimination as described in:
+    Salimans et al., &#34;Improved Techniques for Training GANs&#34; (2016).
+
+    Given an input feature vector x of shape (batch_size, in_features),
+    this module learns a tensor T (of shape (in_features, out_features, kernel_dim))
+    and computes for each sample an additional feature vector that measures
+    similarity to other samples in the mini-batch.
+    &#34;&#34;&#34;
+    def __init__(self, in_features, out_features, kernel_dim):
+        &#34;&#34;&#34;
+        Args:
+            in_features (int): Number of input features.
+            out_features (int): Number of discrimination features to produce.
+            kernel_dim (int): Dimensionality of the kernels.
+        &#34;&#34;&#34;
+        super(MiniBatchDiscrimination, self).__init__()
+        self.out_features = out_features
+        self.kernel_dim = kernel_dim
+        # Initialize T with a random normal distribution.
+        self.T = nn.Parameter(torch.randn(in_features, out_features, kernel_dim))
+
+    def forward(self, x: Tensor) -&gt; Tensor:
+        &#34;&#34;&#34;
+        Computes for each sample an additional feature vector that measures similarity to other samples in the mini-batch.
+        :param x: Tensor of shape (batch_size, in_features).
+        :return: Tensor of shape (batch_size, in_features + out_features).
+        &#34;&#34;&#34;
+        # x: (batch_size, in_features)
+        batch_size = x.size(0)
+        # Multiply input with T to get M of shape (batch_size, out_features, kernel_dim)
+        M = x.matmul(self.T.view(x.size(1), -1))
+        M = M.view(batch_size, self.out_features, self.kernel_dim)
+        # Compute the L1 distance between each pair of examples along kernel_dim.
+        # We expand M so that we can compute pairwise differences.
+        M_i = M.unsqueeze(0)   # Shape: (1, batch_size, out_features, kernel_dim)
+        M_j = M.unsqueeze(1)   # Shape: (batch_size, 1, out_features, kernel_dim)
+        # Compute L1 distances and sum over the kernel dimension.
+        abs_diff = torch.abs(M_i - M_j).sum(3)  # Shape: (batch_size, batch_size, out_features)
+        # Apply a negative exponential to obtain similarity measures.
+        c = torch.exp(-abs_diff)
+        # For each sample, sum the similarities to all other samples (exclude self-similarity by subtracting 1).
+        mbd_features = c.sum(1) - 1  # Shape: (batch_size, out_features)
+        # Concatenate the original features with the mini-batch discrimination features.
+        return torch.cat([x, mbd_features], dim=1)</code></pre>
+</details>
+<div class="desc"><p>Implements mini-batch discrimination as described in:
+Salimans et al., "Improved Techniques for Training GANs" (2016).</p>
+<p>Given an input feature vector x of shape (batch_size, in_features),
+this module learns a tensor T (of shape (in_features, out_features, kernel_dim))
+and computes for each sample an additional feature vector that measures
+similarity to other samples in the mini-batch.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>in_features</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of input features.</dd>
+<dt><strong><code>out_features</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of discrimination features to produce.</dd>
+<dt><strong><code>kernel_dim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimensionality of the kernels.</dd>
+</dl></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.MiniBatchDiscrimination.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x: torch.Tensor) ‑> torch.Tensor</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x: Tensor) -&gt; Tensor:
+    &#34;&#34;&#34;
+    Computes for each sample an additional feature vector that measures similarity to other samples in the mini-batch.
+    :param x: Tensor of shape (batch_size, in_features).
+    :return: Tensor of shape (batch_size, in_features + out_features).
+    &#34;&#34;&#34;
+    # x: (batch_size, in_features)
+    batch_size = x.size(0)
+    # Multiply input with T to get M of shape (batch_size, out_features, kernel_dim)
+    M = x.matmul(self.T.view(x.size(1), -1))
+    M = M.view(batch_size, self.out_features, self.kernel_dim)
+    # Compute the L1 distance between each pair of examples along kernel_dim.
+    # We expand M so that we can compute pairwise differences.
+    M_i = M.unsqueeze(0)   # Shape: (1, batch_size, out_features, kernel_dim)
+    M_j = M.unsqueeze(1)   # Shape: (batch_size, 1, out_features, kernel_dim)
+    # Compute L1 distances and sum over the kernel dimension.
+    abs_diff = torch.abs(M_i - M_j).sum(3)  # Shape: (batch_size, batch_size, out_features)
+    # Apply a negative exponential to obtain similarity measures.
+    c = torch.exp(-abs_diff)
+    # For each sample, sum the similarities to all other samples (exclude self-similarity by subtracting 1).
+    mbd_features = c.sum(1) - 1  # Shape: (batch_size, out_features)
+    # Concatenate the original features with the mini-batch discrimination features.
+    return torch.cat([x, mbd_features], dim=1)</code></pre>
+</details>
+<div class="desc"><p>Computes for each sample an additional feature vector that measures similarity to other samples in the mini-batch.
+:param x: Tensor of shape (batch_size, in_features).
+:return: Tensor of shape (batch_size, in_features + out_features).</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.OldGeneratorUpperSoftmax"><code class="flex name class">
+<span>class <span class="ident">OldGeneratorUpperSoftmax</span></span>
+<span>(</span><span>latent_size, img_size)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OldGeneratorUpperSoftmax(nn.Module):
+    def __init__(self, latent_size, img_size):
+        super(OldGeneratorUpperSoftmax, self).__init__()
+        self.main = nn.Sequential(
+            nn.Linear(latent_size, 2*latent_size),
+            nn.Linear(2*latent_size, 4*latent_size),
+            nn.Linear(4*latent_size, 8*latent_size),
+            nn.Linear(8*latent_size, img_size),
+            upper_softmax()
+        )
+
+    def forward(self, input):
+        return self.main(input)</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.OldGeneratorUpperSoftmax.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    return self.main(input)</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.PowSigmoid"><code class="flex name class">
+<span>class <span class="ident">PowSigmoid</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PowSigmoid(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.exp = 1
+
+    def forward(self, input):
+        x = torch.nn.functional.sigmoid(input)
+        return x ** self.exp</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.PowSigmoid.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    x = torch.nn.functional.sigmoid(input)
+    return x ** self.exp</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.SigmoidSoftmax"><code class="flex name class">
+<span>class <span class="ident">SigmoidSoftmax</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SigmoidSoftmax(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.main = nn.Sequential(
+            nn.Sigmoid(),
+            nn.Softmax(dim=1)
+        )
+    def forward(self, input):
+        return self.main(input)</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.SigmoidSoftmax.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    return self.main(input)</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.ValueExtractor"><code class="flex name class">
+<span>class <span class="ident">ValueExtractor</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ValueExtractor(nn.Module):
+    def __init__(self):
+        super(ValueExtractor, self).__init__()
+        self.value: Optional[Tensor] = None
+
+    def forward(self, input):
+        self.value = input.detach().mean(dim=0)
+        return input</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.ValueExtractor.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    self.value = input.detach().mean(dim=0)
+    return input</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.upper_lower_softmax"><code class="flex name class">
+<span>class <span class="ident">upper_lower_softmax</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class upper_lower_softmax(nn.Module):
+    def __init__(self):
+        super().__init__()  # Dummy intialization as there is no parameter to learn
+
+    def forward(self, x):
+        x = torch.nn.functional.softmax(x, 1)
+        selected = torch.greater_equal(x, 1/x.shape[1])
+        x = x*selected + (~selected)*1e-08
+        return x</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.upper_lower_softmax.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+    x = torch.nn.functional.softmax(x, 1)
+    selected = torch.greater_equal(x, 1/x.shape[1])
+    x = x*selected + (~selected)*1e-08
+    return x</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.models.Generator.upper_softmax"><code class="flex name class">
+<span>class <span class="ident">upper_softmax</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class upper_softmax(nn.Module):
+    def __init__(self):
+        super().__init__()  # Dummy intialization as there is no parameter to learn
+
+    # This function applies a softmax to the input tensor and then sets all values to one that are larger than 1/n.
+    def forward(self, input):
+        x = torch.nn.functional.softmax(input, 1)
+        x_less = torch.less(x, 1/x.shape[1]) * x
+        x_ge = torch.greater_equal(x, 1/x.shape[1])
+        x_upper_softmax = x_less + x_ge
+        #x = x_upper_softmax + (x - x.detach())
+        #x = x_ge.detach() + (x_less - x_less.detach())
+        #return x
+        return x_upper_softmax</code></pre>
+</details>
+<div class="desc"><p>Base class for all neural network modules.</p>
+<p>Your models should also subclass this class.</p>
+<p>Modules can also contain other Modules, allowing to nest them in
+a tree structure. You can assign the submodules as regular attributes::</p>
+<pre><code>import torch.nn as nn
+import torch.nn.functional as F
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 20, 5)
+        self.conv2 = nn.Conv2d(20, 20, 5)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        return F.relu(self.conv2(x))
+</code></pre>
+<p>Submodules assigned in this way will be registered, and will have their
+parameters converted too when you call :meth:<code>to</code>, etc.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As per the example above, an <code>__init__()</code> call to the parent class
+must be made before assignment on the child.</p>
+</div>
+<p>:ivar training: Boolean represents whether this module is in training or
+evaluation mode.
+:vartype training: bool</p>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.models.Generator.upper_softmax.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, input) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, input):
+    x = torch.nn.functional.softmax(input, 1)
+    x_less = torch.less(x, 1/x.shape[1]) * x
+    x_ge = torch.greater_equal(x, 1/x.shape[1])
+    x_upper_softmax = x_less + x_ge
+    #x = x_upper_softmax + (x - x.detach())
+    #x = x_ge.detach() + (x_less - x_less.detach())
+    #return x
+    return x_upper_softmax</code></pre>
+</details>
+<div class="desc"><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the :class:<code>Module</code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.models" href="index.html">src.models</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.models.Generator.AnnealingSigmoid" href="#src.models.Generator.AnnealingSigmoid">AnnealingSigmoid</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.AnnealingSigmoid.forward" href="#src.models.Generator.AnnealingSigmoid.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.BinaryStraightThrough" href="#src.models.Generator.BinaryStraightThrough">BinaryStraightThrough</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.BinaryStraightThrough.forward" href="#src.models.Generator.BinaryStraightThrough.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.DyT" href="#src.models.Generator.DyT">DyT</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.DyT.forward" href="#src.models.Generator.DyT.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.FakeGenerator" href="#src.models.Generator.FakeGenerator">FakeGenerator</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.FakeGenerator.forward" href="#src.models.Generator.FakeGenerator.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.Generator" href="#src.models.Generator.Generator">Generator</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.Generator.forward" href="#src.models.Generator.Generator.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSTEMBD" href="#src.models.Generator.GeneratorSTEMBD">GeneratorSTEMBD</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.GeneratorSTEMBD.forward" href="#src.models.Generator.GeneratorSTEMBD.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSigmoid" href="#src.models.Generator.GeneratorSigmoid">GeneratorSigmoid</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSigmoidAnnealing" href="#src.models.Generator.GeneratorSigmoidAnnealing">GeneratorSigmoidAnnealing</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSigmoidSTE" href="#src.models.Generator.GeneratorSigmoidSTE">GeneratorSigmoidSTE</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSigmoidSTEMBD" href="#src.models.Generator.GeneratorSigmoidSTEMBD">GeneratorSigmoidSTEMBD</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSigmoidSoftmaxSTE" href="#src.models.Generator.GeneratorSigmoidSoftmaxSTE">GeneratorSigmoidSoftmaxSTE</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSigmoidSoftmaxSigmoid" href="#src.models.Generator.GeneratorSigmoidSoftmaxSigmoid">GeneratorSigmoidSoftmaxSigmoid</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSoftmax" href="#src.models.Generator.GeneratorSoftmax">GeneratorSoftmax</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSoftmaxAnnealing" href="#src.models.Generator.GeneratorSoftmaxAnnealing">GeneratorSoftmaxAnnealing</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSoftmaxSTE" href="#src.models.Generator.GeneratorSoftmaxSTE">GeneratorSoftmaxSTE</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSoftmaxSTEMBD" href="#src.models.Generator.GeneratorSoftmaxSTEMBD">GeneratorSoftmaxSTEMBD</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSoftmaxSTESpectralNorm" href="#src.models.Generator.GeneratorSoftmaxSTESpectralNorm">GeneratorSoftmaxSTESpectralNorm</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.GeneratorSoftmaxSTESpectralNorm.get_layer" href="#src.models.Generator.GeneratorSoftmaxSTESpectralNorm.get_layer">get_layer</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorSpectralSigmoidSTE" href="#src.models.Generator.GeneratorSpectralSigmoidSTE">GeneratorSpectralSigmoidSTE</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.GeneratorSpectralSigmoidSTE.get_layer" href="#src.models.Generator.GeneratorSpectralSigmoidSTE.get_layer">get_layer</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.GeneratorUpperSoftmax" href="#src.models.Generator.GeneratorUpperSoftmax">GeneratorUpperSoftmax</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.Generator_big" href="#src.models.Generator.Generator_big">Generator_big</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.Generator_big.forward" href="#src.models.Generator.Generator_big.forward">forward</a></code></li>
+<li><code><a title="src.models.Generator.Generator_big.get_layer" href="#src.models.Generator.Generator_big.get_layer">get_layer</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.MiniBatchDiscrimination" href="#src.models.Generator.MiniBatchDiscrimination">MiniBatchDiscrimination</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.MiniBatchDiscrimination.forward" href="#src.models.Generator.MiniBatchDiscrimination.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.OldGeneratorUpperSoftmax" href="#src.models.Generator.OldGeneratorUpperSoftmax">OldGeneratorUpperSoftmax</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.OldGeneratorUpperSoftmax.forward" href="#src.models.Generator.OldGeneratorUpperSoftmax.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.PowSigmoid" href="#src.models.Generator.PowSigmoid">PowSigmoid</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.PowSigmoid.forward" href="#src.models.Generator.PowSigmoid.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.SigmoidSoftmax" href="#src.models.Generator.SigmoidSoftmax">SigmoidSoftmax</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.SigmoidSoftmax.forward" href="#src.models.Generator.SigmoidSoftmax.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.ValueExtractor" href="#src.models.Generator.ValueExtractor">ValueExtractor</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.ValueExtractor.forward" href="#src.models.Generator.ValueExtractor.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.upper_lower_softmax" href="#src.models.Generator.upper_lower_softmax">upper_lower_softmax</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.upper_lower_softmax.forward" href="#src.models.Generator.upper_lower_softmax.forward">forward</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.models.Generator.upper_softmax" href="#src.models.Generator.upper_softmax">upper_softmax</a></code></h4>
+<ul class="">
+<li><code><a title="src.models.Generator.upper_softmax.forward" href="#src.models.Generator.upper_softmax.forward">forward</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

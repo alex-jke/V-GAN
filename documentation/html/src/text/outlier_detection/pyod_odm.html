@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.text.outlier_detection.pyod_odm API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.text.outlier_detection.pyod_odm</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.text.outlier_detection.pyod_odm.BasePyODM"><code class="flex name class">
+<span>class <span class="ident">BasePyODM</span></span>
+<span>(</span><span>dataset: text.dataset.dataset.Dataset,<br>space: text.outlier_detection.space.space.Space,<br>use_cached=False,<br>**params)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BasePyODM(PyODM, ABC):
+    def __init__(self, dataset: Dataset, space: Space, use_cached = False, **params):
+        super().__init__(dataset, space, self._get_model().__class__, use_cached, **params)
+
+    def get_space_type(self):
+        return SpaceType.FULL_SPACE</code></pre>
+</details>
+<div class="desc"><p>Abstract class for outlier detection models. Specifically for one-class classification.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.outlier_detection.pyod_odm.PyODM" href="#src.text.outlier_detection.pyod_odm.PyODM">PyODM</a></li>
+<li>text.outlier_detection.odm.OutlierDetectionModel</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.text.outlier_detection.pyod_odm.ECOD" href="#src.text.outlier_detection.pyod_odm.ECOD">ECOD</a></li>
+<li><a title="src.text.outlier_detection.pyod_odm.LOF" href="#src.text.outlier_detection.pyod_odm.LOF">LOF</a></li>
+<li><a title="src.text.outlier_detection.pyod_odm.LUNAR" href="#src.text.outlier_detection.pyod_odm.LUNAR">LUNAR</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.outlier_detection.pyod_odm.BasePyODM.get_space_type"><code class="name flex">
+<span>def <span class="ident">get_space_type</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_space_type(self):
+    return SpaceType.FULL_SPACE</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.text.outlier_detection.pyod_odm.ECOD"><code class="flex name class">
+<span>class <span class="ident">ECOD</span></span>
+<span>(</span><span>dataset: text.dataset.dataset.Dataset,<br>space: text.outlier_detection.space.space.Space,<br>use_cached=False,<br>**params)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ECOD(BasePyODM):
+    def _get_model(self):
+        return pyod_ECOD()
+
+    def _get_name(self):
+        return f&#34;ECOD&#34; + f&#34; + {self.get_space()}&#34;</code></pre>
+</details>
+<div class="desc"><p>Abstract class for outlier detection models. Specifically for one-class classification.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.outlier_detection.pyod_odm.BasePyODM" href="#src.text.outlier_detection.pyod_odm.BasePyODM">BasePyODM</a></li>
+<li><a title="src.text.outlier_detection.pyod_odm.PyODM" href="#src.text.outlier_detection.pyod_odm.PyODM">PyODM</a></li>
+<li>text.outlier_detection.odm.OutlierDetectionModel</li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="src.text.outlier_detection.pyod_odm.FeatureBagging"><code class="flex name class">
+<span>class <span class="ident">FeatureBagging</span></span>
+<span>(</span><span>dataset: text.dataset.dataset.Dataset,<br>space: text.outlier_detection.space.space.Space,<br>base_detector: Type[pyod.models.base.BaseDetector],<br>use_cached=False,<br>**params)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FeatureBagging(PyODM):
+
+    def __init__(self, dataset: Dataset, space: Space, base_detector:  Type[BaseDetector], use_cached = False, **params):
+        &#34;&#34;&#34;
+        :param dataset: The dataset to use.
+        :param model: The model to use.
+        :param base_estimator: The base estimator to use. Either &#39;LOF&#39;, &#39;LUNAR&#39;, or &#39;ECOD&#39;.
+        :param train_size: The number of training samples.
+        :param test_size: The number of test samples.
+        :param use_embedding: Whether to use the embedding or the tokenized data.
+        &#34;&#34;&#34;
+        if base_detector is None:
+            base_detector = pyod_LUNAR
+
+        self.base_name = base_detector.__name__
+        self.base_estimator: BaseDetector = base_detector()
+
+        if isinstance(space, TokenSpace):
+            transformation = TransformBaseDetector.configure_transform_fun(
+                transformation= space.model.get_embedding_fun(batch_first=True),
+                normalize=True,
+                standardize=True
+            )
+            self.base_estimator = TransformBaseDetector(transformation, lambda: base_detector)
+
+        self.__model = pyod_FeatureBagging(base_estimator=self.base_estimator)
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_detector=base_detector, **params)
+
+    def _get_model(self):
+        return self.__model
+
+    def _get_name(self):
+        return f&#34;FeatureBagging + {self.base_name} + {self.get_space()}&#34;
+
+    def get_space_type(self) -&gt; SpaceType:
+        return SpaceType.FEATURE_BAGGING</code></pre>
+</details>
+<div class="desc"><p>Abstract class for outlier detection models. Specifically for one-class classification.</p>
+<p>:param dataset: The dataset to use.
+:param model: The model to use.
+:param base_estimator: The base estimator to use. Either 'LOF', 'LUNAR', or 'ECOD'.
+:param train_size: The number of training samples.
+:param test_size: The number of test samples.
+:param use_embedding: Whether to use the embedding or the tokenized data.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.outlier_detection.pyod_odm.PyODM" href="#src.text.outlier_detection.pyod_odm.PyODM">PyODM</a></li>
+<li>text.outlier_detection.odm.OutlierDetectionModel</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.outlier_detection.pyod_odm.FeatureBagging.get_space_type"><code class="name flex">
+<span>def <span class="ident">get_space_type</span></span>(<span>self) ‑> text.outlier_detection.space_type.SpaceType</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_space_type(self) -&gt; SpaceType:
+    return SpaceType.FEATURE_BAGGING</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.text.outlier_detection.pyod_odm.LOF"><code class="flex name class">
+<span>class <span class="ident">LOF</span></span>
+<span>(</span><span>dataset: text.dataset.dataset.Dataset,<br>space: text.outlier_detection.space.space.Space,<br>use_cached=False,<br>**params)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LOF(BasePyODM):
+    def _get_model(self):
+        return pyod_LOF()
+
+    def _get_name(self):
+        return f&#34;LOF&#34; + f&#34; + {self.get_space()}&#34;</code></pre>
+</details>
+<div class="desc"><p>Abstract class for outlier detection models. Specifically for one-class classification.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.outlier_detection.pyod_odm.BasePyODM" href="#src.text.outlier_detection.pyod_odm.BasePyODM">BasePyODM</a></li>
+<li><a title="src.text.outlier_detection.pyod_odm.PyODM" href="#src.text.outlier_detection.pyod_odm.PyODM">PyODM</a></li>
+<li>text.outlier_detection.odm.OutlierDetectionModel</li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="src.text.outlier_detection.pyod_odm.LUNAR"><code class="flex name class">
+<span>class <span class="ident">LUNAR</span></span>
+<span>(</span><span>dataset: text.dataset.dataset.Dataset,<br>space: text.outlier_detection.space.space.Space,<br>use_cached=False,<br>**params)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LUNAR(BasePyODM):
+    def _get_model(self):
+        return pyod_LUNAR()
+
+    def _get_name(self):
+        return f&#34;LUNAR&#34; + f&#34; + {self.get_space()}&#34;</code></pre>
+</details>
+<div class="desc"><p>Abstract class for outlier detection models. Specifically for one-class classification.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.outlier_detection.pyod_odm.BasePyODM" href="#src.text.outlier_detection.pyod_odm.BasePyODM">BasePyODM</a></li>
+<li><a title="src.text.outlier_detection.pyod_odm.PyODM" href="#src.text.outlier_detection.pyod_odm.PyODM">PyODM</a></li>
+<li>text.outlier_detection.odm.OutlierDetectionModel</li>
+<li>abc.ABC</li>
+</ul>
+</dd>
+<dt id="src.text.outlier_detection.pyod_odm.PyODM"><code class="flex name class">
+<span>class <span class="ident">PyODM</span></span>
+<span>(</span><span>dataset: text.dataset.dataset.Dataset,<br>space: text.outlier_detection.space.space.Space,<br>base_detector: Type[pyod.models.base.BaseDetector],<br>use_cached=False,<br>**params)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PyODM(OutlierDetectionModel, ABC):
+    def __init__(self, dataset: Dataset, space: Space, base_detector: Type[BaseDetector], use_cached = False, **params):
+        #self.space = &#34;Embedding&#34; if pre_embed else &#34;Tokenized&#34;
+        super().__init__(dataset=dataset, space=space, use_cached=use_cached, base_method=base_detector, **params)
+        self.od_model = self._get_model()
+
+    def _train(self):
+        data = self.x_train.float().cpu().numpy()
+        self.od_model.fit(data, None)
+
+    def _predict(self):
+        test = self.x_test
+        decision_function = self.od_model.decision_function(test.float().cpu().numpy())
+        self.decision_function = decision_function
+
+    def _get_predictions(self) -&gt; List[int]:
+        return self.decision_function
+
+    @abstractmethod
+    def _get_model(self) -&gt; BaseDetector:
+        pass</code></pre>
+</details>
+<div class="desc"><p>Abstract class for outlier detection models. Specifically for one-class classification.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>text.outlier_detection.odm.OutlierDetectionModel</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.text.outlier_detection.pyod_odm.BasePyODM" href="#src.text.outlier_detection.pyod_odm.BasePyODM">BasePyODM</a></li>
+<li><a title="src.text.outlier_detection.pyod_odm.FeatureBagging" href="#src.text.outlier_detection.pyod_odm.FeatureBagging">FeatureBagging</a></li>
+</ul>
+</dd>
+<dt id="src.text.outlier_detection.pyod_odm.TransformBaseDetector"><code class="flex name class">
+<span>class <span class="ident">TransformBaseDetector</span></span>
+<span>(</span><span>transform_fun: Callable[[numpy.ndarray], numpy.ndarray],<br>base_detector: Callable[[], Type[pyod.models.base.BaseDetector]])</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TransformBaseDetector(BaseDetector):
+    &#34;&#34;&#34;
+    A wrapper for a base detector that transforms the input data before passing it to the base detector.
+    An example of this is to give the base detector tokenized data, while the model is trained on embeddings.
+    &#34;&#34;&#34;
+
+
+    def __init__(self, transform_fun: Callable[[ndarray], ndarray],
+                 base_detector: Callable[[],Type[BaseDetector]]):
+        # self.model = model #saving the model will cause CUDA out of memory as model is large
+        raise NotImplementedError(&#34;This class should not be used, as it is currently error prone.&#34;
+                                  &#34;When using this class in an ensemble, the scalar (maybe more) is not properly&#34;
+                                  &#34;copied, which results in an dimension missmatch, as seen below.&#34;)
+        self.base_detector: Callable[[], Type[BaseDetector]] = base_detector # This is required because, when the base detectors are duplicated in the feature bagging,
+        # instead for each param to check if its of type BaseDetector it checks if it has the get_params method.
+        # Then an error it caused was it trying to call get_params on the base_detector class, that self was not passed.
+        #self.embedding_fun = self.model.get_embedding_fun(batch_first=True)
+        self.transform_fun = transform_fun
+        self._classes = 2
+        self.dimensions_provided: Optional[int] = None
+        self.embedded_dims: Optional[int] = None
+        global detector_number
+        self.detector_num = detector_number
+        detector_number += 1
+        #if detector_number &gt; 51:
+            #print(f&#34;creating Detector #{detector_number} / 50&#34;)
+
+        super().__init__()
+
+    def fit(self, X: ndarray, y=None):
+        self.dimensions_provided = X.shape[1]
+        self._estimator = self.base_detector()(contamination = self.contamination)
+        embedded = self.transform_fun(X)
+        self.embedded_dims = embedded.shape[1]
+        self._estimator.fit(embedded, y)
+        self.decision_scores_ = self._estimator.decision_scores_
+        self.threshold_ = self._estimator.threshold_
+        self.labels_ = self._estimator.labels_
+        if isinstance(self._estimator, pyod_LUNAR):
+            #TODO: why is this not an error here, if that is the error that is thrown later? The scalar is overwritten
+            assert self.embedded_dims == self._estimator.scaler.n_features_in_, (f&#34;Number features in does not match &#34;
+                                                                                 f&#34;actual dimensions: exp: {self.embedded_dims}, &#34;
+                                                                                 f&#34;got: {self._estimator.scaler.n_features_in_}&#34;)
+
+    def decision_function(self, X):
+        dims = X.shape[1]
+        assert dims == self.dimensions_provided, (f&#34;The amount of dimensions provided during training does not &#34;
+                                                        f&#34;match the dimensions here: Expected: &#34;
+                                                        f&#34;{self.dimensions_provided}, got: {dims}&#34;)
+        embedded = self.transform_fun(X)
+        assert embedded.shape[1] == self.embedded_dims
+        if isinstance(self._estimator, pyod_LUNAR):
+            # TODO: This error is thrown here.
+            scalar_dims = self._estimator.scaler.n_features_in_
+            assert self.embedded_dims == scalar_dims, (f&#34;Number features in does not match &#34;
+                                                                                 f&#34;actual dimensions: exp: {self.embedded_dims}, &#34;
+                                                                                 f&#34;expected dims by estimator: {self._estimator.scaler.n_features_in_}&#34;)
+        return self._estimator.decision_function(embedded)
+
+    @staticmethod
+    def configure_transform_fun(transformation: Callable[[Tensor], Tensor],
+                                normalize: bool, standardize: bool) -&gt; Callable[[ndarray], ndarray]:
+        &#34;&#34;&#34;
+        Configure the transformation to apply to the data.
+        :param transformation: The base transformation to apply.
+        :param normalize: Whether to normalize the data after the transformation
+        :param standardize: Whether to standardize the data before applying the transformation.
+        &#34;&#34;&#34;
+        device = torch.device(&#34;cuda&#34; if torch.cuda.is_available() else
+                              (&#34;mps&#34; if torch.backends.mps.is_available() else &#34;cpu&#34;))
+        def transform(x: ndarray) -&gt; ndarray:
+            &#34;&#34;&#34;
+            Transforms the data, given the base transformation to apply.
+            &#34;&#34;&#34;
+            x_tensor = Tensor(x).to(device)
+            embedded: Tensor = transformation(x_tensor)
+            standardized = embedded
+            if standardize:
+                #todo: is using dimension 1 correct?
+                #raise NotImplementedError(&#34;Check TODO.&#34;)
+                means = embedded.mean(1, keepdim=True)
+                stds = embedded.std(1, keepdim=True)
+                standardized = (embedded - means) / stds
+            normalized = standardized
+            if normalize:
+                normalized = torch.nn.functional.normalize(standardized, p=2, dim=1)
+            return normalized.cpu().numpy()
+        return transform</code></pre>
+</details>
+<div class="desc"><p>A wrapper for a base detector that transforms the input data before passing it to the base detector.
+An example of this is to give the base detector tokenized data, while the model is trained on embeddings.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pyod.models.base.BaseDetector</li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="src.text.outlier_detection.pyod_odm.TransformBaseDetector.configure_transform_fun"><code class="name flex">
+<span>def <span class="ident">configure_transform_fun</span></span>(<span>transformation: Callable[[torch.Tensor], torch.Tensor],<br>normalize: bool,<br>standardize: bool) ‑> Callable[[numpy.ndarray], numpy.ndarray]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def configure_transform_fun(transformation: Callable[[Tensor], Tensor],
+                            normalize: bool, standardize: bool) -&gt; Callable[[ndarray], ndarray]:
+    &#34;&#34;&#34;
+    Configure the transformation to apply to the data.
+    :param transformation: The base transformation to apply.
+    :param normalize: Whether to normalize the data after the transformation
+    :param standardize: Whether to standardize the data before applying the transformation.
+    &#34;&#34;&#34;
+    device = torch.device(&#34;cuda&#34; if torch.cuda.is_available() else
+                          (&#34;mps&#34; if torch.backends.mps.is_available() else &#34;cpu&#34;))
+    def transform(x: ndarray) -&gt; ndarray:
+        &#34;&#34;&#34;
+        Transforms the data, given the base transformation to apply.
+        &#34;&#34;&#34;
+        x_tensor = Tensor(x).to(device)
+        embedded: Tensor = transformation(x_tensor)
+        standardized = embedded
+        if standardize:
+            #todo: is using dimension 1 correct?
+            #raise NotImplementedError(&#34;Check TODO.&#34;)
+            means = embedded.mean(1, keepdim=True)
+            stds = embedded.std(1, keepdim=True)
+            standardized = (embedded - means) / stds
+        normalized = standardized
+        if normalize:
+            normalized = torch.nn.functional.normalize(standardized, p=2, dim=1)
+        return normalized.cpu().numpy()
+    return transform</code></pre>
+</details>
+<div class="desc"><p>Configure the transformation to apply to the data.
+:param transformation: The base transformation to apply.
+:param normalize: Whether to normalize the data after the transformation
+:param standardize: Whether to standardize the data before applying the transformation.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.outlier_detection.pyod_odm.TransformBaseDetector.decision_function"><code class="name flex">
+<span>def <span class="ident">decision_function</span></span>(<span>self, X)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def decision_function(self, X):
+    dims = X.shape[1]
+    assert dims == self.dimensions_provided, (f&#34;The amount of dimensions provided during training does not &#34;
+                                                    f&#34;match the dimensions here: Expected: &#34;
+                                                    f&#34;{self.dimensions_provided}, got: {dims}&#34;)
+    embedded = self.transform_fun(X)
+    assert embedded.shape[1] == self.embedded_dims
+    if isinstance(self._estimator, pyod_LUNAR):
+        # TODO: This error is thrown here.
+        scalar_dims = self._estimator.scaler.n_features_in_
+        assert self.embedded_dims == scalar_dims, (f&#34;Number features in does not match &#34;
+                                                                             f&#34;actual dimensions: exp: {self.embedded_dims}, &#34;
+                                                                             f&#34;expected dims by estimator: {self._estimator.scaler.n_features_in_}&#34;)
+    return self._estimator.decision_function(embedded)</code></pre>
+</details>
+<div class="desc"><p>Predict raw anomaly scores of X using the fitted detector.</p>
+<p>The anomaly score of an input sample is computed based on the fitted
+detector. For consistency, outliers are assigned with
+higher anomaly scores.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>numpy array</code> of <code>shape (n_samples, n_features)</code></dt>
+<dd>The input samples. Sparse matrices are accepted only
+if they are supported by the base estimator.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>anomaly_scores</code></strong> :&ensp;<code>numpy array</code> of <code>shape (n_samples,)</code></dt>
+<dd>The anomaly score of the input samples.</dd>
+</dl></div>
+</dd>
+<dt id="src.text.outlier_detection.pyod_odm.TransformBaseDetector.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X: numpy.ndarray, y=None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, X: ndarray, y=None):
+    self.dimensions_provided = X.shape[1]
+    self._estimator = self.base_detector()(contamination = self.contamination)
+    embedded = self.transform_fun(X)
+    self.embedded_dims = embedded.shape[1]
+    self._estimator.fit(embedded, y)
+    self.decision_scores_ = self._estimator.decision_scores_
+    self.threshold_ = self._estimator.threshold_
+    self.labels_ = self._estimator.labels_
+    if isinstance(self._estimator, pyod_LUNAR):
+        #TODO: why is this not an error here, if that is the error that is thrown later? The scalar is overwritten
+        assert self.embedded_dims == self._estimator.scaler.n_features_in_, (f&#34;Number features in does not match &#34;
+                                                                             f&#34;actual dimensions: exp: {self.embedded_dims}, &#34;
+                                                                             f&#34;got: {self._estimator.scaler.n_features_in_}&#34;)</code></pre>
+</details>
+<div class="desc"><p>Fit detector. y is ignored in unsupervised methods.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>numpy array</code> of <code>shape (n_samples, n_features)</code></dt>
+<dd>The input samples.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Ignored</code></dt>
+<dd>Not used, present for API consistency by convention.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>Fitted estimator.</dd>
+</dl></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.text.outlier_detection" href="index.html">src.text.outlier_detection</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.text.outlier_detection.pyod_odm.BasePyODM" href="#src.text.outlier_detection.pyod_odm.BasePyODM">BasePyODM</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.outlier_detection.pyod_odm.BasePyODM.get_space_type" href="#src.text.outlier_detection.pyod_odm.BasePyODM.get_space_type">get_space_type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.outlier_detection.pyod_odm.ECOD" href="#src.text.outlier_detection.pyod_odm.ECOD">ECOD</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.text.outlier_detection.pyod_odm.FeatureBagging" href="#src.text.outlier_detection.pyod_odm.FeatureBagging">FeatureBagging</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.outlier_detection.pyod_odm.FeatureBagging.get_space_type" href="#src.text.outlier_detection.pyod_odm.FeatureBagging.get_space_type">get_space_type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.outlier_detection.pyod_odm.LOF" href="#src.text.outlier_detection.pyod_odm.LOF">LOF</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.text.outlier_detection.pyod_odm.LUNAR" href="#src.text.outlier_detection.pyod_odm.LUNAR">LUNAR</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.text.outlier_detection.pyod_odm.PyODM" href="#src.text.outlier_detection.pyod_odm.PyODM">PyODM</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.text.outlier_detection.pyod_odm.TransformBaseDetector" href="#src.text.outlier_detection.pyod_odm.TransformBaseDetector">TransformBaseDetector</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.outlier_detection.pyod_odm.TransformBaseDetector.configure_transform_fun" href="#src.text.outlier_detection.pyod_odm.TransformBaseDetector.configure_transform_fun">configure_transform_fun</a></code></li>
+<li><code><a title="src.text.outlier_detection.pyod_odm.TransformBaseDetector.decision_function" href="#src.text.outlier_detection.pyod_odm.TransformBaseDetector.decision_function">decision_function</a></code></li>
+<li><code><a title="src.text.outlier_detection.pyod_odm.TransformBaseDetector.fit" href="#src.text.outlier_detection.pyod_odm.TransformBaseDetector.fit">fit</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.text.dataset.nlp_adbench API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.text.dataset.nlp_adbench</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchAGNews"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchAGNews</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchAGNews(NLP_ADBench):
+    def __init__(self):
+        super().__init__(&#34;agnews&#34;, AGNews.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchBBC"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchBBC</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchBBC(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix=&#34;text :&#34;,
+        label_prefix=&#34;news type :&#34;,
+        samples=[&#34;The stars from the movie &#39;The Breakfast Club&#39; reunite for the fist time in 40 years.&#34;,
+                 &#34;Stocks rally as electronics get a tariff break.&#34;],
+        labels=[&#34;Entertainment&#34;, &#34;Business&#34;]
+    )
+    def __init__(self):
+        super().__init__(&#34;bbc&#34;, self.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchBBC.prompt"><code class="name">var <span class="ident">prompt</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchEmailSpam"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchEmailSpam</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchEmailSpam(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix=&#34;email :&#34;,
+        label_prefix=&#34;spam type :&#34;,
+        samples=[&#34;Subject: YOU WON! Congratulations! You&#39;ve won a $1,000 cash prize!&#34;,
+                 &#34;Subject: Submission Approved. Hi, your submission has been approved.&#34;],
+        labels=[&#34;spam&#34;, &#34;no spam&#34;]
+    )
+    def __init__(self):
+        super().__init__(&#34;email_spam&#34;, self.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchEmailSpam.prompt"><code class="name">var <span class="ident">prompt</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchEmotion"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchEmotion</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchEmotion(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix=&#34;text :&#34;,
+        label_prefix=&#34;emotion :&#34;,
+        samples=[&#34;I am so happy today, as I got a promotion.&#34;,
+                        &#34;I feel absolutely devastated after hearing the news.&#34;],
+        labels=[&#34;happiness&#34;, &#34;sadness&#34;]
+    )
+    def __init__(self):
+        super().__init__(&#34;emotion&#34;, self.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchEmotion.prompt"><code class="name">var <span class="ident">prompt</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchMovieReview"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchMovieReview</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchMovieReview(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix=&#34;review :&#34;,
+        label_prefix=&#34;sentiment :&#34;,
+        samples=[&#34;This movie was great!&#34;,
+                 &#34;I really did not like this movie.&#34;],
+        labels=[&#34;positive&#34;, &#34;negative&#34;]
+    )
+    def __init__(self):
+        super().__init__(&#34;movie_review&#34;, self.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchMovieReview.prompt"><code class="name">var <span class="ident">prompt</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchN24News"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchN24News</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchN24News(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix=&#34;Description :&#34;,
+        label_prefix=&#34;News type :&#34;,
+        samples=[&#34;Mcdonald&#39;s to introduce a new burger in Germany.&#34;,
+                 &#34;Stocks rally as electronics get a tariff break.&#34;],
+        labels=[&#34;Food&#34;, &#34;Business&#34;]
+    )
+    def __init__(self):
+        super().__init__(&#34;N24News&#34;, self.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchN24News.prompt"><code class="name">var <span class="ident">prompt</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchSMSSpam"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchSMSSpam</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchSMSSpam(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix=&#34;sms:&#34;,
+        label_prefix=&#34;spam type:&#34;,
+        samples=[&#34;Congratulations! You&#39;ve won a $1,000 cash prize! Click here to claim it now!&#34;,
+                 &#34;What r ur plans for tonight?&#34;],
+        labels=[&#34;spam&#34;, &#34;no spam&#34;, ]
+    )
+    def __init__(self):
+        super().__init__(&#34;sms_spam&#34;, self.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchSMSSpam.prompt"><code class="name">var <span class="ident">prompt</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity"><code class="flex name class">
+<span>class <span class="ident">NLPADBenchYelpReviewPolarity</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLPADBenchYelpReviewPolarity(NLP_ADBench):
+    prompt = Prompt(
+        sample_prefix=&#34;review :&#34;,
+        label_prefix=&#34;sentiment :&#34;,
+        samples=[&#34;This restaurant is amazing! The food was delicious and the service was excellent.&#34;,
+                 &#34;I had a terrible experience. The food was cold and the staff was rude.&#34;],
+        labels=[&#34;positive&#34;, &#34;negative&#34;]
+    )
+    def __init__(self):
+        super().__init__(&#34;yelp_review_polarity&#34;, self.prompt)</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></li>
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity.prompt"><code class="name">var <span class="ident">prompt</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench"><code class="flex name class">
+<span>class <span class="ident">NLP_ADBench</span></span>
+<span>(</span><span>dataset_name: str, prompt: text.dataset.prompt.Prompt)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NLP_ADBench(AggregatableDataset, ABC):
+
+    def __init__(self, dataset_name: str, prompt: Prompt):
+        self.dataset_name = dataset_name
+        self._assert_is_valid_name(dataset_name)
+        super().__init__(prompt=prompt)
+
+    def get_possible_labels(self) -&gt; list:
+        return [0, 1]
+
+    def _import_data(self):
+        dataset_path = self.resources_path / &#34;NLP-ADBench&#34;
+        if not dataset_path.exists():
+            dataset_path.mkdir(parents=True, exist_ok=True)
+            dataset = load_dataset(&#34;kendx/NLP-ADBench&#34;)
+            train_dataset = dataset[&#34;train&#34;]
+            train_dataset = pd.DataFrame(train_dataset)
+            test_dataset = dataset[&#34;test&#34;]
+            test_dataset = pd.DataFrame(test_dataset)
+
+            # Shuffle the dataset as all outliers are concentrated, where the original labels were.
+            test_dataset = test_dataset.sample(frac=1).reset_index(drop=True)
+            train_dataset = train_dataset.sample(frac=1).reset_index(drop=True)
+
+            train_dataset.to_csv(dataset_path / &#34;train.csv&#34;, index=False)
+            test_dataset.to_csv(dataset_path / &#34;test.csv&#34;, index=False)
+        else:
+            train_dataset = pd.read_csv(dataset_path / &#34;train.csv&#34;)
+            test_dataset = pd.read_csv(dataset_path / &#34;test.csv&#34;)
+
+        task_label = self._get_row()
+        train_dataset_filtered = train_dataset[train_dataset[&#34;original_task&#34;] == task_label].reset_index(drop=True)
+        test_dataset_filtered = test_dataset[test_dataset[&#34;original_task&#34;] == task_label].reset_index(drop=True)
+
+        self.x_train = train_dataset_filtered[self.x_label_name]
+        self.y_train = train_dataset_filtered[self.y_label_name]
+        self.x_test = test_dataset_filtered[self.x_label_name]
+        self.y_test = test_dataset_filtered[self.y_label_name]
+        self.imported = True
+
+    @property
+    def name(self) -&gt; str:
+        return &#34;NLP_ADBench &#34; + self.dataset_name
+
+    @property
+    def x_label_name(self) -&gt; str:
+        return &#34;text&#34;
+
+    @property
+    def y_label_name(self):
+        return &#34;label&#34;
+
+    def _get_row(self):
+        name_to_row_map = {
+            &#34;agnews&#34;: &#34;AG News Classification&#34;,
+            &#34;N24News&#34;: &#34;N24News: A New Dataset for Multimodal News Classification&#34;,
+            &#34;bbc&#34;: &#34;BBC news category classification&#34;,
+            &#34;email_spam&#34;: &#34;To check if an email is a spam&#34;,
+            &#34;emotion&#34;: &#34;Emotion is a dataset of English Twitter messages with six basic emotions: anger, fear, joy, love, sadness, and surprise.&#34;,
+            &#34;movie_review&#34;: &#34;For the task of binary sentiment classification: such like giving a review to decide if it is pos or neg.&#34;,
+            &#34;sms_spam&#34;: &#34;SMS spam classification&#34;,
+            &#34;yelp_review_polarity&#34;: &#34;Yelp reviews dataset consists of reviews from Yelp&#34;
+        }
+        key = self.dataset_name
+        return name_to_row_map[key]
+
+    def _assert_is_valid_name(self, name: str):
+       if name not in self.possible_datasets():
+           raise ValueError(f&#34;Invalid dataset. Possible dataset: {self.possible_datasets()}&#34;)
+
+    @classmethod
+    def agnews(cls) :
+        return NLPADBenchAGNews()
+
+    @classmethod
+    def n24news(cls):
+        return NLPADBenchN24News()
+
+    @classmethod
+    def bbc(cls):
+        return NLPADBenchBBC()
+
+    @classmethod
+    def email_spam(cls):
+        return NLPADBenchEmailSpam()
+
+    @classmethod
+    def emotion(cls):
+        return NLPADBenchEmotion()
+
+    @classmethod
+    def movie_review(cls):
+        return NLPADBenchMovieReview()
+
+    @classmethod
+    def sms_spam(cls):
+        return NLPADBenchSMSSpam()
+
+    @classmethod
+    def yelp_review_polarity(cls):
+        return NLPADBenchYelpReviewPolarity()
+
+    @staticmethod
+    def possible_datasets():
+        return [&#34;agnews&#34;, &#34;N24News&#34;, &#34;bbc&#34;, &#34;email_spam&#34;, &#34;emotion&#34;, &#34;movie_review&#34;, &#34;sms_spam&#34;, &#34;yelp_review_polarity&#34;]
+
+    @classmethod
+    def get_all_datasets(cls) -&gt; List[AggregatableDataset]:
+        return [NLPADBenchAGNews(), NLPADBenchN24News(), NLPADBenchBBC(), NLPADBenchEmailSpam(), NLPADBenchEmotion(),
+                NLPADBenchMovieReview(), NLPADBenchSMSSpam(), NLPADBenchYelpReviewPolarity()]</code></pre>
+</details>
+<div class="desc"><p>A dataset that can be aggregated.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>text.dataset.dataset.AggregatableDataset</li>
+<li>text.dataset.dataset.Dataset</li>
+<li>text.dataset.aggregatable.Aggregatable</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchAGNews" href="#src.text.dataset.nlp_adbench.NLPADBenchAGNews">NLPADBenchAGNews</a></li>
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchBBC" href="#src.text.dataset.nlp_adbench.NLPADBenchBBC">NLPADBenchBBC</a></li>
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchEmailSpam" href="#src.text.dataset.nlp_adbench.NLPADBenchEmailSpam">NLPADBenchEmailSpam</a></li>
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchEmotion" href="#src.text.dataset.nlp_adbench.NLPADBenchEmotion">NLPADBenchEmotion</a></li>
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchMovieReview" href="#src.text.dataset.nlp_adbench.NLPADBenchMovieReview">NLPADBenchMovieReview</a></li>
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchN24News" href="#src.text.dataset.nlp_adbench.NLPADBenchN24News">NLPADBenchN24News</a></li>
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchSMSSpam" href="#src.text.dataset.nlp_adbench.NLPADBenchSMSSpam">NLPADBenchSMSSpam</a></li>
+<li><a title="src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity" href="#src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity">NLPADBenchYelpReviewPolarity</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.agnews"><code class="name flex">
+<span>def <span class="ident">agnews</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.bbc"><code class="name flex">
+<span>def <span class="ident">bbc</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.email_spam"><code class="name flex">
+<span>def <span class="ident">email_spam</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.emotion"><code class="name flex">
+<span>def <span class="ident">emotion</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.get_all_datasets"><code class="name flex">
+<span>def <span class="ident">get_all_datasets</span></span>(<span>) ‑> List[text.dataset.dataset.AggregatableDataset]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.movie_review"><code class="name flex">
+<span>def <span class="ident">movie_review</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.n24news"><code class="name flex">
+<span>def <span class="ident">n24news</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.possible_datasets"><code class="name flex">
+<span>def <span class="ident">possible_datasets</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def possible_datasets():
+    return [&#34;agnews&#34;, &#34;N24News&#34;, &#34;bbc&#34;, &#34;email_spam&#34;, &#34;emotion&#34;, &#34;movie_review&#34;, &#34;sms_spam&#34;, &#34;yelp_review_polarity&#34;]</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.sms_spam"><code class="name flex">
+<span>def <span class="ident">sms_spam</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.yelp_review_polarity"><code class="name flex">
+<span>def <span class="ident">yelp_review_polarity</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.name"><code class="name">prop <span class="ident">name</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self) -&gt; str:
+    return &#34;NLP_ADBench &#34; + self.dataset_name</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name"><code class="name">prop <span class="ident">x_label_name</span> : str</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def x_label_name(self) -&gt; str:
+    return &#34;text&#34;</code></pre>
+</details>
+<div class="desc"><p>Returns the name of the x-axis label.
+:return: A string representing the x-axis label.</p></div>
+</dd>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name"><code class="name">prop <span class="ident">y_label_name</span></code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def y_label_name(self):
+    return &#34;label&#34;</code></pre>
+</details>
+<div class="desc"><p>Returns the name of the y-axis label.
+:return: A string representing the y-axis label.</p></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.dataset.nlp_adbench.NLP_ADBench.get_possible_labels"><code class="name flex">
+<span>def <span class="ident">get_possible_labels</span></span>(<span>self) ‑> list</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_possible_labels(self) -&gt; list:
+    return [0, 1]</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.text.dataset" href="index.html">src.text.dataset</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchAGNews" href="#src.text.dataset.nlp_adbench.NLPADBenchAGNews">NLPADBenchAGNews</a></code></h4>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchBBC" href="#src.text.dataset.nlp_adbench.NLPADBenchBBC">NLPADBenchBBC</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLPADBenchBBC.prompt" href="#src.text.dataset.nlp_adbench.NLPADBenchBBC.prompt">prompt</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchEmailSpam" href="#src.text.dataset.nlp_adbench.NLPADBenchEmailSpam">NLPADBenchEmailSpam</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLPADBenchEmailSpam.prompt" href="#src.text.dataset.nlp_adbench.NLPADBenchEmailSpam.prompt">prompt</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchEmotion" href="#src.text.dataset.nlp_adbench.NLPADBenchEmotion">NLPADBenchEmotion</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLPADBenchEmotion.prompt" href="#src.text.dataset.nlp_adbench.NLPADBenchEmotion.prompt">prompt</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchMovieReview" href="#src.text.dataset.nlp_adbench.NLPADBenchMovieReview">NLPADBenchMovieReview</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLPADBenchMovieReview.prompt" href="#src.text.dataset.nlp_adbench.NLPADBenchMovieReview.prompt">prompt</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchN24News" href="#src.text.dataset.nlp_adbench.NLPADBenchN24News">NLPADBenchN24News</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLPADBenchN24News.prompt" href="#src.text.dataset.nlp_adbench.NLPADBenchN24News.prompt">prompt</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchSMSSpam" href="#src.text.dataset.nlp_adbench.NLPADBenchSMSSpam">NLPADBenchSMSSpam</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLPADBenchSMSSpam.prompt" href="#src.text.dataset.nlp_adbench.NLPADBenchSMSSpam.prompt">prompt</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity" href="#src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity">NLPADBenchYelpReviewPolarity</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity.prompt" href="#src.text.dataset.nlp_adbench.NLPADBenchYelpReviewPolarity.prompt">prompt</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench" href="#src.text.dataset.nlp_adbench.NLP_ADBench">NLP_ADBench</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.agnews" href="#src.text.dataset.nlp_adbench.NLP_ADBench.agnews">agnews</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.bbc" href="#src.text.dataset.nlp_adbench.NLP_ADBench.bbc">bbc</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.email_spam" href="#src.text.dataset.nlp_adbench.NLP_ADBench.email_spam">email_spam</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.emotion" href="#src.text.dataset.nlp_adbench.NLP_ADBench.emotion">emotion</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.get_all_datasets" href="#src.text.dataset.nlp_adbench.NLP_ADBench.get_all_datasets">get_all_datasets</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.get_possible_labels" href="#src.text.dataset.nlp_adbench.NLP_ADBench.get_possible_labels">get_possible_labels</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.movie_review" href="#src.text.dataset.nlp_adbench.NLP_ADBench.movie_review">movie_review</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.n24news" href="#src.text.dataset.nlp_adbench.NLP_ADBench.n24news">n24news</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.name">name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.possible_datasets" href="#src.text.dataset.nlp_adbench.NLP_ADBench.possible_datasets">possible_datasets</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.sms_spam" href="#src.text.dataset.nlp_adbench.NLP_ADBench.sms_spam">sms_spam</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.x_label_name">x_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name" href="#src.text.dataset.nlp_adbench.NLP_ADBench.y_label_name">y_label_name</a></code></li>
+<li><code><a title="src.text.dataset.nlp_adbench.NLP_ADBench.yelp_review_polarity" href="#src.text.dataset.nlp_adbench.NLP_ADBench.yelp_review_polarity">yelp_review_polarity</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

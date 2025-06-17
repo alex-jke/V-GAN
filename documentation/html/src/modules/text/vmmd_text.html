@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.modules.text.vmmd_text API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.modules.text.vmmd_text</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.modules.text.vmmd_text.TextMethod"><code class="flex name class">
+<span>class <span class="ident">TextMethod</span></span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TextMethod(ABC):
+
+    @abstractmethod
+    def _embed(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], masks: Optional[Tensor]) -&gt; Tensor:
+        pass
+
+    @abstractmethod
+    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor],
+                          mask: Optional[Tensor]) -&gt; Tensor:
+        pass
+
+    @abstractmethod
+    def generate_subspaces(self, count: int) -&gt; Tensor:
+        &#34;&#34;&#34;
+        Generates a number of subspaces.
+        :param count: The number of subspaces to generate.
+        :return: A tensor of shape (count, n_dims) containing the generated subspaces.
+        &#34;&#34;&#34;
+        pass
+
+    def _prepare_data(self, original_data: ndarray[str], embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], count=500, bandwidth: float | ndarray = 0.01):
+        device = torch.device(&#34;cuda&#34; if torch.cuda.is_available() else (&#34;mps&#34; if torch.backends.mps.is_available() else &#34;cpu&#34;))
+        x_data: ndarray[str] = original_data
+        # training_data = self._get_training_data(self.original_data, self.embedding, self.n_dims)
+        # x_data = self._convert_batch(training_data, self.embedding, self.n_dims)
+        if count &gt; x_data.shape[0]:
+            warnings.warn(
+                f&#34;Selected &#39;count&#39;: {count} is greater than the number of samples {x_data.shape[0]} in the dataset. Setting count to {x_data.shape[0]}. This might lead to unexpected results.&#34;)
+            count = x_data.shape[0]
+
+        # x_data = normalize(x_data, axis=0)
+        indices = torch.randperm(x_data.size)[:count]
+        x_sample = self._convert_batch(x_data[indices], embedding, None).to(device)
+
+        indices = torch.randperm(x_data.size)[:count]
+        ux_x_sample = x_data[indices]#.to(self.device)
+        u_subspaces = self.generate_subspaces(count).to(device)
+
+        # ux_sample = u_subspaces * torch.mps.Tensor(x_sample).to(self.device) + torch.mean(x_sample, dim=0) * (1-u_subspaces)
+        #ux_sample = (ux_x_sample * u_subspaces.unsqueeze(2)).mean(1) + (ux_x_sample.mean(0) * (1 - u_subspaces.unsqueeze(2))).mean(1)
+        ux_subspaces = self._convert_batch(ux_x_sample, embedding, u_subspaces)
+        ux_1_subspaces = F.normalize(self._embed(ux_x_sample, embedding, 1 - u_subspaces))
+        ux_1_subspaces_mean0 = ux_1_subspaces.mean(0)
+        ux_1_subspaces_mean01 = ux_1_subspaces_mean0.mean(0)
+        ux_1_subspaces_mean01_exp = ux_1_subspaces_mean01.expand_as(ux_subspaces)
+        #ux_1_subspaces = F.normalize(self._embed(ux_x_sample, self.embedding, 1 - u_subspaces)).mean(0).mean(0).unsqueeze(0).expand_as(ux_subspaces)
+        ux_sample = ux_subspaces + ux_1_subspaces_mean01_exp
+
+        return x_sample, ux_sample, u_subspaces, bandwidth, count</code></pre>
+</details>
+<div class="desc"><p>Helper class that provides a standard way to create an ABC using
+inheritance.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="src.modules.text.vmmd_text.VMMDTextLightning" href="#src.modules.text.vmmd_text.VMMDTextLightning">VMMDTextLightning</a></li>
+<li><a title="src.modules.text.vmmd_text.VmmdText" href="#src.modules.text.vmmd_text.VmmdText">VmmdText</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.modules.text.vmmd_text.TextMethod.generate_subspaces"><code class="name flex">
+<span>def <span class="ident">generate_subspaces</span></span>(<span>self, count: int) ‑> torch.Tensor</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def generate_subspaces(self, count: int) -&gt; Tensor:
+    &#34;&#34;&#34;
+    Generates a number of subspaces.
+    :param count: The number of subspaces to generate.
+    :return: A tensor of shape (count, n_dims) containing the generated subspaces.
+    &#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<div class="desc"><p>Generates a number of subspaces.
+:param count: The number of subspaces to generate.
+:return: A tensor of shape (count, n_dims) containing the generated subspaces.</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.modules.text.vmmd_text.VMMDTextLightning"><code class="flex name class">
+<span>class <span class="ident">VMMDTextLightning</span></span>
+<span>(</span><span>sequence_length: int,<br>seperator: str = ' ',<br>strategy: text.Embedding.unification_strategy.StrategyInstance = TRANSFORMER,<br>use_mmd: bool = True,<br>**kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VMMDTextLightning(VMMDTextLightningBase, TextMethod):
+    &#34;&#34;&#34;
+    An implementation of VMMDTextBase that embeds the data each epoch.
+    &#34;&#34;&#34;
+    def get_training_data(self, x_data: ndarray[str], embedding, n_dims) -&gt; Tensor | ndarray[str]:
+        return x_data
+
+    def _embed(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], masks: Optional[Tensor]) -&gt; Tensor:
+        &#34;&#34;&#34;
+        Converts a batch to an embedding tensor. If masks is None, all words are embedded.
+        Otherwise, only the words, where the mask is one are embedded.
+        :param batch: The batch to convert, as a numpy array of cleaned sentences.
+        :param embedding: The embedding function to use.
+        :param masks: The masks to use. If None, all words are embedded.
+        :return: The embeddings of the batch, as a tensor of shape (n_samples, n_tokens, n_embedding_dim).
+        &#34;&#34;&#34;
+        #if masks is None:
+        return embedding(batch, self.n_dims, masks)
+
+    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor],
+                       mask: Optional[Tensor]) -&gt; Tensor:
+        embedded = self._embed(batch, embedding, mask)
+        meaned = embedded.mean(1)
+        normed = F.normalize(meaned, p=2, dim=1)
+        return normed
+
+    def check_if_myopic(self, x_data: Optional[ndarray], count=500, bandwidth: float | Tensor = 0.01):
+        &#34;&#34;&#34;
+        Checks if the model is myopic by sampling a number of samples from the dataset and checking if the MMD is
+        significant.
+        &#34;&#34;&#34;
+        if x_data is None:
+            x_data = self.original_data
+        x_sample, ux_sample, u_subspaces, bandwidth, count = self._prepare_data(
+            x_data, self.embedding, count=count, bandwidth=bandwidth)
+        return self._check_if_myopic(x_sample=x_sample, ux_sample=ux_sample, u_subspaces=u_subspaces,
+                                     bandwidth=bandwidth, count=count)</code></pre>
+</details>
+<div class="desc"><p>An implementation of VMMDTextBase that embeds the data each epoch.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>modules.text.vmmd_text_lightning.VMMDTextLightningBase</li>
+<li>modules.text.vmmd_lightning.VMMDLightningBase</li>
+<li>pytorch_lightning.core.module.LightningModule</li>
+<li>lightning_fabric.utilities.device_dtype_mixin._DeviceDtypeModuleMixin</li>
+<li>pytorch_lightning.core.mixins.hparams_mixin.HyperparametersMixin</li>
+<li>pytorch_lightning.core.hooks.ModelHooks</li>
+<li>pytorch_lightning.core.hooks.DataHooks</li>
+<li>pytorch_lightning.core.hooks.CheckpointHooks</li>
+<li>torch.nn.modules.module.Module</li>
+<li>i_vmmd_base.IVMMDBase</li>
+<li>modules.od_module.ODModule</li>
+<li><a title="src.modules.text.vmmd_text.TextMethod" href="#src.modules.text.vmmd_text.TextMethod">TextMethod</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.modules.text.vmmd_text.VMMDTextLightning.check_if_myopic"><code class="name flex">
+<span>def <span class="ident">check_if_myopic</span></span>(<span>self,<br>x_data: numpy.ndarray | None,<br>count=500,<br>bandwidth: float | torch.Tensor = 0.01)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_if_myopic(self, x_data: Optional[ndarray], count=500, bandwidth: float | Tensor = 0.01):
+    &#34;&#34;&#34;
+    Checks if the model is myopic by sampling a number of samples from the dataset and checking if the MMD is
+    significant.
+    &#34;&#34;&#34;
+    if x_data is None:
+        x_data = self.original_data
+    x_sample, ux_sample, u_subspaces, bandwidth, count = self._prepare_data(
+        x_data, self.embedding, count=count, bandwidth=bandwidth)
+    return self._check_if_myopic(x_sample=x_sample, ux_sample=ux_sample, u_subspaces=u_subspaces,
+                                 bandwidth=bandwidth, count=count)</code></pre>
+</details>
+<div class="desc"><p>Checks if the model is myopic by sampling a number of samples from the dataset and checking if the MMD is
+significant.</p></div>
+</dd>
+<dt id="src.modules.text.vmmd_text.VMMDTextLightning.get_training_data"><code class="name flex">
+<span>def <span class="ident">get_training_data</span></span>(<span>self, x_data: numpy.ndarray[str], embedding, n_dims) ‑> torch.Tensor | numpy.ndarray[str]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_training_data(self, x_data: ndarray[str], embedding, n_dims) -&gt; Tensor | ndarray[str]:
+    return x_data</code></pre>
+</details>
+<div class="desc"><p>Prepare training data.
+Must be implemented.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.modules.text.vmmd_text.TextMethod" href="#src.modules.text.vmmd_text.TextMethod">TextMethod</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.modules.text.vmmd_text.TextMethod.generate_subspaces" href="#src.modules.text.vmmd_text.TextMethod.generate_subspaces">generate_subspaces</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="src.modules.text.vmmd_text.VmmdText"><code class="flex name class">
+<span>class <span class="ident">VmmdText</span></span>
+<span>(</span><span>sequence_length: int | None = None, seperator: str = ' ', **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VmmdText(VMMDTextBase, TextMethod):
+    &#34;&#34;&#34;
+    An implementation of VMMDTextBase that embeds the data each epoch.
+    &#34;&#34;&#34;
+    def _get_training_data(self, x_data: ndarray[str], embedding: Callable[[ndarray[str], int], Tensor], n_dims: int) -&gt; Tensor | ndarray[str]:
+        self._n_dims = n_dims
+        return x_data
+
+    def _embed(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], masks: Optional[Tensor]) -&gt; Tensor:
+        &#34;&#34;&#34;
+        Converts a batch to an embedding tensor. If masks is None, all words are embedded.
+        Otherwise, only the words, where the mask is one are embedded.
+        :param batch: The batch to convert, as a numpy array of cleaned sentences.
+        :param embedding: The embedding function to use.
+        :param masks: The masks to use. If None, all words are embedded.
+        :return: The embeddings of the batch, as a tensor of shape (n_samples, n_tokens, n_embedding_dim).
+        &#34;&#34;&#34;
+        #if masks is None:
+        return embedding(batch, self._n_dims, masks)
+
+    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor],
+                       mask: Optional[Tensor]) -&gt; Tensor:
+        embedded = self._embed(batch, embedding, mask)
+        meaned = embedded.mean(1)
+        normed = F.normalize(meaned, p=2, dim=1)
+        return normed
+
+    def check_if_myopic(self, count=500, bandwidth: float | ndarray = 0.01):
+        &#34;&#34;&#34;
+        Checks if the model is myopic by sampling a number of samples from the dataset and checking if the MMD is
+        significant.
+        &#34;&#34;&#34;
+        x_data = self.original_data
+        x_sample, ux_sample, u_subspaces, bandwidth, count = self._prepare_data(
+            x_data, self.embedding, count=count, bandwidth=bandwidth)
+        return self._check_if_myopic(x_sample=x_sample, ux_sample=ux_sample, u_subspaces=u_subspaces,
+                                     bandwidth=bandwidth, count=count)</code></pre>
+</details>
+<div class="desc"><p>An implementation of VMMDTextBase that embeds the data each epoch.</p>
+<p>Initializes the VMMD_Text model.
+:param sequence_length: The length of the sequences. If None, the average length of the sequences in the data will be used.
+:param seperator: The separator between the words in the sequences.
+param kwargs: Additional keyword arguments.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>modules.text.vmmd_text_base.VMMDTextBase</li>
+<li>VMMDBase.VMMDBase</li>
+<li>i_vmmd_base.IVMMDBase</li>
+<li><a title="src.modules.text.vmmd_text.TextMethod" href="#src.modules.text.vmmd_text.TextMethod">TextMethod</a></li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.modules.text.vmmd_text.VmmdText.check_if_myopic"><code class="name flex">
+<span>def <span class="ident">check_if_myopic</span></span>(<span>self, count=500, bandwidth: float | numpy.ndarray = 0.01)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_if_myopic(self, count=500, bandwidth: float | ndarray = 0.01):
+    &#34;&#34;&#34;
+    Checks if the model is myopic by sampling a number of samples from the dataset and checking if the MMD is
+    significant.
+    &#34;&#34;&#34;
+    x_data = self.original_data
+    x_sample, ux_sample, u_subspaces, bandwidth, count = self._prepare_data(
+        x_data, self.embedding, count=count, bandwidth=bandwidth)
+    return self._check_if_myopic(x_sample=x_sample, ux_sample=ux_sample, u_subspaces=u_subspaces,
+                                 bandwidth=bandwidth, count=count)</code></pre>
+</details>
+<div class="desc"><p>Checks if the model is myopic by sampling a number of samples from the dataset and checking if the MMD is
+significant.</p></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="src.modules.text.vmmd_text.TextMethod" href="#src.modules.text.vmmd_text.TextMethod">TextMethod</a></b></code>:
+<ul class="hlist">
+<li><code><a title="src.modules.text.vmmd_text.TextMethod.generate_subspaces" href="#src.modules.text.vmmd_text.TextMethod.generate_subspaces">generate_subspaces</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.modules.text" href="index.html">src.modules.text</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.modules.text.vmmd_text.TextMethod" href="#src.modules.text.vmmd_text.TextMethod">TextMethod</a></code></h4>
+<ul class="">
+<li><code><a title="src.modules.text.vmmd_text.TextMethod.generate_subspaces" href="#src.modules.text.vmmd_text.TextMethod.generate_subspaces">generate_subspaces</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.modules.text.vmmd_text.VMMDTextLightning" href="#src.modules.text.vmmd_text.VMMDTextLightning">VMMDTextLightning</a></code></h4>
+<ul class="">
+<li><code><a title="src.modules.text.vmmd_text.VMMDTextLightning.check_if_myopic" href="#src.modules.text.vmmd_text.VMMDTextLightning.check_if_myopic">check_if_myopic</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text.VMMDTextLightning.get_training_data" href="#src.modules.text.vmmd_text.VMMDTextLightning.get_training_data">get_training_data</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.modules.text.vmmd_text.VmmdText" href="#src.modules.text.vmmd_text.VmmdText">VmmdText</a></code></h4>
+<ul class="">
+<li><code><a title="src.modules.text.vmmd_text.VmmdText.check_if_myopic" href="#src.modules.text.vmmd_text.VmmdText.check_if_myopic">check_if_myopic</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

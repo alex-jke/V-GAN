@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.vgan API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.vgan</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.vgan.VGAN"><code class="flex name class">
+<span>class <span class="ident">VGAN</span></span>
+<span>(</span><span>batch_size=500,<br>penalty=1,<br>epochs=30,<br>lr_G=0.007,<br>lr_D=0.007,<br>iternum_d=1,<br>iternum_g=5,<br>seed=777,<br>weight_decay=0.04,<br>path_to_directory=None,<br>generator=None,<br>print_updates=False,<br>gradient_clipping=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VGAN:
+    &#39;&#39;&#39;
+    V-MMD, a Subspace-Generative Moment Matching Network.
+
+    Class for the method VMMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no
+    kernel learning is performed. The default values for the kernel are
+    &#39;&#39;&#39;
+
+    def __init__(self, batch_size=500, penalty=1, epochs=30, lr_G=0.007, lr_D=0.007,
+                 iternum_d=1, iternum_g=5, seed=777,
+                 weight_decay=0.04, path_to_directory=None,
+                 generator= None,
+                 #Currently does not do anything:
+                 print_updates=False, gradient_clipping=False):
+        self.storage = locals()
+        self.train_history = defaultdict(list)
+        self.batch_size = batch_size
+        self.penalty = penalty
+        self.epochs = epochs
+        self.lr_G = lr_G
+        self.lr_D = lr_D
+        self.iternum_d = iternum_d
+        self.iternum_g = iternum_g
+        #self.momentum = momentum
+        self.seed = seed
+        if seed is None:
+            self.seed = 777
+        self.weight_decay = weight_decay
+        self.path_to_directory = path_to_directory
+        self.generator_optimizer = None
+        self.__elm = False
+        self.device = torch.device(&#39;cuda:0&#39; if torch.cuda.is_available(
+        ) else &#39;mps:0&#39; if torch.backends.mps.is_available() else &#39;cpu&#39;)
+
+        self.provided_generator = generator
+        self.generator_loss_key = &#39;generator_loss&#39;
+        if generator is None:
+            self.provided_generator = Generator_big
+        self.print_updates = print_updates
+
+    def __normalize(x, dim=1):
+        return x.div(x.norm(2, dim=dim).expand_as(x))
+
+    def __distance(self, x, y, dist):
+        &#34;&#34;&#34;
+        Computes distance between corresponding points points in `x` and `y`
+        using distance `dist`.
+        &#34;&#34;&#34;
+        if dist == &#39;L2&#39;:
+            return (x - y).pow(2).mean()
+        elif dist == &#39;L1&#39;:
+            return (x - y).abs().mean()
+        elif dist == &#39;cos&#39;:
+            x_n = self.__normalize(x)
+            y_n = self.__normalize(y)
+            return 2 - (x_n).mul(y_n).mean()
+        else:
+            assert dist == &#39;none&#39;, &#39;wtf ?&#39;
+
+    def __weights_init(self, m):
+        classname = m.__class__.__name__
+        if classname.find(&#39;Conv&#39;) != -1:
+            m.weight.data.normal_(0.0, 0.02)
+        elif classname.find(&#39;BatchNorm&#39;) != -1:
+            m.weight.data.normal_(1.0, 0.02)
+            m.bias.data.fill_(0)
+        elif classname.find(&#39;Linear&#39;) != -1:
+            m.weight.data.normal_(0.0, 0.1)
+            m.bias.data.fill_(0)
+
+    def __plot_loss(self, path_to_directory, show=False):
+        train_history = self.train_history
+        plt.style.use(&#39;ggplot&#39;)
+        generator_y = train_history[&#39;generator_loss&#39;]
+        detector_y = train_history[&#39;detector_loss&#39;]
+        x = np.linspace(1, len(generator_y), len(generator_y))
+        fig, ax = plt.subplots()
+        ax.plot(x, generator_y, color=&#34;cornflowerblue&#34;,
+                label=&#34;Generator loss&#34;, linewidth=2)
+        ax.plot(x, detector_y, color=&#34;black&#34;,
+                label=&#34;Detector loss&#34;, linewidth=2)
+
+        plt.xlabel(&#34;Epoch&#34;)
+        plt.ylabel(&#34;Loss&#34;)
+        ax.legend(loc=&#34;upper right&#34;)
+        plt.savefig(path_to_directory / &#34;train_history.png&#34;,
+                    format=&#34;png&#34;, dpi=1200)
+
+        if show == True:
+            print(&#34;The show option has been depricated due to lack of utility&#34;)
+
+    def get_params(self) -&gt; dict:
+        return {&#39;batch size&#39;: self.batch_size, &#39;epochs&#39;: self.epochs, &#39;lr_g&#39;: self.lr_G,
+                #&#39;momentum&#39;: self.momentum,
+                &#39;weight decay&#39;: self.weight_decay,
+                &#39;batch_size&#39;: self.batch_size, &#39;seed&#39;: self.seed,
+                &#39;generator optimizer&#39;: self.generator_optimizer,
+                &#34;generator&#34;: self.generator.__class__.__name__,
+                &#34;detector&#34;: self.detector.__class__.__name__,}
+
+    def model_snapshot(self, path_to_directory=None, run_number=0, show=False):
+        &#39;&#39;&#39; Creates an snapshot of the model
+
+        Saves important information regarding the training of the model
+        Args:
+            - path_to_directory (Path): Specifies the path to directory (relative to the WD)
+            - show (bool): Boolean specifying if a pop-up window should open to show the plot for previsualization.
+        &#39;&#39;&#39;
+
+        if path_to_directory == None:
+            path_to_directory = self.path_to_directory
+        path_to_directory = Path(path_to_directory)
+        if operator.not_(path_to_directory.exists()):
+            os.mkdir(path_to_directory)
+        if operator.not_((path_to_directory/&#34;train_history&#34;).exists()):
+            os.mkdir(path_to_directory / &#34;train_history&#34;)
+
+        pd.DataFrame(self.train_history[&#34;generator_loss&#34;]).to_csv(
+            path_to_directory/&#39;train_history&#39;/f&#39;generator_loss_{run_number}.csv&#39;, header=False, index=False)
+        if os.path.isfile(path_to_directory/&#39;params.csv&#39;) != True:
+            pd.DataFrame(self.get_params(), [0]).to_csv(
+                path_to_directory / &#39;params.csv&#39;)
+        else:
+            params = pd.read_csv(path_to_directory / &#39;params.csv&#39;, index_col=0)
+            params_new = pd.DataFrame(self.get_params(), [run_number])
+            params = params.reindex(params.index.union(params_new.index))
+            params.update(params_new)
+            params.to_csv(
+                path_to_directory / &#39;params.csv&#39;)
+        self.__plot_loss(path_to_directory, show=False)
+
+    def load_models(self, path_to_generator, ndims, device: str = None):
+        &#39;&#39;&#39;Loads models for prediction
+
+        In case that the generator has already been trained, this method allows to load it (and optionally the discriminator) for generating subspaces
+        Args:
+            - path_to_generator: Path to the generator (has to be stored as a .keras model)
+            - path_to_discriminator: Path to the discriminator (has to be stored as a .keras model) (Optional)
+        &#39;&#39;&#39;
+        if device == None:
+            device = self.device
+        latent_size = max(int(ndims / 16), 1)
+        self.generator =self.get_the_networks(ndims, latent_size, device=device)[0]
+        self.generator.load_state_dict(torch.load(
+            path_to_generator, map_location=device))
+        self.generator.eval()  # This only works for dropout layers
+        self.generator_optimizer = f&#39;Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space&#39;
+        self.__latent_size = latent_size
+
+    def get_the_networks(self, ndims: int, latent_size: int, device: str = None) -&gt; tuple:
+        &#34;&#34;&#34;Object function to obtain the networks&#39; architecture
+
+        Args:
+            ndims (int): Number of dimensions of the full space
+            latent_size (int): Number of dimensions of the latent space
+            device (str, optional): CUDA device to mount the networks to. Defaults to None.
+
+        Returns:
+            tuple: A tuple containing the generator and the detector of the network (child classes from torch.nn.Module)
+        &#34;&#34;&#34;
+        if device == None:
+            device = self.device
+            # Check if only the constructor or a whole generator was passed.
+        if inspect.isclass(self.provided_generator):
+            generator = self.provided_generator(
+                img_size=ndims, latent_size=latent_size).to(device)
+        else:
+            generator = self.provided_generator
+
+        #detector = Detector(latent_size, ndims, Encoder, Decoder).to(device)
+        detector = DetectorExtra(img_size=ndims, latent_size=latent_size).to(device)
+        return generator, detector
+
+    def fit(self, X: np.array):
+        for _ in self.yield_fit(X):
+            continue
+
+    def yield_fit(self, X: np.array, embedding = lambda x: x, yield_epochs: int = None):
+
+        cuda = torch.cuda.is_available()
+        mps = torch.backends.mps.is_available()
+
+        torch.manual_seed(self.seed)
+        if cuda:
+            torch.cuda.manual_seed(self.seed)
+        elif mps:
+            torch.mps.manual_seed(self.seed)
+
+        # MODEL INTIALIZATION#
+        self.__latent_size = latent_size = max(int(X.shape[1]/16), 1)
+        ndims = X.shape[1]
+        train_size = X.shape[0]
+        self.batch_size = min(self.batch_size, train_size)
+
+        device = self.device
+        generator, detector = self.get_the_networks(
+            ndims, latent_size, device=device)
+        generator.apply(self.__weights_init)
+        detector.apply(self.__weights_init)
+
+        #gen_optimizer = torch.optim.Adadelta(generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay)
+        #det_optimizer = torch.optim.Adadelta(detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay)
+
+        gen_optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay, betas=(0.5,0.9))
+        det_optimizer = torch.optim.Adam(detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay, betas=(0.5,0.9))
+
+        self.generator_optimizer = gen_optimizer.__class__.__name__
+        self.detector_optimizer = det_optimizer.__class__.__name__
+        # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
+        loss_function = MMDLossConstrained(weight=self.penalty)
+
+        # OPTIMIZATION STUFF
+        one = torch.mps.Tensor([1])
+        minusone = one * -1
+
+        # DATA LOADER#
+        if cuda:
+            data_loader = DataLoader(
+                X, batch_size=self.batch_size, drop_last=True, pin_memory=False, shuffle=True)
+        else:  # Uses CUDA if Available, other wise MPS or nothing
+            data_loader = DataLoader(
+                X, batch_size=self.batch_size, drop_last=True, pin_memory=mps, shuffle=True)
+        batch_number = data_loader.__len__()
+
+        # BATCH LOOP#
+        iternum_d = 1
+        iternum_g = 1
+        detector_loss = np.nan
+        generator_loss = np.nan
+        for epoch in range(self.epochs):
+            if self.print_updates:
+                print(f&#39;\rEpoch {epoch} of {self.epochs}&#39;)
+
+            # GET NOISE TENSORS#
+            if cuda:
+                noise_tensor = torch.cuda.FloatTensor(
+                    self.batch_size, latent_size).to(torch.device(&#39;cuda&#39;))
+            elif mps:
+                noise_tensor = torch.mps.Tensor(
+                    self.batch_size, latent_size).to(torch.device(&#39;mps&#39;))
+            else:
+                noise_tensor = torch.Tensor(self.batch_size, latent_size)
+
+            # ELM
+            if self.__elm == True:
+                for p in detector.encoder.parameters():
+                    p.requires_grad = False
+            if iternum_d &lt;= self.iternum_d:
+                detector_loss = 0
+                for batch in tqdm(data_loader, leave=False):
+                    # Make sure there is only 1 observation per row.
+                    batch = batch.view(self.batch_size, -1)
+                    if cuda:
+                        batch = batch.cuda()
+                    elif mps:
+                        batch = batch.to(torch.float32).to(
+                            torch.device(&#39;mps&#39;))  # float64 not suported with mps
+
+                    # GET SUBSPACES AND ENCODING-DECODING
+                    for p in detector.decoder.parameters():
+                        p.requires_grad = True
+                    batch_enc, batch_dec = detector(batch)
+                    with torch.no_grad():
+                        #noise_tensor = Variable(noise_tensor.normal_())
+                        #fake_subspaces = Variable(generator(noise_tensor).clone().detach())  # Freeze G
+                        noise_tensor = noise_tensor.normal_()
+                        fake_subspaces = generator(noise_tensor).clone().detach()  # Freeze G
+
+                    projected_batch = fake_subspaces * batch
+
+                    projected_batch_enc, projected_batch_dec = detector(
+                        projected_batch
+                        #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                    )
+
+                    L2_distance_batch = self.__distance(
+                        batch.view(self.batch_size, -1), batch_dec, &#39;L2&#39;)
+
+                    L2_distance_projected_batch = self.__distance(
+                        (projected_batch #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                         ).view(self.batch_size, -1)
+                        , projected_batch_dec, &#39;L2&#39;)
+
+                    # OPTIMIZATION STEP DETECTOR
+                    det_optimizer.zero_grad()
+                    batch_loss_D = (minusone.to(self.device)*
+                                    (loss_function(batch_enc, projected_batch_enc, fake_subspaces) - .1 *
+                                                       L2_distance_batch - .1*L2_distance_projected_batch))  # Constrained MMD Loss
+                    self.bandwidth = loss_function.bandwidth
+                    batch_loss_D.backward()
+                    det_optimizer.step()
+                    detector_loss += float(batch_loss_D.to(
+                        &#39;cpu&#39;).detach().numpy())/batch_number
+                iternum_d += 1
+                iternum_g = 1
+
+            elif iternum_g &lt;= self.iternum_g:
+                generator_loss = 0
+                for batch in tqdm(data_loader, leave=False):
+                    # Make sure there is only 1 observation per row.
+                    batch = batch.view(self.batch_size, -1)
+                    if cuda:
+                        batch = batch.cuda()
+                    elif mps:
+                        batch = batch.to(torch.float32).to(
+                            torch.device(&#39;mps&#39;))  # float64 not suported with mps
+                    # GET SUBSPACES AND ENCODING-DECODING
+                    batch_enc, batch_dec = detector(batch)
+
+                    #noise_tensor = Variable(noise_tensor.normal_())
+                    #fake_subspaces = Variable(generator(noise_tensor))  # Unfreeze G
+                    #fake_subspaces.requires_grad = True
+
+                    noise_tensor = torch.normal(mean=0, std=1, size=noise_tensor.shape, device=noise_tensor.device,
+                                                requires_grad=True)
+                    fake_subspaces = generator(noise_tensor)  # Unfreeze G
+
+                    projected_batch_enc, projected_batch_dec = detector(
+                        fake_subspaces*batch #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                        )
+
+                    #L2_distance_batch = self.__distance(
+                    #    batch.view(self.batch_size, -1), batch_dec, &#39;L2&#39;)
+                    #L2_distance_projected_batch = self.__distance((fake_subspaces*batch + torch.less(
+                    #    batch, 1/batch.shape[1])*torch.mean(batch, dim=0)).view(self.batch_size, -1), projected_batch_dec, &#39;L2&#39;)
+
+                    # OPTIMIZATION STEP GENERATOR
+                    for p in detector.parameters():
+                        p.requires_grad = False
+                    gen_optimizer.zero_grad()
+
+                    batch_loss_G = loss_function(
+                       projected_batch_enc,  batch_enc, fake_subspaces)  # Constrained MMD Loss
+                    self.bandwidth = loss_function.bandwidth
+                    batch_loss_G.backward()
+
+                    # Calculate the gradient norm
+                    tensors_with_grad = [p for p in generator.parameters() if p.grad is not None]
+                    if len(tensors_with_grad) &gt; 0:
+                        gradient_norm = torch.norm(torch.stack(
+                            [torch.norm(p.grad.detach(), 2) for p in generator.parameters() if p.grad is not None]), 2)
+                        # Print the gradient norm
+                        #print(f&#34;Gradient norm for Generator: {gradient_norm}&#34;)
+                    else:
+                        raise ValueError(&#34;No gradient for the generator&#34;)
+
+
+                    gen_optimizer.step()
+                    generator_loss += float(batch_loss_G.to(
+                        &#39;cpu&#39;).detach().numpy())/batch_number
+                iternum_g += 1
+                if iternum_g &gt; self.iternum_g:
+                    iternum_d = 1
+            if self.print_updates:
+                print(f&#34;Average loss in the epoch Generator: {generator_loss}&#34;)
+                print(f&#34;Average loss in the epoch Detector: {detector_loss}&#34;)
+            self.train_history[&#34;generator_loss&#34;].append(generator_loss)
+            self.train_history[&#34;detector_loss&#34;].append(detector_loss)
+
+            if yield_epochs is not None and epoch % yield_epochs == 0:
+                self.generator = generator
+                self.detector = detector
+                yield epoch
+
+        if not self.path_to_directory == None:
+            path_to_directory = Path(self.path_to_directory)
+            if operator.not_(path_to_directory.exists()):
+                os.makedirs(path_to_directory, exist_ok=True)
+            if operator.not_(Path(path_to_directory/&#39;models&#39;).exists()):
+                os.mkdir(path_to_directory / &#39;models&#39;)
+            run_number = int(len(os.listdir(path_to_directory/&#39;models&#39;))/2)
+            torch.save(generator.state_dict(),
+                       path_to_directory/&#39;models&#39;/f&#39;generator_{run_number}.pt&#39;)
+            torch.save(generator.state_dict(),
+                       path_to_directory/&#39;models&#39;/f&#39;detector_{run_number}.pt&#39;)
+            self.model_snapshot(path_to_directory, run_number, show=True)
+
+        self.generator = generator
+        self.detector = detector
+
+    def generate_subspaces(self, nsubs, round: bool = True):
+        noise_tensor = torch.Tensor(nsubs, self.__latent_size).to(&#39;cpu&#39;)
+        if not self.seed == None:
+            torch.manual_seed(self.seed)
+        noise_tensor.normal_()
+        u = self.generator(noise_tensor.to(self.device))
+        if round:
+            u = torch.greater_equal(u, 0.5) * 1
+        u = u.detach()
+        return u</code></pre>
+</details>
+<div class="desc"><p>V-MMD, a Subspace-Generative Moment Matching Network.</p>
+<p>Class for the method VMMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no
+kernel learning is performed. The default values for the kernel are</p></div>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>modules.od_module.VGAN_od</li>
+<li><a title="src.modules.od_module.VGAN_od" href="modules/od_module.html#src.modules.od_module.VGAN_od">VGAN_od</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.vgan.VGAN.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X: <built-in function array>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, X: np.array):
+    for _ in self.yield_fit(X):
+        continue</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.vgan.VGAN.generate_subspaces"><code class="name flex">
+<span>def <span class="ident">generate_subspaces</span></span>(<span>self, nsubs, round: bool = True)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_subspaces(self, nsubs, round: bool = True):
+    noise_tensor = torch.Tensor(nsubs, self.__latent_size).to(&#39;cpu&#39;)
+    if not self.seed == None:
+        torch.manual_seed(self.seed)
+    noise_tensor.normal_()
+    u = self.generator(noise_tensor.to(self.device))
+    if round:
+        u = torch.greater_equal(u, 0.5) * 1
+    u = u.detach()
+    return u</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.vgan.VGAN.get_params"><code class="name flex">
+<span>def <span class="ident">get_params</span></span>(<span>self) ‑> dict</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_params(self) -&gt; dict:
+    return {&#39;batch size&#39;: self.batch_size, &#39;epochs&#39;: self.epochs, &#39;lr_g&#39;: self.lr_G,
+            #&#39;momentum&#39;: self.momentum,
+            &#39;weight decay&#39;: self.weight_decay,
+            &#39;batch_size&#39;: self.batch_size, &#39;seed&#39;: self.seed,
+            &#39;generator optimizer&#39;: self.generator_optimizer,
+            &#34;generator&#34;: self.generator.__class__.__name__,
+            &#34;detector&#34;: self.detector.__class__.__name__,}</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.vgan.VGAN.get_the_networks"><code class="name flex">
+<span>def <span class="ident">get_the_networks</span></span>(<span>self, ndims: int, latent_size: int, device: str = None) ‑> tuple</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_the_networks(self, ndims: int, latent_size: int, device: str = None) -&gt; tuple:
+    &#34;&#34;&#34;Object function to obtain the networks&#39; architecture
+
+    Args:
+        ndims (int): Number of dimensions of the full space
+        latent_size (int): Number of dimensions of the latent space
+        device (str, optional): CUDA device to mount the networks to. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing the generator and the detector of the network (child classes from torch.nn.Module)
+    &#34;&#34;&#34;
+    if device == None:
+        device = self.device
+        # Check if only the constructor or a whole generator was passed.
+    if inspect.isclass(self.provided_generator):
+        generator = self.provided_generator(
+            img_size=ndims, latent_size=latent_size).to(device)
+    else:
+        generator = self.provided_generator
+
+    #detector = Detector(latent_size, ndims, Encoder, Decoder).to(device)
+    detector = DetectorExtra(img_size=ndims, latent_size=latent_size).to(device)
+    return generator, detector</code></pre>
+</details>
+<div class="desc"><p>Object function to obtain the networks' architecture</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>ndims</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of dimensions of the full space</dd>
+<dt><strong><code>latent_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of dimensions of the latent space</dd>
+<dt><strong><code>device</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>CUDA device to mount the networks to. Defaults to None.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>A tuple containing the generator and the detector of the network (child classes from torch.nn.Module)</dd>
+</dl></div>
+</dd>
+<dt id="src.vgan.VGAN.load_models"><code class="name flex">
+<span>def <span class="ident">load_models</span></span>(<span>self, path_to_generator, ndims, device: str = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_models(self, path_to_generator, ndims, device: str = None):
+    &#39;&#39;&#39;Loads models for prediction
+
+    In case that the generator has already been trained, this method allows to load it (and optionally the discriminator) for generating subspaces
+    Args:
+        - path_to_generator: Path to the generator (has to be stored as a .keras model)
+        - path_to_discriminator: Path to the discriminator (has to be stored as a .keras model) (Optional)
+    &#39;&#39;&#39;
+    if device == None:
+        device = self.device
+    latent_size = max(int(ndims / 16), 1)
+    self.generator =self.get_the_networks(ndims, latent_size, device=device)[0]
+    self.generator.load_state_dict(torch.load(
+        path_to_generator, map_location=device))
+    self.generator.eval()  # This only works for dropout layers
+    self.generator_optimizer = f&#39;Loaded Model from {path_to_generator} with {ndims} dimensions in the latent space&#39;
+    self.__latent_size = latent_size</code></pre>
+</details>
+<div class="desc"><p>Loads models for prediction</p>
+<p>In case that the generator has already been trained, this method allows to load it (and optionally the discriminator) for generating subspaces</p>
+<h2 id="args">Args</h2>
+<ul>
+<li>path_to_generator: Path to the generator (has to be stored as a .keras model)</li>
+<li>path_to_discriminator: Path to the discriminator (has to be stored as a .keras model) (Optional)</li>
+</ul></div>
+</dd>
+<dt id="src.vgan.VGAN.model_snapshot"><code class="name flex">
+<span>def <span class="ident">model_snapshot</span></span>(<span>self, path_to_directory=None, run_number=0, show=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def model_snapshot(self, path_to_directory=None, run_number=0, show=False):
+    &#39;&#39;&#39; Creates an snapshot of the model
+
+    Saves important information regarding the training of the model
+    Args:
+        - path_to_directory (Path): Specifies the path to directory (relative to the WD)
+        - show (bool): Boolean specifying if a pop-up window should open to show the plot for previsualization.
+    &#39;&#39;&#39;
+
+    if path_to_directory == None:
+        path_to_directory = self.path_to_directory
+    path_to_directory = Path(path_to_directory)
+    if operator.not_(path_to_directory.exists()):
+        os.mkdir(path_to_directory)
+    if operator.not_((path_to_directory/&#34;train_history&#34;).exists()):
+        os.mkdir(path_to_directory / &#34;train_history&#34;)
+
+    pd.DataFrame(self.train_history[&#34;generator_loss&#34;]).to_csv(
+        path_to_directory/&#39;train_history&#39;/f&#39;generator_loss_{run_number}.csv&#39;, header=False, index=False)
+    if os.path.isfile(path_to_directory/&#39;params.csv&#39;) != True:
+        pd.DataFrame(self.get_params(), [0]).to_csv(
+            path_to_directory / &#39;params.csv&#39;)
+    else:
+        params = pd.read_csv(path_to_directory / &#39;params.csv&#39;, index_col=0)
+        params_new = pd.DataFrame(self.get_params(), [run_number])
+        params = params.reindex(params.index.union(params_new.index))
+        params.update(params_new)
+        params.to_csv(
+            path_to_directory / &#39;params.csv&#39;)
+    self.__plot_loss(path_to_directory, show=False)</code></pre>
+</details>
+<div class="desc"><p>Creates an snapshot of the model</p>
+<p>Saves important information regarding the training of the model</p>
+<h2 id="args">Args</h2>
+<ul>
+<li>path_to_directory (Path): Specifies the path to directory (relative to the WD)</li>
+<li>show (bool): Boolean specifying if a pop-up window should open to show the plot for previsualization.</li>
+</ul></div>
+</dd>
+<dt id="src.vgan.VGAN.yield_fit"><code class="name flex">
+<span>def <span class="ident">yield_fit</span></span>(<span>self,<br>X: <built-in function array>,<br>embedding=&lt;function VGAN.&lt;lambda&gt;&gt;,<br>yield_epochs: int = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def yield_fit(self, X: np.array, embedding = lambda x: x, yield_epochs: int = None):
+
+    cuda = torch.cuda.is_available()
+    mps = torch.backends.mps.is_available()
+
+    torch.manual_seed(self.seed)
+    if cuda:
+        torch.cuda.manual_seed(self.seed)
+    elif mps:
+        torch.mps.manual_seed(self.seed)
+
+    # MODEL INTIALIZATION#
+    self.__latent_size = latent_size = max(int(X.shape[1]/16), 1)
+    ndims = X.shape[1]
+    train_size = X.shape[0]
+    self.batch_size = min(self.batch_size, train_size)
+
+    device = self.device
+    generator, detector = self.get_the_networks(
+        ndims, latent_size, device=device)
+    generator.apply(self.__weights_init)
+    detector.apply(self.__weights_init)
+
+    #gen_optimizer = torch.optim.Adadelta(generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay)
+    #det_optimizer = torch.optim.Adadelta(detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay)
+
+    gen_optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr_G, weight_decay=self.weight_decay, betas=(0.5,0.9))
+    det_optimizer = torch.optim.Adam(detector.parameters(), lr=self.lr_D, weight_decay=self.weight_decay, betas=(0.5,0.9))
+
+    self.generator_optimizer = gen_optimizer.__class__.__name__
+    self.detector_optimizer = det_optimizer.__class__.__name__
+    # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
+    loss_function = MMDLossConstrained(weight=self.penalty)
+
+    # OPTIMIZATION STUFF
+    one = torch.mps.Tensor([1])
+    minusone = one * -1
+
+    # DATA LOADER#
+    if cuda:
+        data_loader = DataLoader(
+            X, batch_size=self.batch_size, drop_last=True, pin_memory=False, shuffle=True)
+    else:  # Uses CUDA if Available, other wise MPS or nothing
+        data_loader = DataLoader(
+            X, batch_size=self.batch_size, drop_last=True, pin_memory=mps, shuffle=True)
+    batch_number = data_loader.__len__()
+
+    # BATCH LOOP#
+    iternum_d = 1
+    iternum_g = 1
+    detector_loss = np.nan
+    generator_loss = np.nan
+    for epoch in range(self.epochs):
+        if self.print_updates:
+            print(f&#39;\rEpoch {epoch} of {self.epochs}&#39;)
+
+        # GET NOISE TENSORS#
+        if cuda:
+            noise_tensor = torch.cuda.FloatTensor(
+                self.batch_size, latent_size).to(torch.device(&#39;cuda&#39;))
+        elif mps:
+            noise_tensor = torch.mps.Tensor(
+                self.batch_size, latent_size).to(torch.device(&#39;mps&#39;))
+        else:
+            noise_tensor = torch.Tensor(self.batch_size, latent_size)
+
+        # ELM
+        if self.__elm == True:
+            for p in detector.encoder.parameters():
+                p.requires_grad = False
+        if iternum_d &lt;= self.iternum_d:
+            detector_loss = 0
+            for batch in tqdm(data_loader, leave=False):
+                # Make sure there is only 1 observation per row.
+                batch = batch.view(self.batch_size, -1)
+                if cuda:
+                    batch = batch.cuda()
+                elif mps:
+                    batch = batch.to(torch.float32).to(
+                        torch.device(&#39;mps&#39;))  # float64 not suported with mps
+
+                # GET SUBSPACES AND ENCODING-DECODING
+                for p in detector.decoder.parameters():
+                    p.requires_grad = True
+                batch_enc, batch_dec = detector(batch)
+                with torch.no_grad():
+                    #noise_tensor = Variable(noise_tensor.normal_())
+                    #fake_subspaces = Variable(generator(noise_tensor).clone().detach())  # Freeze G
+                    noise_tensor = noise_tensor.normal_()
+                    fake_subspaces = generator(noise_tensor).clone().detach()  # Freeze G
+
+                projected_batch = fake_subspaces * batch
+
+                projected_batch_enc, projected_batch_dec = detector(
+                    projected_batch
+                    #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                )
+
+                L2_distance_batch = self.__distance(
+                    batch.view(self.batch_size, -1), batch_dec, &#39;L2&#39;)
+
+                L2_distance_projected_batch = self.__distance(
+                    (projected_batch #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                     ).view(self.batch_size, -1)
+                    , projected_batch_dec, &#39;L2&#39;)
+
+                # OPTIMIZATION STEP DETECTOR
+                det_optimizer.zero_grad()
+                batch_loss_D = (minusone.to(self.device)*
+                                (loss_function(batch_enc, projected_batch_enc, fake_subspaces) - .1 *
+                                                   L2_distance_batch - .1*L2_distance_projected_batch))  # Constrained MMD Loss
+                self.bandwidth = loss_function.bandwidth
+                batch_loss_D.backward()
+                det_optimizer.step()
+                detector_loss += float(batch_loss_D.to(
+                    &#39;cpu&#39;).detach().numpy())/batch_number
+            iternum_d += 1
+            iternum_g = 1
+
+        elif iternum_g &lt;= self.iternum_g:
+            generator_loss = 0
+            for batch in tqdm(data_loader, leave=False):
+                # Make sure there is only 1 observation per row.
+                batch = batch.view(self.batch_size, -1)
+                if cuda:
+                    batch = batch.cuda()
+                elif mps:
+                    batch = batch.to(torch.float32).to(
+                        torch.device(&#39;mps&#39;))  # float64 not suported with mps
+                # GET SUBSPACES AND ENCODING-DECODING
+                batch_enc, batch_dec = detector(batch)
+
+                #noise_tensor = Variable(noise_tensor.normal_())
+                #fake_subspaces = Variable(generator(noise_tensor))  # Unfreeze G
+                #fake_subspaces.requires_grad = True
+
+                noise_tensor = torch.normal(mean=0, std=1, size=noise_tensor.shape, device=noise_tensor.device,
+                                            requires_grad=True)
+                fake_subspaces = generator(noise_tensor)  # Unfreeze G
+
+                projected_batch_enc, projected_batch_dec = detector(
+                    fake_subspaces*batch #+ torch.less(batch, 1/batch.shape[1])*torch.mean(batch, dim=0)
+                    )
+
+                #L2_distance_batch = self.__distance(
+                #    batch.view(self.batch_size, -1), batch_dec, &#39;L2&#39;)
+                #L2_distance_projected_batch = self.__distance((fake_subspaces*batch + torch.less(
+                #    batch, 1/batch.shape[1])*torch.mean(batch, dim=0)).view(self.batch_size, -1), projected_batch_dec, &#39;L2&#39;)
+
+                # OPTIMIZATION STEP GENERATOR
+                for p in detector.parameters():
+                    p.requires_grad = False
+                gen_optimizer.zero_grad()
+
+                batch_loss_G = loss_function(
+                   projected_batch_enc,  batch_enc, fake_subspaces)  # Constrained MMD Loss
+                self.bandwidth = loss_function.bandwidth
+                batch_loss_G.backward()
+
+                # Calculate the gradient norm
+                tensors_with_grad = [p for p in generator.parameters() if p.grad is not None]
+                if len(tensors_with_grad) &gt; 0:
+                    gradient_norm = torch.norm(torch.stack(
+                        [torch.norm(p.grad.detach(), 2) for p in generator.parameters() if p.grad is not None]), 2)
+                    # Print the gradient norm
+                    #print(f&#34;Gradient norm for Generator: {gradient_norm}&#34;)
+                else:
+                    raise ValueError(&#34;No gradient for the generator&#34;)
+
+
+                gen_optimizer.step()
+                generator_loss += float(batch_loss_G.to(
+                    &#39;cpu&#39;).detach().numpy())/batch_number
+            iternum_g += 1
+            if iternum_g &gt; self.iternum_g:
+                iternum_d = 1
+        if self.print_updates:
+            print(f&#34;Average loss in the epoch Generator: {generator_loss}&#34;)
+            print(f&#34;Average loss in the epoch Detector: {detector_loss}&#34;)
+        self.train_history[&#34;generator_loss&#34;].append(generator_loss)
+        self.train_history[&#34;detector_loss&#34;].append(detector_loss)
+
+        if yield_epochs is not None and epoch % yield_epochs == 0:
+            self.generator = generator
+            self.detector = detector
+            yield epoch
+
+    if not self.path_to_directory == None:
+        path_to_directory = Path(self.path_to_directory)
+        if operator.not_(path_to_directory.exists()):
+            os.makedirs(path_to_directory, exist_ok=True)
+        if operator.not_(Path(path_to_directory/&#39;models&#39;).exists()):
+            os.mkdir(path_to_directory / &#39;models&#39;)
+        run_number = int(len(os.listdir(path_to_directory/&#39;models&#39;))/2)
+        torch.save(generator.state_dict(),
+                   path_to_directory/&#39;models&#39;/f&#39;generator_{run_number}.pt&#39;)
+        torch.save(generator.state_dict(),
+                   path_to_directory/&#39;models&#39;/f&#39;detector_{run_number}.pt&#39;)
+        self.model_snapshot(path_to_directory, run_number, show=True)
+
+    self.generator = generator
+    self.detector = detector</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src" href="index.html">src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.vgan.VGAN" href="#src.vgan.VGAN">VGAN</a></code></h4>
+<ul class="two-column">
+<li><code><a title="src.vgan.VGAN.fit" href="#src.vgan.VGAN.fit">fit</a></code></li>
+<li><code><a title="src.vgan.VGAN.generate_subspaces" href="#src.vgan.VGAN.generate_subspaces">generate_subspaces</a></code></li>
+<li><code><a title="src.vgan.VGAN.get_params" href="#src.vgan.VGAN.get_params">get_params</a></code></li>
+<li><code><a title="src.vgan.VGAN.get_the_networks" href="#src.vgan.VGAN.get_the_networks">get_the_networks</a></code></li>
+<li><code><a title="src.vgan.VGAN.load_models" href="#src.vgan.VGAN.load_models">load_models</a></code></li>
+<li><code><a title="src.vgan.VGAN.model_snapshot" href="#src.vgan.VGAN.model_snapshot">model_snapshot</a></code></li>
+<li><code><a title="src.vgan.VGAN.yield_fit" href="#src.vgan.VGAN.yield_fit">yield_fit</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

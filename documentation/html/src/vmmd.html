@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.vmmd API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.vmmd</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="src.vmmd.model_eval"><code class="name flex">
+<span>def <span class="ident">model_eval</span></span>(<span>model, X_data) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def model_eval(model, X_data) -&gt; pd.DataFrame:
+    device = torch.device(&#39;cuda&#39; if torch.cuda.is_available(
+        ) else &#39;mps:0&#39; if torch.backends.mps.is_available() else &#39;cpu&#39;)
+    sample_amount = min(500, X_data.shape[0])
+    X_sample = torch.Tensor(pd.DataFrame(
+        X_data).sample(sample_amount).to_numpy()).to(device)
+    u = model.generate_subspaces(sample_amount)
+    u = u.float()
+    uX_data = u * \
+              torch.mps.Tensor(X_sample).to(model.device) + \
+              torch.mean(X_sample, dim=0) * (1-u)
+    # round each value in u to one decimal
+    X2_data = torch.Tensor(pd.DataFrame(
+        X_data).sample(sample_amount).to_numpy()).to(device)
+
+    #X_data = X_data.to(device)
+    uX_data = uX_data.to(device)
+    mmd = tts.MMDStatistic(sample_amount, sample_amount)
+    mmd_val, distances = mmd(uX_data, X2_data, alphas=[0.01], ret_matrix=True)
+    mmd_prop = tts.MMDStatistic(sample_amount, sample_amount)
+    mmd_prop_val, distances_prop = mmd_prop(
+        X_sample, uX_data, alphas=[1 / model.bandwidth], ret_matrix=True)
+    PYDEVD_WARN_EVALUATION_TIMEOUT = 200
+    print(f&#39;pval of the MMD two sample test {mmd.pval(distances)}&#39;)
+    print(
+        f&#39;pval of the MMD two sample test with proposed bandwidth {1 / model.bandwidth} is {mmd_prop.pval(distances_prop)}, with MMD {mmd_prop_val}&#39;)
+
+    u = torch.round(u * 10) / 10
+    unique_subspaces, proba = np.unique(
+        np.array(u.to(&#39;cpu&#39;)), axis=0, return_counts=True)
+    proba = proba / np.array(u.to(&#39;cpu&#39;)).shape[0]
+    unique_subspaces = [str(unique_subspaces[i] * 1)
+                        for i in range(unique_subspaces.shape[0])]
+
+    subspace_df = pd.DataFrame({&#39;subspace&#39;: unique_subspaces, &#39;probability&#39;: proba}).sort_values(by=&#39;probability&#39;, ascending=False)
+    print(subspace_df)
+    print(np.sum(proba))
+    return subspace_df</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.vmmd.random"><code class="name flex">
+<span>def <span class="ident">random</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>random() -&gt; x in the interval [0, 1).</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.vmmd.VMMD"><code class="flex name class">
+<span>class <span class="ident">VMMD</span></span>
+<span>(</span><span>batch_size=500,<br>epochs=500,<br>lr=0.0001,<br>momentum=0.99,<br>seed=777,<br>weight_decay=0.0001,<br>path_to_directory=None,<br>weight=0,<br>generator=None,<br>print_updates=None,<br>gradient_clipping=False,<br>export_generator=True)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VMMD(VMMDBase):
+    &#39;&#39;&#39;
+    V-MMD, a Subspace-Generative Moment Matching Network.
+
+    Class for the method VMMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no
+    kernel learning is performed. The default values for the kernel are
+    &#39;&#39;&#39;
+
+
+    def fit(self, X: np.array):
+        embedding = lambda x: x
+        for _ in self.yield_fit(X, embedding):
+            continue
+
+    def yield_fit(self, X: np.array, embedding, yield_epochs: int = None):
+        &#39;&#39;&#39;
+        Fits the model to the data. The model is trained using the MMD loss function. The model is trained using the Adadelta optimizer.
+        @param X: A two-dimensional numpy array with the data to be fitted.
+        The data should be in the form: n_samples x n_features
+        @param embedding: A function that transforms the data. By default, it is the identity function.
+        This function is used inside the RBF kernel before calculating the distance.
+        @param yield_epochs: The number of epochs between each yield. If None, the model will not yield.
+        This is useful for monitoring the training process.
+        &#39;&#39;&#39;
+        cuda = torch.cuda.is_available()
+        mps = torch.backends.mps.is_available()
+        self._set_seed()
+
+        # MODEL INTIALIZATION#
+        epochs = self.epochs
+        self._latent_size = latent_size = max(int(X.shape[1] / self.latent_size_factor), 1)
+        ndims = X.shape[1]
+        train_size = X.shape[0]
+        self.batch_size = min(self.batch_size, train_size)
+
+        device = self.device
+        generator = self.get_the_networks(
+            ndims, latent_size, device=device)
+        #optimizer = torch.optim.Adadelta(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay, betas=(0.5,0.9))
+        self.generator_optimizer = optimizer.__class__.__name__
+        # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
+        #kernel = RBFConstrained(embedding=embedding)
+        kernel = EfficientRBF()
+        #kernel = MixtureRQLinear()
+        loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
+        ui = cli.get()
+
+        torch.autograd.set_detect_anomaly(True)
+
+        with ui.display():
+            for epoch in range(epochs):
+                if self.print_updates:
+                    print(f&#39;\rEpoch {epoch} of {epochs}&#39;)
+                generator_loss = 0
+                mmd_loss = 0
+                gradient = 0
+
+                # DATA LOADER#
+                data_loader = self._get_data_loader(X)
+                batch_number = data_loader.__len__()
+
+                # GET NOISE TENSORS#
+                noise_tensor = self._get_noise_tensor(latent_size)
+
+                # BATCH LOOP#
+                #for batch in tqdm(data_loader, leave=False):
+                for batch in data_loader:
+                    ui.update(f&#34;epoch {epoch}/{epochs}, loss {generator_loss}&#34;)
+                    # Make sure there is only 1 observation per row.
+                    batch = batch.view(self.batch_size, -1)
+                    if cuda:
+                        batch = batch.cuda()
+                    elif mps:
+                        #batch = batch.to(torch.float32).to(torch.device(&#39;mps&#39;))  # float64 not suported with mps
+                        batch = batch.to(&#39;mps&#39;) # For tokeniz
+                    # SAMPLE NOISE#
+                    noise_tensor.normal_()
+
+                    # OPTIMIZATION STEP#
+                    optimizer.zero_grad()
+                    fake_subspaces = generator(noise_tensor)
+                    masked_batch = (fake_subspaces * batch)
+                    batch_loss = loss_function(masked_batch, batch, fake_subspaces)
+                    batch_mmd_loss = loss_function.mmd_loss
+                    self.bandwidth = loss_function.bandwidth
+                    batch_loss.backward()
+
+                    # Apply gradient clipping (e.g., max norm of 1.0)
+                    if self.apply_gradient_clipping:
+                        torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=2.0)
+
+                    gradients = [param.grad.norm() for param in generator.parameters()]
+
+                    gradient += torch.Tensor(gradients).mean() / batch_number
+
+                    optimizer.step()
+
+                    generator_loss += float(batch_loss.to(
+                        &#39;cpu&#39;).detach().numpy())/batch_number
+                    mmd_loss += float(batch_mmd_loss.to(
+                        &#39;cpu&#39;).detach().numpy())/batch_number
+                    #print(&#34;finished batch&#34;)
+
+                self._log_epoch(generator_loss, mmd_loss, generator, gradient)
+                if yield_epochs is not None and epoch % yield_epochs == 0:
+                    yield epoch
+
+        self.generator = generator
+        self._export(generator, export_params=self.export_generator)</code></pre>
+</details>
+<div class="desc"><p>V-MMD, a Subspace-Generative Moment Matching Network.</p>
+<p>Class for the method VMMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no
+kernel learning is performed. The default values for the kernel are</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>VMMDBase.VMMDBase</li>
+<li>i_vmmd_base.IVMMDBase</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li>modules.od_module.VMMD_od</li>
+<li><a title="src.modules.od_module.VMMD_od" href="modules/od_module.html#src.modules.od_module.VMMD_od">VMMD_od</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.vmmd.VMMD.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, X: <built-in function array>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, X: np.array):
+    embedding = lambda x: x
+    for _ in self.yield_fit(X, embedding):
+        continue</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.vmmd.VMMD.yield_fit"><code class="name flex">
+<span>def <span class="ident">yield_fit</span></span>(<span>self, X: <built-in function array>, embedding, yield_epochs: int = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def yield_fit(self, X: np.array, embedding, yield_epochs: int = None):
+    &#39;&#39;&#39;
+    Fits the model to the data. The model is trained using the MMD loss function. The model is trained using the Adadelta optimizer.
+    @param X: A two-dimensional numpy array with the data to be fitted.
+    The data should be in the form: n_samples x n_features
+    @param embedding: A function that transforms the data. By default, it is the identity function.
+    This function is used inside the RBF kernel before calculating the distance.
+    @param yield_epochs: The number of epochs between each yield. If None, the model will not yield.
+    This is useful for monitoring the training process.
+    &#39;&#39;&#39;
+    cuda = torch.cuda.is_available()
+    mps = torch.backends.mps.is_available()
+    self._set_seed()
+
+    # MODEL INTIALIZATION#
+    epochs = self.epochs
+    self._latent_size = latent_size = max(int(X.shape[1] / self.latent_size_factor), 1)
+    ndims = X.shape[1]
+    train_size = X.shape[0]
+    self.batch_size = min(self.batch_size, train_size)
+
+    device = self.device
+    generator = self.get_the_networks(
+        ndims, latent_size, device=device)
+    #optimizer = torch.optim.Adadelta(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+    optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay, betas=(0.5,0.9))
+    self.generator_optimizer = optimizer.__class__.__name__
+    # loss_function =  tts.MMDStatistic(self.batch_size, self.batch_size)
+    #kernel = RBFConstrained(embedding=embedding)
+    kernel = EfficientRBF()
+    #kernel = MixtureRQLinear()
+    loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
+    ui = cli.get()
+
+    torch.autograd.set_detect_anomaly(True)
+
+    with ui.display():
+        for epoch in range(epochs):
+            if self.print_updates:
+                print(f&#39;\rEpoch {epoch} of {epochs}&#39;)
+            generator_loss = 0
+            mmd_loss = 0
+            gradient = 0
+
+            # DATA LOADER#
+            data_loader = self._get_data_loader(X)
+            batch_number = data_loader.__len__()
+
+            # GET NOISE TENSORS#
+            noise_tensor = self._get_noise_tensor(latent_size)
+
+            # BATCH LOOP#
+            #for batch in tqdm(data_loader, leave=False):
+            for batch in data_loader:
+                ui.update(f&#34;epoch {epoch}/{epochs}, loss {generator_loss}&#34;)
+                # Make sure there is only 1 observation per row.
+                batch = batch.view(self.batch_size, -1)
+                if cuda:
+                    batch = batch.cuda()
+                elif mps:
+                    #batch = batch.to(torch.float32).to(torch.device(&#39;mps&#39;))  # float64 not suported with mps
+                    batch = batch.to(&#39;mps&#39;) # For tokeniz
+                # SAMPLE NOISE#
+                noise_tensor.normal_()
+
+                # OPTIMIZATION STEP#
+                optimizer.zero_grad()
+                fake_subspaces = generator(noise_tensor)
+                masked_batch = (fake_subspaces * batch)
+                batch_loss = loss_function(masked_batch, batch, fake_subspaces)
+                batch_mmd_loss = loss_function.mmd_loss
+                self.bandwidth = loss_function.bandwidth
+                batch_loss.backward()
+
+                # Apply gradient clipping (e.g., max norm of 1.0)
+                if self.apply_gradient_clipping:
+                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=2.0)
+
+                gradients = [param.grad.norm() for param in generator.parameters()]
+
+                gradient += torch.Tensor(gradients).mean() / batch_number
+
+                optimizer.step()
+
+                generator_loss += float(batch_loss.to(
+                    &#39;cpu&#39;).detach().numpy())/batch_number
+                mmd_loss += float(batch_mmd_loss.to(
+                    &#39;cpu&#39;).detach().numpy())/batch_number
+                #print(&#34;finished batch&#34;)
+
+            self._log_epoch(generator_loss, mmd_loss, generator, gradient)
+            if yield_epochs is not None and epoch % yield_epochs == 0:
+                yield epoch
+
+    self.generator = generator
+    self._export(generator, export_params=self.export_generator)</code></pre>
+</details>
+<div class="desc"><p>Fits the model to the data. The model is trained using the MMD loss function. The model is trained using the Adadelta optimizer.
+@param X: A two-dimensional numpy array with the data to be fitted.
+The data should be in the form: n_samples x n_features
+@param embedding: A function that transforms the data. By default, it is the identity function.
+This function is used inside the RBF kernel before calculating the distance.
+@param yield_epochs: The number of epochs between each yield. If None, the model will not yield.
+This is useful for monitoring the training process.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src" href="index.html">src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="src.vmmd.model_eval" href="#src.vmmd.model_eval">model_eval</a></code></li>
+<li><code><a title="src.vmmd.random" href="#src.vmmd.random">random</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.vmmd.VMMD" href="#src.vmmd.VMMD">VMMD</a></code></h4>
+<ul class="">
+<li><code><a title="src.vmmd.VMMD.fit" href="#src.vmmd.VMMD.fit">fit</a></code></li>
+<li><code><a title="src.vmmd.VMMD.yield_fit" href="#src.vmmd.VMMD.yield_fit">yield_fit</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.modules.text.vmmd_text_base API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.modules.text.vmmd_text_base</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.modules.text.vmmd_text_base.VMMDTextBase"><code class="flex name class">
+<span>class <span class="ident">VMMDTextBase</span></span>
+<span>(</span><span>sequence_length: int | None = None, seperator: str = ' ', **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class VMMDTextBase(VMMDBase):
+    def __init__(self, sequence_length: int | None = None, seperator: str = &#34; &#34;, **kwargs):
+        &#34;&#34;&#34;
+        Initializes the VMMD_Text model.
+        :param sequence_length: The length of the sequences. If None, the average length of the sequences in the data will be used.
+        :param seperator: The separator between the words in the sequences.
+        param kwargs: Additional keyword arguments.
+        &#34;&#34;&#34;
+        if &#39;generator&#39; not in kwargs:
+            kwargs[&#39;generator&#39;] = GeneratorSigmoidSTE
+        super().__init__(**kwargs)
+        self.sequence_length = sequence_length
+        self.seperator = seperator
+        self.embedding: Optional[Callable[[ndarray[str], int, Optional[Tensor]], Tensor]] = None
+        self.n_dims: Optional[int] = None
+        self.original_data: Optional[ndarray[str]] = None
+        self.fallback = False
+
+    def fit(self, x_data: ndarray[str],
+            embedding: Callable[[ndarray[str], int], Tensor]):
+        &#34;&#34;&#34;
+        Trains the model.
+        :param x_data: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence as a string.
+            This is due, to sentences having different lengths.
+        :param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentences as a numpy array of strings,
+        and the length to pad to or trim to. The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, n_words, n_dims).
+        &#34;&#34;&#34;
+        for _ in self.yield_fit(x_data, embedding):
+            pass
+
+    @abstractmethod
+    def _get_training_data(self, x_data: ndarray[str], embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], n_dims: int) -&gt; Tensor | ndarray[str]:
+        &#34;&#34;&#34;
+        Prepares the training data for the VMMD_Text model. Whatever is returned here is used in the _convert_batch function.
+        In the end, a one-dimensional tensor needs to be returned.
+        :param x_data: The data to prepare.
+        :param embedding: The embedding function, that can be used to embed the sentences.
+        :n_dims: The number of dimensions the vectors should have. That is usually the number of words.
+        &#34;&#34;&#34;
+        pass
+
+    @abstractmethod
+    def _convert_batch(self, batch: ndarray[str] | Tensor, embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor], mask: Optional[Tensor]) -&gt; Tensor:
+        &#34;&#34;&#34;
+        This method converts a batch into a one-dimensional tensor of shape (n_dims).
+        :param batch: The batch to convert.
+        :param embedding: An embedding function that can be used to convert sentences into embeddings.
+        :param mask: An optional mask tensor that is applied to words in the batch.
+        :return: A one-dimensional tensor of shape (n_dims).
+        &#34;&#34;&#34;
+        pass
+
+    def yield_fit(self, x_data_str: ndarray[str],
+                  embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor],
+                  yield_epochs=None) -&gt; Iterable[int]:
+        &#34;&#34;&#34;
+        Trains the model.
+        :param x_data_str: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence.
+            This is due, to sentences having different lengths.
+        :param embedding: The embedding function to use. It is expected to be able to take in three parameters, the sentences as a numpy array of strings,
+        the length to pad to or trim to and an optional attention mask that can be applied to the input.
+            The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, [n_words or n_non_masked_words], n_dims).
+        :param yield_epochs: The number of epochs between each print.
+        &#34;&#34;&#34;
+        self._set_seed()
+        self.n_dims = n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str, embedding)
+        self.embedding = embedding
+
+        self.original_data = x_data_str
+        x_data = self._get_training_data(x_data_str, embedding, n_dims)
+
+        self._latent_size = latent_size = max(n_dims // 4, 1)
+        samples = x_data_str.shape[0]
+        self.batch_size = min(self.batch_size, samples)
+
+        generator = self.get_the_networks(
+            n_dims, latent_size, device=self.device)
+        optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay#, betas=(0.5, 0.9)
+                                     )
+        self.generator_optimizer = optimizer.__class__.__name__
+        kernel = RBFConstrained()
+        loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
+        ui = ConsoleUserInterface()
+        with ui.display():
+            for epoch in range(self.epochs):
+                ui.update(&#34;Epoch: %d&#34; % epoch)
+                data_loader = self._get_data_loader(x_data)
+                if self.print_updates:
+                    print(f&#39;\rEpoch {epoch} of {self.epochs}&#39;)
+                generator_loss = 0
+                mmd_loss = 0
+                gradient = 0
+
+                #data_loader = self._get_data_loader(x_data)
+                batch_number = data_loader.__len__()
+
+                noise_tensor = self._get_noise_tensor(latent_size)
+
+                for batch in tqdm(data_loader, leave=False):
+                    noise_tensor.normal_()
+
+                    #OPTIMIZATION STEP#
+                    #batch = batch.to(self.device)
+                    optimizer.zero_grad()
+                    subspaces = generator(noise_tensor)
+
+                    #embeddings = Tensor([[1., 1.], [1.,1.]]).to(self.device)#self._convert_batch(batch, embedding, None)
+                    #masked_embeddings = Tensor([[1.,0.], [0., 1.]]).to(self.device)#self._convert_batch(batch, embedding, subspaces)
+
+                    embeddings = self._convert_batch(batch, embedding, None)
+                    masked_embeddings = self._convert_batch(batch, embedding, subspaces)
+
+                    # Set mean of the embeddings to zero. This allows masking the embeddings to zero.
+                    #mean = embeddings.mean(0)
+                    #embeddings = embeddings - mean
+                    #masked_embeddings = masked_embeddings - mean
+
+                    masked_embeddings = masked_embeddings.to(self.device)
+                    embeddings = embeddings.to(self.device)
+                    batch_loss = loss_function(embeddings, masked_embeddings, subspaces)
+                    batch_mmd_loss = loss_function.mmd_loss
+                    self.bandwidth = loss_function.bandwidth
+                    #if self.device.type == &#39;mps&#39; and not self.fallback:
+                        #try: # MPS does not support backward on the loss
+                            #batch_loss.backward()
+                        #except NotImplementedError:
+                            # Set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1`
+                            # to enable MPS fallback.
+                            #print(&#34;MPS does not support backward on the loss. Falling back to CPU and skipping this batch.&#34;)
+                            #self.fallback = True
+                            #continue
+
+                    #if self.fallback:
+                    #batch_loss = batch_loss.cpu()
+                    #diagraph = make_dot(batch_loss, params=dict(generator.named_parameters()))
+                    #diagraph.render(Path(self.path_to_directory) / &#34;computational_graph.png&#34;, format=&#34;png&#34;)
+                    #diagraph.render(filename=&#34;comp_graph.gv&#34;, directory=self.path_to_directory, format=&#34;svg&#34; ,engine=&#34;dot&#34;)
+
+                    batch_loss.backward()
+
+
+
+                    if self.apply_gradient_clipping:
+                        grad_list = [param.grad.norm() for param in generator.parameters()]
+                        grads = Tensor(grad_list)
+                        grad_before_clipping = grads.mean()
+                        trimmed = grads.greater_equal(torch.ones_like(grads)).int().sum()
+                        torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+                        #if trimmed &gt; 0:
+                            #print(f&#39;trimmed {trimmed} gradients from {grad_before_clipping}&#39;)
+
+                    parameters = generator.parameters()
+                    gradients = [param.grad.norm() for param in parameters]
+                    gradient += Tensor(gradients).mean() / batch_number
+
+                    optimizer.step()
+                    generator_loss += float(batch_loss.to(
+                        &#39;cpu&#39;).detach().numpy()) / batch_number
+                    mmd_loss += float(batch_mmd_loss.to(
+                        &#39;cpu&#39;).detach().numpy()) / batch_number
+
+                self._log_epoch(generator_loss, mmd_loss, generator, gradient)
+                if yield_epochs is not None and yield_epochs &gt; 0 and epoch % yield_epochs == 0:
+                    yield epoch
+
+        self.generator = generator
+        self._export(generator)
+
+    @abstractmethod
+    def check_if_myopic(self, count=500, bandwidth: float | ndarray = 0.01):
+        pass
+
+    def _plot_loss(self, path_to_directory, show=False):
+        plot, ax = self._create_plot()
+
+        p_values = self.check_if_myopic(count=self.batch_size)
+        recomended_p_value = p_values[&#34;recommended bandwidth&#34;].values[0]
+        recommended_bandwidth = self.bandwidth.item()
+
+        # add the p-value to the plot in the top right corner
+        plt.text(0.5, 0.99, f&#39;{&#34;recommended bandwidth&#34;}\n({recommended_bandwidth}): {recomended_p_value}&#39;,
+                 ha=&#39;center&#39;, va=&#39;top&#39;,
+                 transform=ax.transAxes, color=&#39;black&#39;, fontsize=8)
+
+        plot.savefig(path_to_directory / &#34;train_history.png&#34;,
+                     format=&#34;png&#34;, dpi=1200) #todo: change back to pdf
+        plot.close()
+
+    def _get_average_sequence_length(self, x_data: ndarray, embedding: Callable[[ndarray[str], int], Tensor]) -&gt; int:
+        &#34;&#34;&#34;
+        Returns the average length of the sequences in the data.
+        &#34;&#34;&#34;
+        #sequence_length = int(np.mean([embedding(np.array([x]), -1).shape[1] for x in x_data]))
+        sequence_length = int(np.mean([len(x.split(self.seperator)) for x in x_data]))
+        return sequence_length
+
+    def _sentence_to_words(self, sentence: str) -&gt; List[str]:
+        &#34;&#34;&#34;
+        Returns a list of words from the sentence.
+        &#34;&#34;&#34;
+        return sentence.split(self.seperator)</code></pre>
+</details>
+<div class="desc"><p>V-MMD, a Subspace-Generative Moment Matching Network.</p>
+<p>Class for the method VMMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no
+kernel learning is performed. The default values for the kernel are</p>
+<p>Initializes the VMMD_Text model.
+:param sequence_length: The length of the sequences. If None, the average length of the sequences in the data will be used.
+:param seperator: The separator between the words in the sequences.
+param kwargs: Additional keyword arguments.</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>VMMDBase.VMMDBase</li>
+<li>i_vmmd_base.IVMMDBase</li>
+<li>abc.ABC</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="src.modules.text.vmmd_text_base.VMMDTextBase.check_if_myopic"><code class="name flex">
+<span>def <span class="ident">check_if_myopic</span></span>(<span>self, count=500, bandwidth: float | numpy.ndarray = 0.01)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def check_if_myopic(self, count=500, bandwidth: float | ndarray = 0.01):
+    pass</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_base.VMMDTextBase.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self,<br>x_data: numpy.ndarray[str],<br>embedding: Callable[[numpy.ndarray[str], int], torch.Tensor])</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit(self, x_data: ndarray[str],
+        embedding: Callable[[ndarray[str], int], Tensor]):
+    &#34;&#34;&#34;
+    Trains the model.
+    :param x_data: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence as a string.
+        This is due, to sentences having different lengths.
+    :param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentences as a numpy array of strings,
+    and the length to pad to or trim to. The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, n_words, n_dims).
+    &#34;&#34;&#34;
+    for _ in self.yield_fit(x_data, embedding):
+        pass</code></pre>
+</details>
+<div class="desc"><p>Trains the model.
+:param x_data: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence as a string.
+This is due, to sentences having different lengths.
+:param embedding: The embedding function to use. It is expected to be able to take in two parameters, the sentences as a numpy array of strings,
+and the length to pad to or trim to. The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, n_words, n_dims).</p></div>
+</dd>
+<dt id="src.modules.text.vmmd_text_base.VMMDTextBase.yield_fit"><code class="name flex">
+<span>def <span class="ident">yield_fit</span></span>(<span>self,<br>x_data_str: numpy.ndarray[str],<br>embedding: Callable[[numpy.ndarray[str], int, torch.Tensor | None], torch.Tensor],<br>yield_epochs=None) ‑> Iterable[int]</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def yield_fit(self, x_data_str: ndarray[str],
+              embedding: Callable[[ndarray[str], int, Optional[Tensor]], Tensor],
+              yield_epochs=None) -&gt; Iterable[int]:
+    &#34;&#34;&#34;
+    Trains the model.
+    :param x_data_str: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence.
+        This is due, to sentences having different lengths.
+    :param embedding: The embedding function to use. It is expected to be able to take in three parameters, the sentences as a numpy array of strings,
+    the length to pad to or trim to and an optional attention mask that can be applied to the input.
+        The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, [n_words or n_non_masked_words], n_dims).
+    :param yield_epochs: The number of epochs between each print.
+    &#34;&#34;&#34;
+    self._set_seed()
+    self.n_dims = n_dims = self.sequence_length if self.sequence_length is not None else self._get_average_sequence_length(x_data_str, embedding)
+    self.embedding = embedding
+
+    self.original_data = x_data_str
+    x_data = self._get_training_data(x_data_str, embedding, n_dims)
+
+    self._latent_size = latent_size = max(n_dims // 4, 1)
+    samples = x_data_str.shape[0]
+    self.batch_size = min(self.batch_size, samples)
+
+    generator = self.get_the_networks(
+        n_dims, latent_size, device=self.device)
+    optimizer = torch.optim.Adam(generator.parameters(), lr=self.lr, weight_decay=self.weight_decay#, betas=(0.5, 0.9)
+                                 )
+    self.generator_optimizer = optimizer.__class__.__name__
+    kernel = RBFConstrained()
+    loss_function = MMDLossConstrained(weight=self.weight, kernel=kernel)
+    ui = ConsoleUserInterface()
+    with ui.display():
+        for epoch in range(self.epochs):
+            ui.update(&#34;Epoch: %d&#34; % epoch)
+            data_loader = self._get_data_loader(x_data)
+            if self.print_updates:
+                print(f&#39;\rEpoch {epoch} of {self.epochs}&#39;)
+            generator_loss = 0
+            mmd_loss = 0
+            gradient = 0
+
+            #data_loader = self._get_data_loader(x_data)
+            batch_number = data_loader.__len__()
+
+            noise_tensor = self._get_noise_tensor(latent_size)
+
+            for batch in tqdm(data_loader, leave=False):
+                noise_tensor.normal_()
+
+                #OPTIMIZATION STEP#
+                #batch = batch.to(self.device)
+                optimizer.zero_grad()
+                subspaces = generator(noise_tensor)
+
+                #embeddings = Tensor([[1., 1.], [1.,1.]]).to(self.device)#self._convert_batch(batch, embedding, None)
+                #masked_embeddings = Tensor([[1.,0.], [0., 1.]]).to(self.device)#self._convert_batch(batch, embedding, subspaces)
+
+                embeddings = self._convert_batch(batch, embedding, None)
+                masked_embeddings = self._convert_batch(batch, embedding, subspaces)
+
+                # Set mean of the embeddings to zero. This allows masking the embeddings to zero.
+                #mean = embeddings.mean(0)
+                #embeddings = embeddings - mean
+                #masked_embeddings = masked_embeddings - mean
+
+                masked_embeddings = masked_embeddings.to(self.device)
+                embeddings = embeddings.to(self.device)
+                batch_loss = loss_function(embeddings, masked_embeddings, subspaces)
+                batch_mmd_loss = loss_function.mmd_loss
+                self.bandwidth = loss_function.bandwidth
+                #if self.device.type == &#39;mps&#39; and not self.fallback:
+                    #try: # MPS does not support backward on the loss
+                        #batch_loss.backward()
+                    #except NotImplementedError:
+                        # Set the environment variable `PYTORCH_ENABLE_MPS_FALLBACK=1`
+                        # to enable MPS fallback.
+                        #print(&#34;MPS does not support backward on the loss. Falling back to CPU and skipping this batch.&#34;)
+                        #self.fallback = True
+                        #continue
+
+                #if self.fallback:
+                #batch_loss = batch_loss.cpu()
+                #diagraph = make_dot(batch_loss, params=dict(generator.named_parameters()))
+                #diagraph.render(Path(self.path_to_directory) / &#34;computational_graph.png&#34;, format=&#34;png&#34;)
+                #diagraph.render(filename=&#34;comp_graph.gv&#34;, directory=self.path_to_directory, format=&#34;svg&#34; ,engine=&#34;dot&#34;)
+
+                batch_loss.backward()
+
+
+
+                if self.apply_gradient_clipping:
+                    grad_list = [param.grad.norm() for param in generator.parameters()]
+                    grads = Tensor(grad_list)
+                    grad_before_clipping = grads.mean()
+                    trimmed = grads.greater_equal(torch.ones_like(grads)).int().sum()
+                    torch.nn.utils.clip_grad_norm_(generator.parameters(), max_norm=1.0)
+                    #if trimmed &gt; 0:
+                        #print(f&#39;trimmed {trimmed} gradients from {grad_before_clipping}&#39;)
+
+                parameters = generator.parameters()
+                gradients = [param.grad.norm() for param in parameters]
+                gradient += Tensor(gradients).mean() / batch_number
+
+                optimizer.step()
+                generator_loss += float(batch_loss.to(
+                    &#39;cpu&#39;).detach().numpy()) / batch_number
+                mmd_loss += float(batch_mmd_loss.to(
+                    &#39;cpu&#39;).detach().numpy()) / batch_number
+
+            self._log_epoch(generator_loss, mmd_loss, generator, gradient)
+            if yield_epochs is not None and yield_epochs &gt; 0 and epoch % yield_epochs == 0:
+                yield epoch
+
+    self.generator = generator
+    self._export(generator)</code></pre>
+</details>
+<div class="desc"><p>Trains the model.
+:param x_data_str: The data to train the model on. The data should be a one-dimensional numpy array, where each element is a sentence.
+This is due, to sentences having different lengths.
+:param embedding: The embedding function to use. It is expected to be able to take in three parameters, the sentences as a numpy array of strings,
+the length to pad to or trim to and an optional attention mask that can be applied to the input.
+The function should return the embeddings of the sentences, as a three-dimensional tensor of shape (n_sentences, [n_words or n_non_masked_words], n_dims).
+:param yield_epochs: The number of epochs between each print.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.modules.text" href="index.html">src.modules.text</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.modules.text.vmmd_text_base.VMMDTextBase" href="#src.modules.text.vmmd_text_base.VMMDTextBase">VMMDTextBase</a></code></h4>
+<ul class="">
+<li><code><a title="src.modules.text.vmmd_text_base.VMMDTextBase.check_if_myopic" href="#src.modules.text.vmmd_text_base.VMMDTextBase.check_if_myopic">check_if_myopic</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_base.VMMDTextBase.fit" href="#src.modules.text.vmmd_text_base.VMMDTextBase.fit">fit</a></code></li>
+<li><code><a title="src.modules.text.vmmd_text_base.VMMDTextBase.yield_fit" href="#src.modules.text.vmmd_text_base.VMMDTextBase.yield_fit">yield_fit</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

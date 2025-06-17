@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.text.visualizer.result_visualizer.rank API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.text.visualizer.result_visualizer.rank</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="src.text.visualizer.result_visualizer.rank.manual_ranking"><code class="name flex">
+<span>def <span class="ident">manual_ranking</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def manual_ranking():
+    from src.text.outlier_detection.odm import METHOD_COL, AUC_COL, BASE_COL, SPACE_COL
+    from src.text.visualizer.result_visualizer.result_aggregator import coloring
+
+    version_path = Path(__file__).parent.parent.parent.parent.parent / &#34;experiments&#34; / &#34;0.45&#34; / &#34;rank_csv&#34;
+    ranked_df = pd.read_csv(version_path / &#34;ranked_results_filterd_renamed.csv&#34;)
+    ranked_df[METHOD_COL] = ranked_df[METHOD_COL].replace(&#34;Feature-Bagging&#34;, &#34;FB&#34;).replace(&#34;V-GAN-Token&#34;, &#34;V-GAN-\nToken&#34;).replace(&#34;V-GAN-Text&#34;, &#34;V-GAN-\nText&#34;).replace(&#34;Full-Space&#34;, &#34;Full&#34;)
+    ranked_df = ranked_df[ranked_df[BASE_COL] != &#34;ECOD&#34;]
+    ranked_df = ranked_df[ranked_df[METHOD_COL] != &#34;Trivial&#34;]
+
+    rank = RankVisualizer([], version_path)
+
+    rank.create_box_plot_vertical(data=ranked_df,
+                                  method_col=METHOD_COL,
+                                  metric_col=AUC_COL,
+                                  group_by=[BASE_COL, SPACE_COL],
+                                  method_color=coloring, name=&#34;ranked_renamed_vertical&#34;, n_cols=2)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.text.visualizer.result_visualizer.rank.RankVisualizer"><code class="flex name class">
+<span>class <span class="ident">RankVisualizer</span></span>
+<span>(</span><span>results: List[pandas.core.frame.DataFrame], output_dir: pathlib.Path)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RankVisualizer():
+    &#34;&#34;&#34;
+    A class to visualize the rank of methods in comparison to each other with regard to a metric.
+    A box plot is created to show the distribution of ranks per method.
+    &#34;&#34;&#34;
+
+    def __init__(self, results: List[pd.DataFrame], output_dir: Path):
+        self.results: List[pd.DataFrame] = results
+        self.output_dir: Path = output_dir
+
+    def visualize(self, method_col: str, metric_col: str, group_by: str):
+        &#34;&#34;&#34;
+        Visualizes the rank the methods attain in comparison to each other
+        with regard to the metric specified, as a box plot.
+        :param method_col: Column specifying the method.
+        :param metric_col: Column specifying the metric.
+        :param group_by: Column to group by. A separate subplot is created per group.
+        &#34;&#34;&#34;
+        dfs = []
+        for run in self.results:
+            df_run = run.copy()
+            df_run[RANK_COL] = df_run.groupby(group_by)[metric_col].rank(ascending=False, method=&#39;min&#39;)
+            dfs.append(df_run)
+        data = pd.concat(dfs, ignore_index=True)
+
+        self.create_box_plot(data, method_col, metric_col, [group_by])
+
+    def create_box_plot(self, data: pd.DataFrame, method_col: str, metric_col: str, group_by: str or list, name: Optional[str]= None, method_color: Callable[[str], str] = None):
+        # Use a modern style
+        plt.style.use(&#39;seaborn-v0_8-whitegrid&#39;)
+
+        # Handle both single column and list of columns for group_by
+        if isinstance(group_by, list):
+            # Get unique combinations of values in the groupby columns
+            groups = list(data.groupby(group_by).groups.keys())
+            # Sort groups for consistent display
+            groups = sorted(groups, key=str)
+        else:
+            groups = sorted(data[group_by].unique())
+
+        n_groups = len(groups)
+        unique_methods = data[method_col].unique()
+
+        def default_color_mapping(method: str) -&gt; str:
+            if &#34;VMMD&#34; in method:
+                return colors.VGAN_GREEN
+            elif &#34;FeatureBagging&#34; in method:
+                return colors.TRIADIC[0]
+            else:
+                return colors.TRIADIC[1]
+
+        # Create custom color mapping based on method names
+        color_map = {}
+        color_func = default_color_mapping if method_color is None else method_color
+        for method in unique_methods:
+            color_map[method] = color_func(method)
+
+
+
+        # Dynamically size figure based on content
+        fig_width = max(12, len(max(unique_methods, key=len)) * 0.3)
+        fig_height = max(8, n_groups * 2.5 + len(unique_methods) * 0.5)
+
+        # Create figure with subplots stacked vertically
+        fig, axes = plt.subplots(n_groups, 1, figsize=(fig_width, fig_height),
+                                 sharex=True, constrained_layout=True)
+
+        # Handle single group case
+        axes = [axes] if n_groups == 1 else axes
+
+        # Create CSV directory if needed
+        csv_path = self.output_dir / &#34;rank_csv&#34;
+        if not csv_path.exists():
+            csv_path.mkdir(parents=True)
+
+        for ax, group in zip(axes, groups):
+            # Filter data based on whether group_by is a list or single column
+            if isinstance(group_by, list):
+                # For tuple of values from multiple columns
+                mask = pd.Series(True, index=data.index)
+                for col, val in zip(group_by, group):
+                    mask &amp;= (data[col] == val)
+                group_data = data[mask]
+            else:
+                # Original behavior for single column
+                group_data = data[data[group_by] == group]
+
+            # Create horizontal boxplot with methods on y-axis
+            seaborn.boxplot(
+                x=RANK_COL,
+                y=method_col,
+                data=group_data,
+                ax=ax,
+                hue=method_col,
+                palette=color_map,
+                width=0.7,
+                legend=False,
+                orient=&#39;h&#39;
+            )
+
+            # Create title based on group_by type
+            if isinstance(group_by, list):
+                title = &#34;, &#34;.join([f&#34;{col}={val}&#34; for col, val in zip(group_by, group)])
+            else:
+                title = f&#34;{group}&#34;
+
+            ax.set_title(title, fontsize=14, fontweight=&#39;bold&#39;)
+            ax.set_ylabel(&#39;&#39;)
+            ax.set_xlabel(&#39;Rank&#39;, fontsize=12)
+
+            # Improve appearance
+            ax.spines[&#39;top&#39;].set_visible(False)
+            ax.spines[&#39;right&#39;].set_visible(False)
+            ax.grid(axis=&#39;x&#39;, linestyle=&#39;--&#39;, alpha=0.6)
+
+            # Ensure method names are fully visible
+            ax.tick_params(axis=&#39;y&#39;, labelsize=11)
+            ax.tick_params(axis=&#39;x&#39;, labelsize=11)
+
+            # Set y-tick labels to be fully visible
+            plt.setp(ax.get_yticklabels(), wrap=True)
+
+            for i, artist in enumerate(ax.artists):
+                artist.set_edgecolor(&#39;black&#39;)
+                artist.set_linewidth(0.8)
+
+        # Create a descriptive filename
+        if isinstance(group_by, list):
+            group_str = &#34;_&#34;.join(group_by)
+        else:
+            group_str = group_by
+
+        name = f&#34;rank_{method_col}_{metric_col}_{group_str}&#34; if name is None else name
+        plt.savefig(self.output_dir / (name + &#34;.png&#34;),
+                    dpi=300, bbox_inches=&#39;tight&#39;)
+        plt.close()
+
+    def create_box_plot_vertical(self, data: pd.DataFrame, method_col: str, metric_col: str, group_by: str or list,
+                                 name: Optional[str] = None, method_color: Callable[[str], str] = None,
+                                 n_rows: Optional[int] = None, n_cols: Optional[int] = None):
+        &#34;&#34;&#34;
+        Creates vertical box plots comparing method ranks within specified groups in a grid layout.
+        Only includes methods present in all groups.
+
+        :param data: DataFrame containing the data
+        :param method_col: Column specifying the method name
+        :param metric_col: Column specifying the metric
+        :param group_by: Column(s) to group by
+        :param name: Optional custom name for the output file
+        :param method_color: Optional function to determine colors for methods
+        :param n_rows: Number of rows in the plot grid (default: auto-calculated)
+        :param n_cols: Number of columns in the plot grid (default: auto-calculated)
+        &#34;&#34;&#34;
+        plt.style.use(&#39;seaborn-v0_8-whitegrid&#39;)
+
+        # Determine groups
+        if isinstance(group_by, list):
+            groups = sorted(list(data.groupby(group_by).groups.keys()), key=str)
+        else:
+            groups = sorted(data[group_by].unique())
+
+        common_methods = set(data[method_col].unique())
+        filtered_data = data[data[method_col].isin(common_methods)].copy()
+        unique_methods = sorted(common_methods)
+        n_groups = len(groups)
+
+        # Determine grid layout
+        if n_rows is None and n_cols is None:
+            n_rows, n_cols = n_groups, 1
+        elif n_rows is None:
+            n_rows = (n_groups + n_cols - 1) // n_cols
+        elif n_cols is None:
+            n_cols = (n_groups + n_rows - 1) // n_rows
+
+        if n_rows * n_cols &lt; n_groups:
+            print(f&#34;Warning: Grid size ({n_rows}x{n_cols}) too small for {n_groups} groups.&#34;)
+            groups = groups[:n_rows * n_cols]
+
+        # Color mapping
+        def default_color_mapping(method: str) -&gt; str:
+            if &#34;VMMD&#34; in method:
+                return colors.VGAN_GREEN
+            elif &#34;FeatureBagging&#34; in method:
+                triadic_0 = colors.TRIADIC[0]
+                return triadic_0 if triadic_0.startswith(&#39;#&#39;) else f&#34;#{triadic_0}&#34;
+            else:
+                triadic_1 = colors.TRIADIC[1]
+                return triadic_1 if triadic_1.startswith(&#39;#&#39;) else f&#34;#{triadic_1}&#34;
+
+        color_func = default_color_mapping if method_color is None else method_color
+        color_map = {m: color_func(m) for m in unique_methods}
+
+        fig_w = max(5, n_cols * len(unique_methods) * 0.4)
+        fig_h = max(4, n_rows * 2)
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(fig_w, fig_h),
+                                 sharey=True, constrained_layout=True)
+
+        # Normalize axes array
+        if n_rows == 1 and n_cols == 1:
+            axes = np.array([[axes]])
+        elif n_rows == 1:
+            axes = axes.reshape(1, -1)
+        elif n_cols == 1:
+            axes = axes.reshape(-1, 1)
+
+        # Ensure CSV output dir
+        csv_path = self.output_dir / &#34;rank_csv&#34;
+        csv_path.mkdir(parents=True, exist_ok=True)
+
+        axes_flat = axes.flatten()
+        for ax, group in zip(axes_flat, groups):
+            # Filter per‐group
+            if isinstance(group_by, list):
+                mask = pd.Series(True, index=filtered_data.index)
+                for col, val in zip(group_by, group):
+                    mask &amp;= filtered_data[col] == val
+                group_df = filtered_data[mask]
+                space_val = group[1]
+            else:
+                group_df = filtered_data[filtered_data[group_by] == group]
+                space_val = None
+
+            # Compute ranks
+            reranked = group_df.copy()
+            reranked[RANK_COL] = group_df.groupby(DATASET_COL)[metric_col] \
+                .rank(ascending=False, method=&#39;min&#39;)
+
+            # Select methods for this subplot
+            methods_plot = unique_methods.copy()
+            if space_val == &#34;Avg&#34;:
+                methods_plot = [m for m in methods_plot if &#34;Text&#34; not in m]
+            elif space_val == &#34;NPTE&#34;:
+                methods_plot = [m for m in methods_plot if &#34;Token&#34; not in m]
+
+            plot_df = reranked[reranked[method_col].isin(methods_plot)]
+            plot_palette = {m: color_map[m] for m in methods_plot}
+
+            # Draw boxplot
+            seaborn.boxplot(
+                x=method_col, y=RANK_COL, data=plot_df, ax=ax,
+                hue=method_col, palette=plot_palette,
+                order=methods_plot, width=0.7, legend=False, orient=&#39;v&#39;
+            )
+
+            # Title &amp; labels
+            title = &#34;, &#34;.join(map(str, group)) if isinstance(group_by, list) else str(group)
+            ax.set_title(title, fontsize=11, fontweight=&#39;bold&#39;)
+            ax.set_xlabel(&#39;&#39;)
+            ax.set_ylabel(&#39;Rank&#39;, fontsize=12)
+
+            # Styling
+            ax.spines[&#39;top&#39;].set_visible(False)
+            ax.spines[&#39;right&#39;].set_visible(False)
+            ax.grid(axis=&#39;y&#39;, linestyle=&#39;--&#39;, alpha=0.6)
+            ax.tick_params(axis=&#39;x&#39;, labelsize=10, rotation=45)
+            ax.tick_params(axis=&#39;y&#39;, labelsize=10)
+            for artist in ax.artists:
+                artist.set_edgecolor(&#39;black&#39;)
+                artist.set_linewidth(0.8)
+
+        # Hide extra subplots
+        for ax in axes_flat[len(groups):]:
+            ax.set_visible(False)
+
+        # Save
+        group_str = &#34;_&#34;.join(group_by) if isinstance(group_by, list) else group_by
+        base = name or f&#34;rank_{method_col}_{metric_col}_{group_str}&#34;
+        fname = f&#34;{base}_grid_{n_rows}x{n_cols}.pdf&#34;
+        plt.savefig(self.output_dir / fname, dpi=300, bbox_inches=&#39;tight&#39;)
+        plt.close()</code></pre>
+</details>
+<div class="desc"><p>A class to visualize the rank of methods in comparison to each other with regard to a metric.
+A box plot is created to show the distribution of ranks per method.</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.visualizer.result_visualizer.rank.RankVisualizer.create_box_plot"><code class="name flex">
+<span>def <span class="ident">create_box_plot</span></span>(<span>self,<br>data: pandas.core.frame.DataFrame,<br>method_col: str,<br>metric_col: str,<br>group_by: str,<br>name: str | None = None,<br>method_color: Callable[[str], str] = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_box_plot(self, data: pd.DataFrame, method_col: str, metric_col: str, group_by: str or list, name: Optional[str]= None, method_color: Callable[[str], str] = None):
+    # Use a modern style
+    plt.style.use(&#39;seaborn-v0_8-whitegrid&#39;)
+
+    # Handle both single column and list of columns for group_by
+    if isinstance(group_by, list):
+        # Get unique combinations of values in the groupby columns
+        groups = list(data.groupby(group_by).groups.keys())
+        # Sort groups for consistent display
+        groups = sorted(groups, key=str)
+    else:
+        groups = sorted(data[group_by].unique())
+
+    n_groups = len(groups)
+    unique_methods = data[method_col].unique()
+
+    def default_color_mapping(method: str) -&gt; str:
+        if &#34;VMMD&#34; in method:
+            return colors.VGAN_GREEN
+        elif &#34;FeatureBagging&#34; in method:
+            return colors.TRIADIC[0]
+        else:
+            return colors.TRIADIC[1]
+
+    # Create custom color mapping based on method names
+    color_map = {}
+    color_func = default_color_mapping if method_color is None else method_color
+    for method in unique_methods:
+        color_map[method] = color_func(method)
+
+
+
+    # Dynamically size figure based on content
+    fig_width = max(12, len(max(unique_methods, key=len)) * 0.3)
+    fig_height = max(8, n_groups * 2.5 + len(unique_methods) * 0.5)
+
+    # Create figure with subplots stacked vertically
+    fig, axes = plt.subplots(n_groups, 1, figsize=(fig_width, fig_height),
+                             sharex=True, constrained_layout=True)
+
+    # Handle single group case
+    axes = [axes] if n_groups == 1 else axes
+
+    # Create CSV directory if needed
+    csv_path = self.output_dir / &#34;rank_csv&#34;
+    if not csv_path.exists():
+        csv_path.mkdir(parents=True)
+
+    for ax, group in zip(axes, groups):
+        # Filter data based on whether group_by is a list or single column
+        if isinstance(group_by, list):
+            # For tuple of values from multiple columns
+            mask = pd.Series(True, index=data.index)
+            for col, val in zip(group_by, group):
+                mask &amp;= (data[col] == val)
+            group_data = data[mask]
+        else:
+            # Original behavior for single column
+            group_data = data[data[group_by] == group]
+
+        # Create horizontal boxplot with methods on y-axis
+        seaborn.boxplot(
+            x=RANK_COL,
+            y=method_col,
+            data=group_data,
+            ax=ax,
+            hue=method_col,
+            palette=color_map,
+            width=0.7,
+            legend=False,
+            orient=&#39;h&#39;
+        )
+
+        # Create title based on group_by type
+        if isinstance(group_by, list):
+            title = &#34;, &#34;.join([f&#34;{col}={val}&#34; for col, val in zip(group_by, group)])
+        else:
+            title = f&#34;{group}&#34;
+
+        ax.set_title(title, fontsize=14, fontweight=&#39;bold&#39;)
+        ax.set_ylabel(&#39;&#39;)
+        ax.set_xlabel(&#39;Rank&#39;, fontsize=12)
+
+        # Improve appearance
+        ax.spines[&#39;top&#39;].set_visible(False)
+        ax.spines[&#39;right&#39;].set_visible(False)
+        ax.grid(axis=&#39;x&#39;, linestyle=&#39;--&#39;, alpha=0.6)
+
+        # Ensure method names are fully visible
+        ax.tick_params(axis=&#39;y&#39;, labelsize=11)
+        ax.tick_params(axis=&#39;x&#39;, labelsize=11)
+
+        # Set y-tick labels to be fully visible
+        plt.setp(ax.get_yticklabels(), wrap=True)
+
+        for i, artist in enumerate(ax.artists):
+            artist.set_edgecolor(&#39;black&#39;)
+            artist.set_linewidth(0.8)
+
+    # Create a descriptive filename
+    if isinstance(group_by, list):
+        group_str = &#34;_&#34;.join(group_by)
+    else:
+        group_str = group_by
+
+    name = f&#34;rank_{method_col}_{metric_col}_{group_str}&#34; if name is None else name
+    plt.savefig(self.output_dir / (name + &#34;.png&#34;),
+                dpi=300, bbox_inches=&#39;tight&#39;)
+    plt.close()</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.text.visualizer.result_visualizer.rank.RankVisualizer.create_box_plot_vertical"><code class="name flex">
+<span>def <span class="ident">create_box_plot_vertical</span></span>(<span>self,<br>data: pandas.core.frame.DataFrame,<br>method_col: str,<br>metric_col: str,<br>group_by: str,<br>name: str | None = None,<br>method_color: Callable[[str], str] = None,<br>n_rows: int | None = None,<br>n_cols: int | None = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_box_plot_vertical(self, data: pd.DataFrame, method_col: str, metric_col: str, group_by: str or list,
+                             name: Optional[str] = None, method_color: Callable[[str], str] = None,
+                             n_rows: Optional[int] = None, n_cols: Optional[int] = None):
+    &#34;&#34;&#34;
+    Creates vertical box plots comparing method ranks within specified groups in a grid layout.
+    Only includes methods present in all groups.
+
+    :param data: DataFrame containing the data
+    :param method_col: Column specifying the method name
+    :param metric_col: Column specifying the metric
+    :param group_by: Column(s) to group by
+    :param name: Optional custom name for the output file
+    :param method_color: Optional function to determine colors for methods
+    :param n_rows: Number of rows in the plot grid (default: auto-calculated)
+    :param n_cols: Number of columns in the plot grid (default: auto-calculated)
+    &#34;&#34;&#34;
+    plt.style.use(&#39;seaborn-v0_8-whitegrid&#39;)
+
+    # Determine groups
+    if isinstance(group_by, list):
+        groups = sorted(list(data.groupby(group_by).groups.keys()), key=str)
+    else:
+        groups = sorted(data[group_by].unique())
+
+    common_methods = set(data[method_col].unique())
+    filtered_data = data[data[method_col].isin(common_methods)].copy()
+    unique_methods = sorted(common_methods)
+    n_groups = len(groups)
+
+    # Determine grid layout
+    if n_rows is None and n_cols is None:
+        n_rows, n_cols = n_groups, 1
+    elif n_rows is None:
+        n_rows = (n_groups + n_cols - 1) // n_cols
+    elif n_cols is None:
+        n_cols = (n_groups + n_rows - 1) // n_rows
+
+    if n_rows * n_cols &lt; n_groups:
+        print(f&#34;Warning: Grid size ({n_rows}x{n_cols}) too small for {n_groups} groups.&#34;)
+        groups = groups[:n_rows * n_cols]
+
+    # Color mapping
+    def default_color_mapping(method: str) -&gt; str:
+        if &#34;VMMD&#34; in method:
+            return colors.VGAN_GREEN
+        elif &#34;FeatureBagging&#34; in method:
+            triadic_0 = colors.TRIADIC[0]
+            return triadic_0 if triadic_0.startswith(&#39;#&#39;) else f&#34;#{triadic_0}&#34;
+        else:
+            triadic_1 = colors.TRIADIC[1]
+            return triadic_1 if triadic_1.startswith(&#39;#&#39;) else f&#34;#{triadic_1}&#34;
+
+    color_func = default_color_mapping if method_color is None else method_color
+    color_map = {m: color_func(m) for m in unique_methods}
+
+    fig_w = max(5, n_cols * len(unique_methods) * 0.4)
+    fig_h = max(4, n_rows * 2)
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(fig_w, fig_h),
+                             sharey=True, constrained_layout=True)
+
+    # Normalize axes array
+    if n_rows == 1 and n_cols == 1:
+        axes = np.array([[axes]])
+    elif n_rows == 1:
+        axes = axes.reshape(1, -1)
+    elif n_cols == 1:
+        axes = axes.reshape(-1, 1)
+
+    # Ensure CSV output dir
+    csv_path = self.output_dir / &#34;rank_csv&#34;
+    csv_path.mkdir(parents=True, exist_ok=True)
+
+    axes_flat = axes.flatten()
+    for ax, group in zip(axes_flat, groups):
+        # Filter per‐group
+        if isinstance(group_by, list):
+            mask = pd.Series(True, index=filtered_data.index)
+            for col, val in zip(group_by, group):
+                mask &amp;= filtered_data[col] == val
+            group_df = filtered_data[mask]
+            space_val = group[1]
+        else:
+            group_df = filtered_data[filtered_data[group_by] == group]
+            space_val = None
+
+        # Compute ranks
+        reranked = group_df.copy()
+        reranked[RANK_COL] = group_df.groupby(DATASET_COL)[metric_col] \
+            .rank(ascending=False, method=&#39;min&#39;)
+
+        # Select methods for this subplot
+        methods_plot = unique_methods.copy()
+        if space_val == &#34;Avg&#34;:
+            methods_plot = [m for m in methods_plot if &#34;Text&#34; not in m]
+        elif space_val == &#34;NPTE&#34;:
+            methods_plot = [m for m in methods_plot if &#34;Token&#34; not in m]
+
+        plot_df = reranked[reranked[method_col].isin(methods_plot)]
+        plot_palette = {m: color_map[m] for m in methods_plot}
+
+        # Draw boxplot
+        seaborn.boxplot(
+            x=method_col, y=RANK_COL, data=plot_df, ax=ax,
+            hue=method_col, palette=plot_palette,
+            order=methods_plot, width=0.7, legend=False, orient=&#39;v&#39;
+        )
+
+        # Title &amp; labels
+        title = &#34;, &#34;.join(map(str, group)) if isinstance(group_by, list) else str(group)
+        ax.set_title(title, fontsize=11, fontweight=&#39;bold&#39;)
+        ax.set_xlabel(&#39;&#39;)
+        ax.set_ylabel(&#39;Rank&#39;, fontsize=12)
+
+        # Styling
+        ax.spines[&#39;top&#39;].set_visible(False)
+        ax.spines[&#39;right&#39;].set_visible(False)
+        ax.grid(axis=&#39;y&#39;, linestyle=&#39;--&#39;, alpha=0.6)
+        ax.tick_params(axis=&#39;x&#39;, labelsize=10, rotation=45)
+        ax.tick_params(axis=&#39;y&#39;, labelsize=10)
+        for artist in ax.artists:
+            artist.set_edgecolor(&#39;black&#39;)
+            artist.set_linewidth(0.8)
+
+    # Hide extra subplots
+    for ax in axes_flat[len(groups):]:
+        ax.set_visible(False)
+
+    # Save
+    group_str = &#34;_&#34;.join(group_by) if isinstance(group_by, list) else group_by
+    base = name or f&#34;rank_{method_col}_{metric_col}_{group_str}&#34;
+    fname = f&#34;{base}_grid_{n_rows}x{n_cols}.pdf&#34;
+    plt.savefig(self.output_dir / fname, dpi=300, bbox_inches=&#39;tight&#39;)
+    plt.close()</code></pre>
+</details>
+<div class="desc"><p>Creates vertical box plots comparing method ranks within specified groups in a grid layout.
+Only includes methods present in all groups.</p>
+<p>:param data: DataFrame containing the data
+:param method_col: Column specifying the method name
+:param metric_col: Column specifying the metric
+:param group_by: Column(s) to group by
+:param name: Optional custom name for the output file
+:param method_color: Optional function to determine colors for methods
+:param n_rows: Number of rows in the plot grid (default: auto-calculated)
+:param n_cols: Number of columns in the plot grid (default: auto-calculated)</p></div>
+</dd>
+<dt id="src.text.visualizer.result_visualizer.rank.RankVisualizer.visualize"><code class="name flex">
+<span>def <span class="ident">visualize</span></span>(<span>self, method_col: str, metric_col: str, group_by: str)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def visualize(self, method_col: str, metric_col: str, group_by: str):
+    &#34;&#34;&#34;
+    Visualizes the rank the methods attain in comparison to each other
+    with regard to the metric specified, as a box plot.
+    :param method_col: Column specifying the method.
+    :param metric_col: Column specifying the metric.
+    :param group_by: Column to group by. A separate subplot is created per group.
+    &#34;&#34;&#34;
+    dfs = []
+    for run in self.results:
+        df_run = run.copy()
+        df_run[RANK_COL] = df_run.groupby(group_by)[metric_col].rank(ascending=False, method=&#39;min&#39;)
+        dfs.append(df_run)
+    data = pd.concat(dfs, ignore_index=True)
+
+    self.create_box_plot(data, method_col, metric_col, [group_by])</code></pre>
+</details>
+<div class="desc"><p>Visualizes the rank the methods attain in comparison to each other
+with regard to the metric specified, as a box plot.
+:param method_col: Column specifying the method.
+:param metric_col: Column specifying the metric.
+:param group_by: Column to group by. A separate subplot is created per group.</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.text.visualizer.result_visualizer" href="index.html">src.text.visualizer.result_visualizer</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="src.text.visualizer.result_visualizer.rank.manual_ranking" href="#src.text.visualizer.result_visualizer.rank.manual_ranking">manual_ranking</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.text.visualizer.result_visualizer.rank.RankVisualizer" href="#src.text.visualizer.result_visualizer.rank.RankVisualizer">RankVisualizer</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.visualizer.result_visualizer.rank.RankVisualizer.create_box_plot" href="#src.text.visualizer.result_visualizer.rank.RankVisualizer.create_box_plot">create_box_plot</a></code></li>
+<li><code><a title="src.text.visualizer.result_visualizer.rank.RankVisualizer.create_box_plot_vertical" href="#src.text.visualizer.result_visualizer.rank.RankVisualizer.create_box_plot_vertical">create_box_plot_vertical</a></code></li>
+<li><code><a title="src.text.visualizer.result_visualizer.rank.RankVisualizer.visualize" href="#src.text.visualizer.result_visualizer.rank.RankVisualizer.visualize">visualize</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

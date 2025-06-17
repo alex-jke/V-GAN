@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.text.result_aggregator API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.text.result_aggregator</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.text.result_aggregator.FullResultAggregator"><code class="flex name class">
+<span>class <span class="ident">FullResultAggregator</span></span>
+<span>(</span><span>common_metrics_name: str, result_name: str)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FullResultAggregator():
+    &#34;&#34;&#34;
+    A class to aggregate the results of multiple experiments. The results are stored in a nested folder structure, where each folder contains the results of one experiment.
+    This class traverses the folder structure and reads the results of each experiment. The results are stored in a list of dataframes, where each dataframe contains two cross joined dataframes: one with the common metrics and one with the results of the experiment.
+    It then provides methods to aggregate the results and save them to a csv file. One such aggregation is for each &#34;method&#34; in the results dataframe to find the best result for each metric: auc, prauc, f1. That is, create one dataframe with the best result for each metric for each method.
+    It then stores the aggregated results in a csv file in the results folder, under the name &#34;aggregated_results.csv&#34;.
+    &#34;&#34;&#34;
+
+    def __init__(self, common_metrics_name: str, result_name: str):
+        self.results_path = Path(os.path.dirname(__file__)) / &#34;results&#34;
+        self.common_metrics_name = common_metrics_name
+        self.results_name = result_name
+        self.exist_criteria_file = self.common_metrics_name
+        self.results: List[pd.DataFrame] = []
+
+    def is_experiment_result_dir(self, path: Path) -&gt; bool:
+        &#34;&#34;&#34;
+        Check if a given path is a directory containing the results of an experiment.
+        It does so by verifying that the directory contains the criteria file.
+        &#34;&#34;&#34;
+        if not path.is_dir():
+            return False
+        criteria_file = path / self.exist_criteria_file
+        return criteria_file.exists()
+
+    def traverse_and_load_results(self):
+        &#34;&#34;&#34;
+        Traverse the nested folder structure starting from self.results_path,
+        find all experiment result directories, and load their results into self.results.
+        Each experiment folder is expected to contain two files:
+          - one with the common metrics (self.common_metrics_name)
+          - one with the experiment results (self.results_name)
+        &#34;&#34;&#34;
+        folders = self.results_path.glob(&#39;**/*&#39;)
+        error_occurred = False
+        for folder in folders:
+            if folder.is_dir() and self.is_experiment_result_dir(folder):
+                try:
+                    common_metrics_file = folder / self.common_metrics_name
+                    results_file = folder / self.results_name
+
+                    common_df = pd.read_csv(common_metrics_file)
+                    results_df = pd.read_csv(results_file)
+
+                    df = results_df.join(common_df, how=&#39;cross&#39;)
+
+                    self.results.append(df)
+                    #print(f&#34;Loaded results from: {folder}&#34;)
+                except Exception as e:
+                    if not error_occurred:
+                        print(f&#34;Failed to load results from {folder}: {e}&#34;, end=&#34; &#34;)
+                    else:
+                        print(f&#34;and {folder}&#34;, end=&#34; &#34;)
+
+    def aggregate_best_results(self) -&gt; pd.DataFrame:
+        &#34;&#34;&#34;
+        Aggregate the best results for each method across all experiments.
+        For each method in the results dataframe, find the best (i.e. maximum) value for each metric: auc, prauc, f1.
+        Returns a dataframe with aggregated best results.
+        &#34;&#34;&#34;
+        # Combine all experiment results into a single DataFrame.
+        results_list = [results_df for results_df in self.results]
+        if not results_list:
+            print(&#34;No experiment results found to aggregate.&#34;)
+            return pd.DataFrame()
+
+        combined_df = pd.concat(results_list, ignore_index=True)
+
+        # Ensure that the necessary columns exist.
+        required_columns = [&#39;method&#39;, &#39;auc&#39;, &#39;prauc&#39;, &#39;f1&#39;]
+        for col in required_columns:
+            if col not in combined_df.columns:
+                raise ValueError(f&#34;Column &#39;{col}&#39; not found in the results data.&#34;)
+
+        best_rows = []
+        # For each metric, find the row for each method that has the maximum value.
+        for metric in [&#39;auc&#39;, &#39;prauc&#39;, &#39;f1&#39;]:
+            # idxmax returns the index of the max value for each group.
+            idx = combined_df.groupby(&#34;dataset&#34;)[metric].idxmax()
+            best_df = combined_df.loc[idx].copy()
+            best_df[&#39;best_metric&#39;] = metric
+            #best_df = pd.DataFrame([best_df])
+            best_rows.append(best_df)
+
+        # Concatenate the best rows for all metrics.
+        aggregated_df = pd.concat(best_rows, ignore_index=True)
+        return aggregated_df
+
+    def save_aggregated_results(self, aggregated_df: pd.DataFrame):
+        &#34;&#34;&#34;
+        Save the aggregated results to a CSV file in the results folder.
+        The file is named &#39;aggregated_results.csv&#39;.
+        &#34;&#34;&#34;
+        output_file = self.results_path / &#34;aggregated_results.csv&#34;
+        aggregated_df.to_csv(output_file, index=False)
+        print(f&#34;Aggregated results saved to: {output_file}&#34;)
+
+    def run_aggregation(self):
+        &#34;&#34;&#34;
+        Execute the complete aggregation process:
+          1. Traverse the folder structure and load results.
+          2. Aggregate the best results for each method.
+          3. Save the aggregated results to a CSV file.
+        &#34;&#34;&#34;
+        self.traverse_and_load_results()
+        aggregated_df = self.aggregate_best_results()
+        if not aggregated_df.empty:
+            self.save_aggregated_results(aggregated_df)
+        else:
+            print(&#34;No aggregated results to save.&#34;)</code></pre>
+</details>
+<div class="desc"><p>A class to aggregate the results of multiple experiments. The results are stored in a nested folder structure, where each folder contains the results of one experiment.
+This class traverses the folder structure and reads the results of each experiment. The results are stored in a list of dataframes, where each dataframe contains two cross joined dataframes: one with the common metrics and one with the results of the experiment.
+It then provides methods to aggregate the results and save them to a csv file. One such aggregation is for each "method" in the results dataframe to find the best result for each metric: auc, prauc, f1. That is, create one dataframe with the best result for each metric for each method.
+It then stores the aggregated results in a csv file in the results folder, under the name "aggregated_results.csv".</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.result_aggregator.FullResultAggregator.aggregate_best_results"><code class="name flex">
+<span>def <span class="ident">aggregate_best_results</span></span>(<span>self) ‑> pandas.core.frame.DataFrame</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def aggregate_best_results(self) -&gt; pd.DataFrame:
+    &#34;&#34;&#34;
+    Aggregate the best results for each method across all experiments.
+    For each method in the results dataframe, find the best (i.e. maximum) value for each metric: auc, prauc, f1.
+    Returns a dataframe with aggregated best results.
+    &#34;&#34;&#34;
+    # Combine all experiment results into a single DataFrame.
+    results_list = [results_df for results_df in self.results]
+    if not results_list:
+        print(&#34;No experiment results found to aggregate.&#34;)
+        return pd.DataFrame()
+
+    combined_df = pd.concat(results_list, ignore_index=True)
+
+    # Ensure that the necessary columns exist.
+    required_columns = [&#39;method&#39;, &#39;auc&#39;, &#39;prauc&#39;, &#39;f1&#39;]
+    for col in required_columns:
+        if col not in combined_df.columns:
+            raise ValueError(f&#34;Column &#39;{col}&#39; not found in the results data.&#34;)
+
+    best_rows = []
+    # For each metric, find the row for each method that has the maximum value.
+    for metric in [&#39;auc&#39;, &#39;prauc&#39;, &#39;f1&#39;]:
+        # idxmax returns the index of the max value for each group.
+        idx = combined_df.groupby(&#34;dataset&#34;)[metric].idxmax()
+        best_df = combined_df.loc[idx].copy()
+        best_df[&#39;best_metric&#39;] = metric
+        #best_df = pd.DataFrame([best_df])
+        best_rows.append(best_df)
+
+    # Concatenate the best rows for all metrics.
+    aggregated_df = pd.concat(best_rows, ignore_index=True)
+    return aggregated_df</code></pre>
+</details>
+<div class="desc"><p>Aggregate the best results for each method across all experiments.
+For each method in the results dataframe, find the best (i.e. maximum) value for each metric: auc, prauc, f1.
+Returns a dataframe with aggregated best results.</p></div>
+</dd>
+<dt id="src.text.result_aggregator.FullResultAggregator.is_experiment_result_dir"><code class="name flex">
+<span>def <span class="ident">is_experiment_result_dir</span></span>(<span>self, path: pathlib.Path) ‑> bool</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_experiment_result_dir(self, path: Path) -&gt; bool:
+    &#34;&#34;&#34;
+    Check if a given path is a directory containing the results of an experiment.
+    It does so by verifying that the directory contains the criteria file.
+    &#34;&#34;&#34;
+    if not path.is_dir():
+        return False
+    criteria_file = path / self.exist_criteria_file
+    return criteria_file.exists()</code></pre>
+</details>
+<div class="desc"><p>Check if a given path is a directory containing the results of an experiment.
+It does so by verifying that the directory contains the criteria file.</p></div>
+</dd>
+<dt id="src.text.result_aggregator.FullResultAggregator.run_aggregation"><code class="name flex">
+<span>def <span class="ident">run_aggregation</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_aggregation(self):
+    &#34;&#34;&#34;
+    Execute the complete aggregation process:
+      1. Traverse the folder structure and load results.
+      2. Aggregate the best results for each method.
+      3. Save the aggregated results to a CSV file.
+    &#34;&#34;&#34;
+    self.traverse_and_load_results()
+    aggregated_df = self.aggregate_best_results()
+    if not aggregated_df.empty:
+        self.save_aggregated_results(aggregated_df)
+    else:
+        print(&#34;No aggregated results to save.&#34;)</code></pre>
+</details>
+<div class="desc"><p>Execute the complete aggregation process:
+1. Traverse the folder structure and load results.
+2. Aggregate the best results for each method.
+3. Save the aggregated results to a CSV file.</p></div>
+</dd>
+<dt id="src.text.result_aggregator.FullResultAggregator.save_aggregated_results"><code class="name flex">
+<span>def <span class="ident">save_aggregated_results</span></span>(<span>self, aggregated_df: pandas.core.frame.DataFrame)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_aggregated_results(self, aggregated_df: pd.DataFrame):
+    &#34;&#34;&#34;
+    Save the aggregated results to a CSV file in the results folder.
+    The file is named &#39;aggregated_results.csv&#39;.
+    &#34;&#34;&#34;
+    output_file = self.results_path / &#34;aggregated_results.csv&#34;
+    aggregated_df.to_csv(output_file, index=False)
+    print(f&#34;Aggregated results saved to: {output_file}&#34;)</code></pre>
+</details>
+<div class="desc"><p>Save the aggregated results to a CSV file in the results folder.
+The file is named 'aggregated_results.csv'.</p></div>
+</dd>
+<dt id="src.text.result_aggregator.FullResultAggregator.traverse_and_load_results"><code class="name flex">
+<span>def <span class="ident">traverse_and_load_results</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def traverse_and_load_results(self):
+    &#34;&#34;&#34;
+    Traverse the nested folder structure starting from self.results_path,
+    find all experiment result directories, and load their results into self.results.
+    Each experiment folder is expected to contain two files:
+      - one with the common metrics (self.common_metrics_name)
+      - one with the experiment results (self.results_name)
+    &#34;&#34;&#34;
+    folders = self.results_path.glob(&#39;**/*&#39;)
+    error_occurred = False
+    for folder in folders:
+        if folder.is_dir() and self.is_experiment_result_dir(folder):
+            try:
+                common_metrics_file = folder / self.common_metrics_name
+                results_file = folder / self.results_name
+
+                common_df = pd.read_csv(common_metrics_file)
+                results_df = pd.read_csv(results_file)
+
+                df = results_df.join(common_df, how=&#39;cross&#39;)
+
+                self.results.append(df)
+                #print(f&#34;Loaded results from: {folder}&#34;)
+            except Exception as e:
+                if not error_occurred:
+                    print(f&#34;Failed to load results from {folder}: {e}&#34;, end=&#34; &#34;)
+                else:
+                    print(f&#34;and {folder}&#34;, end=&#34; &#34;)</code></pre>
+</details>
+<div class="desc"><p>Traverse the nested folder structure starting from self.results_path,
+find all experiment result directories, and load their results into self.results.
+Each experiment folder is expected to contain two files:
+- one with the common metrics (self.common_metrics_name)
+- one with the experiment results (self.results_name)</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.text" href="index.html">src.text</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.text.result_aggregator.FullResultAggregator" href="#src.text.result_aggregator.FullResultAggregator">FullResultAggregator</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.result_aggregator.FullResultAggregator.aggregate_best_results" href="#src.text.result_aggregator.FullResultAggregator.aggregate_best_results">aggregate_best_results</a></code></li>
+<li><code><a title="src.text.result_aggregator.FullResultAggregator.is_experiment_result_dir" href="#src.text.result_aggregator.FullResultAggregator.is_experiment_result_dir">is_experiment_result_dir</a></code></li>
+<li><code><a title="src.text.result_aggregator.FullResultAggregator.run_aggregation" href="#src.text.result_aggregator.FullResultAggregator.run_aggregation">run_aggregation</a></code></li>
+<li><code><a title="src.text.result_aggregator.FullResultAggregator.save_aggregated_results" href="#src.text.result_aggregator.FullResultAggregator.save_aggregated_results">save_aggregated_results</a></code></li>
+<li><code><a title="src.text.result_aggregator.FullResultAggregator.traverse_and_load_results" href="#src.text.result_aggregator.FullResultAggregator.traverse_and_load_results">traverse_and_load_results</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

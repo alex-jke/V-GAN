@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.text.dataset_converter.dataset_tokenizer API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.text.dataset_converter.dataset_tokenizer</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.text.dataset_converter.dataset_tokenizer.Counter"><code class="flex name class">
+<span>class <span class="ident">Counter</span></span>
+<span>(</span><span>start_value: int = 0)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Counter:
+    def __init__(self, start_value: int = 0):
+        self.counter = start_value
+
+    def increase_counter(self):
+        self.counter = self.counter + 1</code></pre>
+</details>
+<div class="desc"></div>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.dataset_converter.dataset_tokenizer.Counter.increase_counter"><code class="name flex">
+<span>def <span class="ident">increase_counter</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def increase_counter(self):
+    self.counter = self.counter + 1</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer"><code class="flex name class">
+<span>class <span class="ident">DatasetTokenizer</span></span>
+<span>(</span><span>tokenizer: <a title="src.text.Embedding.tokenizer.Tokenizer" href="../Embedding/tokenizer.html#src.text.Embedding.tokenizer.Tokenizer">Tokenizer</a>,<br>dataset: <a title="src.text.dataset.dataset.Dataset" href="../dataset/dataset.html#src.text.dataset.dataset.Dataset">Dataset</a>,<br>max_samples: int = -1)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DatasetTokenizer:
+    def __init__(self, tokenizer: Tokenizer, dataset: Dataset, max_samples: int = -1):
+        self.tokenizer = tokenizer
+        self.tokenizer_name = tokenizer.__class__.__name__
+        self.dataset_train_name = &#34;train&#34;
+        self.dataset_test_name = &#34;test&#34;
+        self.file_extension = &#34;.csv&#34;
+        self.resource_path = Path(os.path.dirname(__file__)) / &#39;..&#39; / &#39;resources&#39;
+        self.path = self.resource_path / dataset.name / &#34;tokenized&#34;
+        self.base_file_name = f&#34;{self.tokenizer_name}_{dataset.name}&#34;
+        self.max_samples = max_samples
+        self.dataset_path: Path | None = None
+        #self.sequence_length = sequence_length
+        #self.base_file_name = f&#34;{self.tokenizer_name}_{self.sequence_length}_{dataset.name}&#34;
+        self.dataset = dataset
+        self.padding_token = self.tokenizer.padding_token
+        self.device = torch.device(&#39;cuda&#39; if torch.cuda.is_available(
+        ) else &#39;mps:0&#39; if torch.backends.mps.is_available() else &#39;cpu&#39;)
+        self.class_label = None
+        self.ui = cli.get()
+
+    def get_tokenized_training_data(self, class_labels: List[str] = None) -&gt; (Tensor, Tensor):
+        &#34;&#34;&#34;
+        Get the tokenized training data. If the tokenized data does not exist, it will be created. This way, the
+        tokenized data is only created once.
+        :param class_label: The class label to return. If None, the first class label is returned.
+        :return: A pair of:    - The tokenized training data as a tensor. The tensor is of shape (max_rows, max_sample_length).
+                                        - The labels of the dataset. The tensor is of shape (max_rows).
+        &#34;&#34;&#34;
+
+        self.dataset_path = self.path / f&#34;{self.base_file_name}_{self.dataset_train_name}_s{self.max_samples}_l{class_labels}_{self.file_extension}&#34;
+        return self._get_tensor(self.dataset_train_name, class_labels=class_labels)
+
+    def get_tokenized_testing_data(self, class_labels: List[str] = None) -&gt; (Tensor, Tensor):
+        &#34;&#34;&#34;
+        Get the tokenized testing data. If the tokenized data does not exist, it will be created. This way, the
+        tokenized data is only created once.        :param class_label: The class label to return. If None, the first class label is returned.
+        :return: A pair of:    - The tokenized testing data as a tensor. The tensor is of shape (max_rows, max_sample_length).
+                                        - The labels of the dataset. The tensor is of shape (max_rows).
+
+        &#34;&#34;&#34;
+        self.dataset_path = self.path / f&#34;{self.base_file_name}_{self.dataset_test_name}__s{self.max_samples}_l{class_labels}_{self.file_extension}&#34;
+        return self._get_tensor(self.dataset_test_name, class_labels=class_labels)
+
+    def _get_tensor(self, dataset_name, class_labels: List[str] | None) -&gt; (Tensor, Tensor):
+        &#34;&#34;&#34;
+        Get the tokenized data as a tensor.
+        :param dataset_name: The name of the dataset to get the tokenized data for.
+        :param class_labels: The class labels to filter for. If None, all class labels are returned.
+        :return: A pair of:     - The tokenized data as a tensor. The tensor is of shape (max_rows, max_sample_length).
+                                        - The labels of the dataset. The tensor is of shape (max_rows).
+        &#34;&#34;&#34;
+        class_labels: list = self.dataset.get_possible_labels() if class_labels is None else class_labels
+        dataset = self._get_dataset(dataset_name, class_labels)
+        max_rows = self.max_samples if self.max_samples &gt; 0 else len(dataset)
+        max_rows = min(max_rows, len(dataset))
+        #data = dataset[self.dataset.x_label_name].apply(lambda x: ast.literal_eval(x)).tolist()
+        #data = [ast.literal_eval(x) for x in dataset[self.dataset.x_label_name]]
+        #data = [json.loads(x) for x in dataset[self.dataset.x_label_name]]
+        data = []
+        with self.ui.display():
+            for x in dataset[self.dataset.x_label_name]:
+                self.ui.update(f&#34;reading tokenized dataset {len(data)} / {max_rows}&#34;)
+                try:
+                    json_list = json.loads(x)
+                    data.append(json_list)
+                except json.JSONDecodeError:
+                    print(f&#34;Warning: Skipping invalid JSON in row: {x}&#34;)  # Debugging
+                    #json_list = []
+
+        max_length = max([len(token_list) for token_list in data])
+
+        for i in range(len(data)):
+            data[i] = data[i] + [self.padding_token] * (max_length - len(data[i]))
+
+        data_tensor = torch.tensor(data, dtype=torch.int).to(self.device)
+
+        trimmed_tensor = self._trim_tensor(data_tensor)
+
+        return trimmed_tensor, torch.tensor(dataset[self.dataset.y_label_name][:max_rows].tolist()).to(self.device)
+
+
+    def _trim_tensor(self, tensor: torch.Tensor) -&gt; torch.Tensor:
+        &#34;&#34;&#34;
+        Finds the longest sequence of non-padding tokens across rows and
+        trims the tensor to that length.
+        &#34;&#34;&#34;
+        padding_token = self.tokenizer._padding_token
+        # Create a boolean mask: True where token is not padding.
+        mask = tensor != padding_token
+        # Flip the mask along the sequence dimension (assumed dim=1).
+        mask_rev = torch.flip(mask, dims=[1])
+
+        # For each row, check if there is any non-padding token.
+        non_padding_exists = mask_rev.any(dim=1)
+        L = tensor.size(1)
+        # For each row, find the index of the first non-padding token in the reversed row.
+        # (Note: If all tokens are padding, argmax returns 0; we fix that below.)
+        first_non_padding = mask_rev.float().argmax(dim=1)
+        # For rows that are all padding, set the index to L (so that effective length becomes 0).
+        first_non_padding = torch.where(
+            non_padding_exists,
+            first_non_padding,
+            torch.full_like(first_non_padding, L)
+        )
+        # Effective length per row is: total length - number of trailing padding tokens.
+        effective_lengths = L - first_non_padding
+        # Determine the maximum effective (non-padding) length.
+        max_sequence_length = effective_lengths.max().item()
+
+        trimmed = tensor[:, :max_sequence_length]
+        return trimmed
+
+    def _get_dataset(self, dataset_name: str, class_labels: list) -&gt; pd.DataFrame:
+        if not os.path.exists(self.dataset_path):
+            self._create_tokenized_dataset(dataset_name, class_labels)
+        df = pd.read_csv(self.dataset_path)
+        samples = self.max_samples if self.max_samples &gt; 0 else len(self.dataset.get_testing_data()[0])
+        if df[self.dataset.y_label_name].isin(class_labels).sum() &lt; samples:
+            self._create_tokenized_dataset(dataset_name, class_labels)
+        df = pd.read_csv(self.dataset_path)
+        y_label = self.dataset.y_label_name
+        filtered_df = df[df[y_label].isin(class_labels)].reset_index(drop=True)
+        filtered_df = filtered_df.iloc[:self.max_samples] if self.max_samples &gt; 0 else filtered_df
+        #if self.min_samples is not None and len(filtered_df) &lt; self.min_samples:
+            #self.max_samples = self.max_samples +(self.min_samples - len(filtered_df)) * (self.max_samples / len(filtered_df))
+            #return self._get_dataset(dataset_name, class_label) # This could lead to an infinite loop
+        return filtered_df
+
+
+    def _tokenize(self, x: Series, y: Series, dataset_type: str, class_labels: list) -&gt; pd.DataFrame:
+        #length = len(x) if self.max_samples &lt; 0 else self.max_samples
+        counter = Counter()
+        path = self.path / f&#34;{self.base_file_name}_temp_{dataset_type}.csv&#34;
+        max_samples = self.max_samples if self.max_samples &gt; 0 else len(x)
+
+        # x = x[:int(length / 50000)]
+        # length = len(x)
+        def tokenize(x):
+            # if counter.counter % one_percent == 0:
+            self.ui.update(f&#34;\r{counter.counter} tokenized&#34;)
+            counter.increase_counter()
+            tokenized: Tensor = self.tokenizer.tokenize(x)
+            # print(tokenized)
+            return tokenized.tolist()
+
+        # Save the tokenized data to a csv file at path every 100 samples to avoid data loss on crash. If the file
+        # already exists, for the given amount of samples, the data is loaded from the file.
+        start_row = 0
+        amount_inliers = 0
+        tokenized_x = pd.DataFrame()
+        if os.path.exists(path):
+            tokenized_df = pd.read_csv(path)
+            tokenized_x = tokenized_df[self.dataset.x_label_name]
+            start_row = len(tokenized_x)
+            counter = Counter(start_row)
+
+            amount_inliers = tokenized_df[self.dataset.y_label_name].isin(class_labels).sum()
+
+        length = len(x)
+        with self.ui.display():
+            for i in range(start_row, length, 100):
+                self.ui.update(f&#34;tokenizing {i} / {length}&#34;)
+                end_index = i + 100 if i + 100 &lt; length else length
+                newly_tokenized = pd.Series(x[i:end_index]).apply(tokenize)
+                new_labels = y[i:end_index]
+                tokenized_df = pd.DataFrame({self.dataset.x_label_name: newly_tokenized, self.dataset.y_label_name: new_labels})
+
+                amount_inliers += tokenized_df[self.dataset.y_label_name].isin(class_labels).sum()
+
+                if i == 0:
+                    if not os.path.exists(path):
+                        os.makedirs(self.path, exist_ok=True)
+                    tokenized_df.to_csv(path, index=False)
+                else:
+                    tokenized_df.to_csv(path, mode=&#39;a&#39;, header=False, index=False)
+                if amount_inliers &gt;= max_samples:
+                    break
+
+        fully_tokenized = pd.read_csv(path)
+        #return pd.DataFrame({self.dataset.x_label_name: fully_tokenized})
+        return fully_tokenized
+
+    def _create_tokenized_dataset(self, dataset_name: str, class_labels: list):
+        if dataset_name == self.dataset_train_name:
+            x, y = self.dataset.get_training_data()
+        elif dataset_name == self.dataset_test_name:
+            x, y = self.dataset.get_testing_data()
+        else:
+            raise ValueError(f&#34;Unknown dataset name: {dataset_name}&#34;)
+
+        with self.ui.display():
+            tokenized_x = self._tokenize(x, y, dataset_name, class_labels)
+
+        # As a series of length 1 is passed to the apply function, the tokenized data for that row is the first element
+        # Furthermore, the tokenized data is a string of the form &#34;[1, 2, 3, 4, 5]&#34; which is split by the comma
+        max_token_length = tokenized_x.apply(lambda token_list: len(token_list.iloc[0].split(&#34;,&#34;)), axis=1).max()
+
+        def vec_transform(x):
+            tokens_amount = len(x.iloc[0].split(&#34;,&#34;))
+            if tokens_amount &gt; max_token_length:
+                transformed = x.iloc[0][:-1] + &#34;, &#34; + str([self.padding_token] * (max_token_length - tokens_amount))[1:]
+            else:
+                transformed = x.iloc[0]
+            return transformed
+
+
+        tokenized_padded = tokenized_x.apply(lambda row: vec_transform(row), axis=1).reset_index(drop=True)
+        y_trimmed = y[:len(tokenized_padded)].reset_index(drop=True)
+        #tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded, self.dataset.y_label_name: y_trimmed})
+        tokenized_df = pd.DataFrame({self.dataset.x_label_name: tokenized_padded})
+        tokenized_df[self.dataset.y_label_name] = y_trimmed
+        if not os.path.exists(self.resource_path):
+            os.mkdir(self.resource_path)
+        if not os.path.exists(self.path):
+            os.mkdir(self.path)
+        tokenized_df.to_csv(self.dataset_path, index=False)</code></pre>
+</details>
+<div class="desc"></div>
+<h3>Methods</h3>
+<dl>
+<dt id="src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer.get_tokenized_testing_data"><code class="name flex">
+<span>def <span class="ident">get_tokenized_testing_data</span></span>(<span>self, class_labels: List[str] = None) ‑> (<class 'torch.Tensor'>, <class 'torch.Tensor'>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_tokenized_testing_data(self, class_labels: List[str] = None) -&gt; (Tensor, Tensor):
+    &#34;&#34;&#34;
+    Get the tokenized testing data. If the tokenized data does not exist, it will be created. This way, the
+    tokenized data is only created once.        :param class_label: The class label to return. If None, the first class label is returned.
+    :return: A pair of:    - The tokenized testing data as a tensor. The tensor is of shape (max_rows, max_sample_length).
+                                    - The labels of the dataset. The tensor is of shape (max_rows).
+
+    &#34;&#34;&#34;
+    self.dataset_path = self.path / f&#34;{self.base_file_name}_{self.dataset_test_name}__s{self.max_samples}_l{class_labels}_{self.file_extension}&#34;
+    return self._get_tensor(self.dataset_test_name, class_labels=class_labels)</code></pre>
+</details>
+<div class="desc"><p>Get the tokenized testing data. If the tokenized data does not exist, it will be created. This way, the
+tokenized data is only created once.
+:param class_label: The class label to return. If None, the first class label is returned.
+:return: A pair of:
+- The tokenized testing data as a tensor. The tensor is of shape (max_rows, max_sample_length).
+- The labels of the dataset. The tensor is of shape (max_rows).</p></div>
+</dd>
+<dt id="src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer.get_tokenized_training_data"><code class="name flex">
+<span>def <span class="ident">get_tokenized_training_data</span></span>(<span>self, class_labels: List[str] = None) ‑> (<class 'torch.Tensor'>, <class 'torch.Tensor'>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_tokenized_training_data(self, class_labels: List[str] = None) -&gt; (Tensor, Tensor):
+    &#34;&#34;&#34;
+    Get the tokenized training data. If the tokenized data does not exist, it will be created. This way, the
+    tokenized data is only created once.
+    :param class_label: The class label to return. If None, the first class label is returned.
+    :return: A pair of:    - The tokenized training data as a tensor. The tensor is of shape (max_rows, max_sample_length).
+                                    - The labels of the dataset. The tensor is of shape (max_rows).
+    &#34;&#34;&#34;
+
+    self.dataset_path = self.path / f&#34;{self.base_file_name}_{self.dataset_train_name}_s{self.max_samples}_l{class_labels}_{self.file_extension}&#34;
+    return self._get_tensor(self.dataset_train_name, class_labels=class_labels)</code></pre>
+</details>
+<div class="desc"><p>Get the tokenized training data. If the tokenized data does not exist, it will be created. This way, the
+tokenized data is only created once.
+:param class_label: The class label to return. If None, the first class label is returned.
+:return: A pair of:
+- The tokenized training data as a tensor. The tensor is of shape (max_rows, max_sample_length).
+- The labels of the dataset. The tensor is of shape (max_rows).</p></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.text.dataset_converter" href="index.html">src.text.dataset_converter</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.text.dataset_converter.dataset_tokenizer.Counter" href="#src.text.dataset_converter.dataset_tokenizer.Counter">Counter</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset_converter.dataset_tokenizer.Counter.increase_counter" href="#src.text.dataset_converter.dataset_tokenizer.Counter.increase_counter">increase_counter</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer" href="#src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer">DatasetTokenizer</a></code></h4>
+<ul class="">
+<li><code><a title="src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer.get_tokenized_testing_data" href="#src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer.get_tokenized_testing_data">get_tokenized_testing_data</a></code></li>
+<li><code><a title="src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer.get_tokenized_training_data" href="#src.text.dataset_converter.dataset_tokenizer.DatasetTokenizer.get_tokenized_training_data">get_tokenized_training_data</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

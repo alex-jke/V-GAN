@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.embedding_aggregation_experiment API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.embedding_aggregation_experiment</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment"><code class="flex name class">
+<span>class <span class="ident">EmbeddingAggregationExperiment</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmbeddingAggregationExperiment():
+
+    def __init__(self, *args, **kwargs):
+        self.train_size = 15_000
+        self.test_size = 3_000
+        super().__init__(*args, **kwargs)
+
+    def run_comparison(self, dataset: AggregatableDataset, base: Type[BasePyODM] = LUNAR, model: HuggingModel = None, type: str = NTPE):
+        if model is None:
+            model = LLama3B()
+        train_size = self.train_size
+        test_size = self.test_size
+        if type == NTPE:
+            space = WordSpace(strategy=UnificationStrategy.TRANSFORMER, model=model, test_size=test_size,
+                               train_size=train_size)
+        elif type == AVG:
+            space = EmbeddingSpace(model=model, train_size=train_size, test_size=test_size)
+        else:
+            raise ValueError(f&#34;type needs to be either &#39;{AVG}&#39; or &#39;{NTPE}&#39;&#34;)
+
+        method = base(
+            space=space,
+            dataset=dataset,
+            use_cached=False
+        )
+
+        method.train()
+        method.predict()
+        metrics, shared_metrics = method.evaluate()
+        metrics[TYPE_COL] = type
+
+        train_samples = shared_metrics[&#34;total_train_samples&#34;]
+        test_samples = shared_metrics[&#34;total_test_samples&#34;]
+
+        test_size = int(test_samples.iloc[0])
+        train_size = int(train_samples.iloc[0])
+
+        comparison_df = metrics
+        comparison_df[DATASET_COL] = dataset.name
+        comparison_df[TRAIN_SIZE_COL] = train_size
+        comparison_df[TEST_SIZE_COL] = test_size
+        comparison_df[EMB_MODEL_COL] = model.model_name
+        prompt = dataset.prompt.full_prompt if type == NTPE else &#34;&#34;
+        comparison_df[PROMPT_COL] = prompt
+
+
+        print(comparison_df)
+
+        return comparison_df
+
+
+    def test_emotions(self):
+        dataset = EmotionDataset()
+        self.run_comparison(dataset)
+
+    def test_ag_news(self):
+        dataset = AGNews()
+        self.run_comparison(dataset)
+
+    def run_all(self, output_path: Path, models: List[Type[CausalLLM]], dtype: Optional = None):
+        datasets = NLP_ADBench.get_all_datasets()
+        datasets.sort(key=lambda d: d.average_length)
+        datasets = [dataset for dataset in datasets if dataset.name != NLP_ADBench.sms_spam().name]
+        sms_spam_new_prompt = NLP_ADBench.sms_spam()
+        sms_spam_old_prompt = NLP_ADBench.sms_spam()
+        sms_spam_old_prompt.prompt = Prompt(
+            sample_prefix=&#34;sms :&#34;,
+            label_prefix=&#34;spam type :&#34;,
+            samples=[&#34;Congratulations! You&#39;ve won a $1,000 cash prize!&#34;,
+                     &#34;What is our plan for tonight?&#34;],
+            labels=[&#34;spam&#34;, &#34;no spam&#34;]
+        )
+        datasets = [sms_spam_old_prompt, sms_spam_new_prompt] + datasets
+        amount_runs = 3
+        for dataset in datasets:
+            for model_cls in models:
+                #print(f&#34;Running model {model_cls.__name__}&#34;)
+                model = model_cls()
+                model._dtype = dtype
+                for base in [LUNAR, LOF, ECOD]:
+                    for type in [AVG,
+                                 NTPE]:
+                        for run in range(amount_runs):
+
+                            if output_path.exists():
+                                results_df = pd.read_csv(output_path)
+                                already_run = results_df[DATASET_COL].tolist()
+                                bases = results_df[&#34;base&#34;].tolist()
+                                emb_models = results_df[EMB_MODEL_COL].tolist()
+                                runs_list = results_df[RUN_COL].tolist()
+                                prompts = results_df[PROMPT_COL].fillna(&#34;no_prompt&#34;).tolist()
+                                types = results_df[TYPE_COL].tolist()
+                                prompt = dataset.prompt.full_prompt if type == NTPE else &#34;no_prompt&#34;
+                                if ((dataset.name, base.__name__, model.model_name, run, prompt, type)
+                                        in zip(already_run, bases, emb_models, runs_list, prompts, types)):
+                                    #print(f&#34;Skipping dataset {dataset.name} with base {base.__name__} + run {run} + &#34;f&#34;type {type}, already present in results.&#34;)
+                                    continue
+                            try:
+                                print(f&#34;Running dataset: {dataset.name}, base: {base.__name__}, model: {model.model_name}, run: {run}, type: {type}&#34;)
+                                result = self.run_comparison(dataset, base, model, type=type)
+                                result[RUN_COL] = run
+                                result[DTYPE_COLUMN] = dtype
+                                result[MAX_TOKEN_LENGTH] = model.max_token_length()
+                                result.to_csv(output_path, mode=&#34;a&#34;, header=not output_path.exists())
+                            except Exception as e:
+                                print(f&#34;An error occurred running {dataset.name} + {base.__name__}. Skipping. (error: {e}&#34;)
+                                #raise e
+                                continue
+                #model.model.to(&#34;cpu&#34;)
+                #del model.model
+                del model
+
+    def run_different_prompts(self, dataset: AggregatableDataset, prompts: List[Prompt], output_path: Path, model: HuggingModel):
+        default_prompt = dataset.prompt
+        prompts = [default_prompt] + prompts
+        for prompt in prompts:
+            dataset.prompt = prompt
+            result = self.run_comparison(dataset, model=model)
+            result.to_csv(output_path, mode=&#34;a&#34;, header=not output_path.exists())
+
+    def compare_sms_spam_prompts(self, output_path: Path, model: HuggingModel):
+        dataset = NLP_ADBench.sms_spam()
+        prompts = [
+            Prompt(
+                sample_prefix=&#34;sms :&#34;,
+                label_prefix=&#34;spam type :&#34;,
+                samples=[&#34;Congratulations! You&#39;ve won a $1,000 cash prize!&#34;,
+                         &#34;What is our plan for tonight?.&#34;,
+                         &#34;Wht r ur plans 4 2night&#34;],
+                labels=[&#34;spam&#34;, &#34;no spam&#34;, &#34;no spam&#34;] #TODO: this yields a little higher auc
+            )
+        ]
+        self.run_different_prompts(dataset, prompts, output_path, model)
+
+    def create_results_csv(self, output_path: Path, experiments: DataFrame):
+        visualizer = CsvVisualizer(output_path, experiments)
+        visualizer.export_csv()</code></pre>
+</details>
+<div class="desc"></div>
+<h3>Methods</h3>
+<dl>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.compare_sms_spam_prompts"><code class="name flex">
+<span>def <span class="ident">compare_sms_spam_prompts</span></span>(<span>self,<br>output_path: pathlib.Path,<br>model: text.Embedding.LLM.huggingmodel.HuggingModel)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compare_sms_spam_prompts(self, output_path: Path, model: HuggingModel):
+    dataset = NLP_ADBench.sms_spam()
+    prompts = [
+        Prompt(
+            sample_prefix=&#34;sms :&#34;,
+            label_prefix=&#34;spam type :&#34;,
+            samples=[&#34;Congratulations! You&#39;ve won a $1,000 cash prize!&#34;,
+                     &#34;What is our plan for tonight?.&#34;,
+                     &#34;Wht r ur plans 4 2night&#34;],
+            labels=[&#34;spam&#34;, &#34;no spam&#34;, &#34;no spam&#34;] #TODO: this yields a little higher auc
+        )
+    ]
+    self.run_different_prompts(dataset, prompts, output_path, model)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.create_results_csv"><code class="name flex">
+<span>def <span class="ident">create_results_csv</span></span>(<span>self, output_path: pathlib.Path, experiments: pandas.core.frame.DataFrame)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_results_csv(self, output_path: Path, experiments: DataFrame):
+    visualizer = CsvVisualizer(output_path, experiments)
+    visualizer.export_csv()</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_all"><code class="name flex">
+<span>def <span class="ident">run_all</span></span>(<span>self,<br>output_path: pathlib.Path,<br>models: List[Type[text.Embedding.LLM.causal_llm.CausalLLM]],<br>dtype: Optional = None)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_all(self, output_path: Path, models: List[Type[CausalLLM]], dtype: Optional = None):
+    datasets = NLP_ADBench.get_all_datasets()
+    datasets.sort(key=lambda d: d.average_length)
+    datasets = [dataset for dataset in datasets if dataset.name != NLP_ADBench.sms_spam().name]
+    sms_spam_new_prompt = NLP_ADBench.sms_spam()
+    sms_spam_old_prompt = NLP_ADBench.sms_spam()
+    sms_spam_old_prompt.prompt = Prompt(
+        sample_prefix=&#34;sms :&#34;,
+        label_prefix=&#34;spam type :&#34;,
+        samples=[&#34;Congratulations! You&#39;ve won a $1,000 cash prize!&#34;,
+                 &#34;What is our plan for tonight?&#34;],
+        labels=[&#34;spam&#34;, &#34;no spam&#34;]
+    )
+    datasets = [sms_spam_old_prompt, sms_spam_new_prompt] + datasets
+    amount_runs = 3
+    for dataset in datasets:
+        for model_cls in models:
+            #print(f&#34;Running model {model_cls.__name__}&#34;)
+            model = model_cls()
+            model._dtype = dtype
+            for base in [LUNAR, LOF, ECOD]:
+                for type in [AVG,
+                             NTPE]:
+                    for run in range(amount_runs):
+
+                        if output_path.exists():
+                            results_df = pd.read_csv(output_path)
+                            already_run = results_df[DATASET_COL].tolist()
+                            bases = results_df[&#34;base&#34;].tolist()
+                            emb_models = results_df[EMB_MODEL_COL].tolist()
+                            runs_list = results_df[RUN_COL].tolist()
+                            prompts = results_df[PROMPT_COL].fillna(&#34;no_prompt&#34;).tolist()
+                            types = results_df[TYPE_COL].tolist()
+                            prompt = dataset.prompt.full_prompt if type == NTPE else &#34;no_prompt&#34;
+                            if ((dataset.name, base.__name__, model.model_name, run, prompt, type)
+                                    in zip(already_run, bases, emb_models, runs_list, prompts, types)):
+                                #print(f&#34;Skipping dataset {dataset.name} with base {base.__name__} + run {run} + &#34;f&#34;type {type}, already present in results.&#34;)
+                                continue
+                        try:
+                            print(f&#34;Running dataset: {dataset.name}, base: {base.__name__}, model: {model.model_name}, run: {run}, type: {type}&#34;)
+                            result = self.run_comparison(dataset, base, model, type=type)
+                            result[RUN_COL] = run
+                            result[DTYPE_COLUMN] = dtype
+                            result[MAX_TOKEN_LENGTH] = model.max_token_length()
+                            result.to_csv(output_path, mode=&#34;a&#34;, header=not output_path.exists())
+                        except Exception as e:
+                            print(f&#34;An error occurred running {dataset.name} + {base.__name__}. Skipping. (error: {e}&#34;)
+                            #raise e
+                            continue
+            #model.model.to(&#34;cpu&#34;)
+            #del model.model
+            del model</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_comparison"><code class="name flex">
+<span>def <span class="ident">run_comparison</span></span>(<span>self,<br>dataset: text.dataset.dataset.AggregatableDataset,<br>base: Type[text.outlier_detection.pyod_odm.BasePyODM] = text.outlier_detection.pyod_odm.LUNAR,<br>model: text.Embedding.LLM.huggingmodel.HuggingModel = None,<br>type: str = 'NPTE')</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_comparison(self, dataset: AggregatableDataset, base: Type[BasePyODM] = LUNAR, model: HuggingModel = None, type: str = NTPE):
+    if model is None:
+        model = LLama3B()
+    train_size = self.train_size
+    test_size = self.test_size
+    if type == NTPE:
+        space = WordSpace(strategy=UnificationStrategy.TRANSFORMER, model=model, test_size=test_size,
+                           train_size=train_size)
+    elif type == AVG:
+        space = EmbeddingSpace(model=model, train_size=train_size, test_size=test_size)
+    else:
+        raise ValueError(f&#34;type needs to be either &#39;{AVG}&#39; or &#39;{NTPE}&#39;&#34;)
+
+    method = base(
+        space=space,
+        dataset=dataset,
+        use_cached=False
+    )
+
+    method.train()
+    method.predict()
+    metrics, shared_metrics = method.evaluate()
+    metrics[TYPE_COL] = type
+
+    train_samples = shared_metrics[&#34;total_train_samples&#34;]
+    test_samples = shared_metrics[&#34;total_test_samples&#34;]
+
+    test_size = int(test_samples.iloc[0])
+    train_size = int(train_samples.iloc[0])
+
+    comparison_df = metrics
+    comparison_df[DATASET_COL] = dataset.name
+    comparison_df[TRAIN_SIZE_COL] = train_size
+    comparison_df[TEST_SIZE_COL] = test_size
+    comparison_df[EMB_MODEL_COL] = model.model_name
+    prompt = dataset.prompt.full_prompt if type == NTPE else &#34;&#34;
+    comparison_df[PROMPT_COL] = prompt
+
+
+    print(comparison_df)
+
+    return comparison_df</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_different_prompts"><code class="name flex">
+<span>def <span class="ident">run_different_prompts</span></span>(<span>self,<br>dataset: text.dataset.dataset.AggregatableDataset,<br>prompts: List[text.dataset.prompt.Prompt],<br>output_path: pathlib.Path,<br>model: text.Embedding.LLM.huggingmodel.HuggingModel)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_different_prompts(self, dataset: AggregatableDataset, prompts: List[Prompt], output_path: Path, model: HuggingModel):
+    default_prompt = dataset.prompt
+    prompts = [default_prompt] + prompts
+    for prompt in prompts:
+        dataset.prompt = prompt
+        result = self.run_comparison(dataset, model=model)
+        result.to_csv(output_path, mode=&#34;a&#34;, header=not output_path.exists())</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.test_ag_news"><code class="name flex">
+<span>def <span class="ident">test_ag_news</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_ag_news(self):
+    dataset = AGNews()
+    self.run_comparison(dataset)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.test_emotions"><code class="name flex">
+<span>def <span class="ident">test_emotions</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_emotions(self):
+    dataset = EmotionDataset()
+    self.run_comparison(dataset)</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src" href="index.html">src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment">EmbeddingAggregationExperiment</a></code></h4>
+<ul class="">
+<li><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.compare_sms_spam_prompts" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.compare_sms_spam_prompts">compare_sms_spam_prompts</a></code></li>
+<li><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.create_results_csv" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.create_results_csv">create_results_csv</a></code></li>
+<li><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_all" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_all">run_all</a></code></li>
+<li><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_comparison" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_comparison">run_comparison</a></code></li>
+<li><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_different_prompts" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.run_different_prompts">run_different_prompts</a></code></li>
+<li><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.test_ag_news" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.test_ag_news">test_ag_news</a></code></li>
+<li><code><a title="src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.test_emotions" href="#src.embedding_aggregation_experiment.EmbeddingAggregationExperiment.test_emotions">test_emotions</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="generator" content="pdoc3 0.11.6">
+<title>src.corr_extraction API documentation</title>
+<meta name="description" content="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source > summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible;min-width:max-content}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin:1em 0}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha512-D9gUyxqja7hBtkWpPWGt9wfbfaMGVt9gnyCvYa+jojwwPHLCzUm5i8rpk7vD7wNee9bA35eYIjobYPaQuKS1MQ==" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => {
+hljs.configure({languages: ['bash', 'css', 'diff', 'graphql', 'ini', 'javascript', 'json', 'plaintext', 'python', 'python-repl', 'rust', 'shell', 'sql', 'typescript', 'xml', 'yaml']});
+hljs.highlightAll();
+/* Collapse source docstrings */
+setTimeout(() => {
+[...document.querySelectorAll('.hljs.language-python > .hljs-string')]
+.filter(el => el.innerHTML.length > 200 && ['"""', "'''"].includes(el.innerHTML.substring(0, 3)))
+.forEach(el => {
+let d = document.createElement('details');
+d.classList.add('hljs-string');
+d.innerHTML = '<summary>"""</summary>' + el.innerHTML.substring(3);
+el.replaceWith(d);
+});
+}, 100);
+})</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.corr_extraction</code></h1>
+</header>
+<section id="section-intro">
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="src.corr_extraction.covariance_matrix_generator"><code class="name flex">
+<span>def <span class="ident">covariance_matrix_generator</span></span>(<span>dim_subspace, sigma, dim_space=10, return_subspace=False)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def covariance_matrix_generator(dim_subspace, sigma, dim_space = 10, return_subspace = False):
+    &#39;&#39;&#39;Create a covariance matrix
+    
+    This functions creates, give a dimensionality of a whole space, the desired subspace, and the covariance value (sigma), a simetric covariance matrix with a random subspace embedded
+    in it.
+    Args:
+        -
+    &#39;&#39;&#39;
+    cov_vector = np.sort(np.random.choice(range(dim_space - 1),dim_subspace,replace=False))
+    x_matrix = np.diag(np.ones(dim_space))
+
+    for i, feature in enumerate(cov_vector):  
+        if i &lt; cov_vector.size - 1:  
+            for j in range(cov_vector.size - 1 - i):    
+                x_matrix[feature, cov_vector[i+j+1]] = sigma
+    x_matrix = x_matrix + np.transpose(x_matrix) - np.diag((np.ones(dim_space))) #Simetric
+    #x_matrix = np.matmul(x_matrix, np.transpose(x_matrix)) #Semi-positivelly defined
+    if return_subspace == True:
+        cov_subspace = np.zeros(dim_space)
+        for element in cov_vector:
+            cov_subspace[element] = 1    
+        return x_matrix, cov_subspace.astype(int)
+    else: return x_matrix</code></pre>
+</details>
+<div class="desc"><p>Create a covariance matrix</p>
+<p>This functions creates, give a dimensionality of a whole space, the desired subspace, and the covariance value (sigma), a simetric covariance matrix with a random subspace embedded
+in it.</p>
+<h2 id="args">Args</h2>
+<p>-</p></div>
+</dd>
+<dt id="src.corr_extraction.launch_corr_experiments"><code class="name flex">
+<span>def <span class="ident">launch_corr_experiments</span></span>(<span>dim_subspace_vector, sigma_vector, dim_space=10, repetitions=10)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def launch_corr_experiments(dim_subspace_vector, sigma_vector, dim_space = 10, repetitions = 10):
+    contain_matrix = np.zeros(shape = [len(sigma_vector),len(dim_subspace_vector)])
+    mmd_test_matrix = np.zeros(shape = [len(sigma_vector),len(dim_subspace_vector)])
+    p_val_matrix = np.zeros(shape = [len(sigma_vector),len(dim_subspace_vector)])
+    selected_subsp_dim_matrix = np.zeros(shape = [len(sigma_vector),len(dim_subspace_vector)])
+    proba_matrix = np.zeros(shape = [len(sigma_vector),len(dim_subspace_vector)])
+    path_for_exiperiments = Path.cwd()/ &#34;experiments&#34; / f&#34;Correlation_extraction_{datetime.datetime.now()}&#34; #So date-time is fixed ONCE only (and we store every individual experiments inside)
+
+    for index_on_sigma, sigma in enumerate(sigma_vector):
+        contain_vector_on_d = np.zeros(len(dim_subspace_vector))
+        mmd_test_vector_on_d = np.zeros(len(dim_subspace_vector))
+        p_value_vector_on_d = np.zeros(len(dim_subspace_vector))
+        selected_subsp_dim_vector_on_d = np.zeros(len(dim_subspace_vector))
+        proba_vector_on_d = np.zeros(len(dim_subspace_vector))
+
+        for index_on_d, dim_subspace in enumerate(dim_subspace_vector):
+            contain_counter = 0
+            mmd_test_counter = 0
+            p_value_counter = 0
+            selected_subsp_dim_counter = 0
+            proba_counter = 0
+            for i in range(repetitions):
+                Cov_matrix, cov_subspace = covariance_matrix_generator(dim_subspace,sigma,dim_space, return_subspace=True)
+                mean = np.zeros(dim_space)
+                X_data = np.random.multivariate_normal(mean,Cov_matrix,2000)
+                
+                if operator.not_(path_for_exiperiments.exists()):
+                    os.mkdir(path_for_exiperiments)
+                
+                model = VMMD(epochs = 1500, path_to_directory= path_for_exiperiments/f&#34;run{i}_with_sigma{sigma}_dimsubspace{dim_subspace}&#34;, lr = 0.01)
+                model.fit(X_data)
+                u = model.generate_subspaces(500)
+                unique_subspaces, proba= np.unique(np.array(u.to(&#39;cpu&#39;)), axis=0, return_counts=True)
+                proba = proba/np.array(u.to(&#39;cpu&#39;)).shape[0]
+                unique_subspaces = [unique_subspaces[i]*1 for i in range(unique_subspaces.shape[0])]
+
+                index_of_max_subspace = np.argmax(proba)
+                control_vector = np.array(unique_subspaces)[index_of_max_subspace, :]  - cov_subspace #To check whether the subspaces are included is easier to check a 1-hot 
+                                                                                                      #encoding of them. If the substraction of the encodings yields -1, it is not contained
+                contained = 1
+                for entry in control_vector:
+                    if entry == -1: contained = 0
+                if contained == 1:
+                    contain_counter += 1/repetitions
+
+
+                X_sample = torch.mps.Tensor(pd.DataFrame(X_data).sample(500).to_numpy()).to(&#39;mps:0&#39;)
+                uX_data = u *torch.mps.Tensor(X_sample).to(model.device) + torch.mean(X_sample,dim=0)*(~u)
+                mmd = tts.MMDStatistic(500, 500)
+                mmd_val, distances = mmd(X_sample,uX_data,alphas=[1/model.bandwidth], ret_matrix=True)
+                p_value = mmd.pval(distances)
+                if p_value &lt;= 0.05:
+                    mmd_test_counter += 1/repetitions
+
+                p_value_counter += p_value/repetitions
+
+                selected_subsp_dim_counter += np.sum(np.array(unique_subspaces)[index_of_max_subspace, :])/repetitions
+
+                proba_counter += proba[index_of_max_subspace]/repetitions
+            
+            contain_vector_on_d[index_on_d] = contain_counter
+            mmd_test_vector_on_d[index_on_d] = mmd_test_counter
+            p_value_vector_on_d[index_on_d] = p_value_counter
+            selected_subsp_dim_vector_on_d[index_on_d] = selected_subsp_dim_counter
+            proba_vector_on_d[index_on_d] = proba_counter
+
+        contain_matrix[index_on_sigma,:] = contain_vector_on_d
+        mmd_test_matrix[index_on_sigma,:] = mmd_test_vector_on_d
+        p_val_matrix[index_on_sigma,:] = p_value_vector_on_d
+        selected_subsp_dim_matrix[index_on_sigma,:] = selected_subsp_dim_vector_on_d
+        proba_matrix[index_on_sigma,:] = proba_vector_on_d
+    contain_matrix = pd.DataFrame(contain_matrix,columns = args.dim_subspace_vector, index = args.sigma_vector)
+    mmd_test_matrix = pd.DataFrame(mmd_test_matrix,columns = args.dim_subspace_vector, index = args.sigma_vector)
+    p_val_matrix = pd.DataFrame(p_val_matrix,columns = args.dim_subspace_vector, index = args.sigma_vector)
+    selected_subsp_dim_matrix = pd.DataFrame(selected_subsp_dim_matrix, columns = args.dim_subspace_vector, index = args.sigma_vector)
+    proba_matrix = pd.DataFrame(proba_matrix, columns = args.dim_subspace_vector, index = args.sigma_vector)
+
+    contain_matrix.to_csv(path_for_exiperiments/f&#34;contain_matrix.csv&#34;)
+    mmd_test_matrix.to_csv(path_for_exiperiments/f&#34;mmd_test_matrix.csv&#34;)
+    p_val_matrix.to_csv(path_for_exiperiments/f&#34;p_val_matrix.csv&#34;)
+    selected_subsp_dim_matrix.to_csv(path_for_exiperiments/f&#34;selected_subsp_dim_matrix.csv&#34;)
+    proba_matrix.to_csv(path_for_exiperiments/f&#34;proba_matrix.csv&#34;)
+
+    return contain_matrix, mmd_test_matrix, p_val_matrix, selected_subsp_dim_matrix, proba_matrix</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+<dt id="src.corr_extraction.parse_arguments"><code class="name flex">
+<span>def <span class="ident">parse_arguments</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_arguments(): 
+   parser = argparse.ArgumentParser(description=&#34;Covariance extraction experiments for V-GAN&#34;) 
+   parser.add_argument(&#34;--dim_subspace_vector&#34;, nargs=&#39;+&#39;, type=int, default=[5], help=&#39;Array of multiple dimensions for the subspaces&#39;)
+   parser.add_argument(&#34;--sigma_vector&#34;, nargs=&#39;+&#39;, type=float, default=[20,50], help=&#39;Array of multiple covariance values for the subspaces&#39;)
+   parser.add_argument(&#34;--repetitions&#34;, type=int, default=10, help=&#39;Number of repetitions taken place for each dimensionality and covariance value&#39;)
+   parser.add_argument(&#34;--dim_space&#34;, type=int, default= 10, help=&#34;Dimensionality of the full-space where the experiment is taken place&#34;)
+
+   return parser.parse_args()</code></pre>
+</details>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src" href="index.html">src</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="src.corr_extraction.covariance_matrix_generator" href="#src.corr_extraction.covariance_matrix_generator">covariance_matrix_generator</a></code></li>
+<li><code><a title="src.corr_extraction.launch_corr_experiments" href="#src.corr_extraction.launch_corr_experiments">launch_corr_experiments</a></code></li>
+<li><code><a title="src.corr_extraction.parse_arguments" href="#src.corr_extraction.parse_arguments">parse_arguments</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.11.6</a>.</p>
+</footer>
+</body>
+</html>
