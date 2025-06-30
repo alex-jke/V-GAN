@@ -44,3 +44,6 @@ There are several pipelines available for running the experiments. These are loc
 - `vmmd_lightning_text_experiments.py`: This script runs V-GAN without kernel learning using PyTorch Lightning on textual data.
 
 All of these scripts include a sample usage in the `if __name__ == "__main__":` section. There, the parameters for the experiments can be set, such as the dataset to use, the number of epochs, and other hyperparameters.
+
+# Documentation
+A documentation for this project is available inside the `documentation` folder.

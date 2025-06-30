@@ -32,13 +32,36 @@ NTPE = "NPTE"
 AVG = "avg"
 
 class EmbeddingAggregationExperiment():
+    """
+    A class to run experiments comparing different embedding aggregation methods on text datasets.
+    That is ways to aggregate the multiple embeddings of a text sample into a single embedding.
+    The methods are:
+    - NTPE: Next Token Predictive Embedding, which uses a transformer model to aggregate the embeddings.
+    - AVG: Average Embedding, which simply averages the embeddings of a text sample.
+    """
 
     def __init__(self, *args, **kwargs):
+        """
+        Initializes the EmbeddingAggregationExperiment with default train and test sizes of 15,000 and 3,000 samples respectively.
+        """
         self.train_size = 15_000
         self.test_size = 3_000
         super().__init__(*args, **kwargs)
 
     def run_comparison(self, dataset: AggregatableDataset, base: Type[BasePyODM] = LUNAR, model: HuggingModel = None, type: str = NTPE):
+        """
+        Runs a comparison of different embedding aggregation methods on the given dataset using the specified base method and model.
+        Args:
+            dataset (AggregatableDataset): The dataset to run the comparison on.
+            base (Type[BasePyODM]): The base outlier detection method to use for the comparison, defaults to LUNAR.
+            model (HuggingModel): The LLM to use for the comparison, defaults to LLama3B.
+            type (str): The type of embedding aggregation method to use, either 'NTPE' or 'AVG', defaults to 'NTPE'.
+
+        Returns:
+            DataFrame: A DataFrame containing the results of the comparison, including metrics and shared metrics.
+        Raises:
+            ValueError: If the type is not 'NTPE' or 'AVG'.
+        """
         if model is None:
             model = LLama3B()
         train_size = self.train_size
@@ -83,14 +106,28 @@ class EmbeddingAggregationExperiment():
 
 
     def test_emotions(self):
+        """
+        Runs a comparison on the EmotionDataset using the default LLM and LUNAR as the base method.
+        """
         dataset = EmotionDataset()
         self.run_comparison(dataset)
 
     def test_ag_news(self):
+        """
+        Runs a comparison on the AGNews dataset using the default LLM and LUNAR as the base method.
+        """
         dataset = AGNews()
         self.run_comparison(dataset)
 
     def run_all(self, output_path: Path, models: List[Type[CausalLLM]], dtype: Optional = None):
+        """
+        Runs a comparison of different embedding aggregation methods on all datasets in NLP_ADBench, running the sms_spam dataset with both old and new prompts.
+        Args:
+            output_path (Path): The path to save the results CSV file.
+            models (List[Type[CausalLLM]]): A list of LLMs to use for the comparison.
+            dtype (Optional): The data type to use for the model, defaults to None. This can be set to torch.float32 or
+            torch.float16 for example to influence the memory usage and performance of the model.
+        """
         datasets = NLP_ADBench.get_all_datasets()
         datasets.sort(key=lambda d: d.average_length)
         datasets = [dataset for dataset in datasets if dataset.name != NLP_ADBench.sms_spam().name]
@@ -144,6 +181,14 @@ class EmbeddingAggregationExperiment():
                 del model
 
     def run_different_prompts(self, dataset: AggregatableDataset, prompts: List[Prompt], output_path: Path, model: HuggingModel):
+        """
+        Runs a comparison of different prompts on the given dataset using the specified model.
+        Args:
+            dataset (AggregatableDataset): The dataset to run the comparison on.
+            prompts (List[Prompt]): A list of prompts to use for the comparison.
+            output_path (Path): The path to save the results CSV file.
+            model (HuggingModel): The LLM to use for the comparison.
+        """
         default_prompt = dataset.prompt
         prompts = [default_prompt] + prompts
         for prompt in prompts:
@@ -152,6 +197,12 @@ class EmbeddingAggregationExperiment():
             result.to_csv(output_path, mode="a", header=not output_path.exists())
 
     def compare_sms_spam_prompts(self, output_path: Path, model: HuggingModel):
+        """
+        Compares different prompts on the SMS Spam dataset.
+        Args:
+            output_path (Path): The path to save the results CSV file.
+            model (HuggingModel): The LLM to use for the comparison.
+        """
         dataset = NLP_ADBench.sms_spam()
         prompts = [
             Prompt(
@@ -166,6 +217,12 @@ class EmbeddingAggregationExperiment():
         self.run_different_prompts(dataset, prompts, output_path, model)
 
     def create_results_csv(self, output_path: Path, experiments: DataFrame):
+        """
+        Creates a CSV file with the results of the experiments.
+        Args:
+            output_path (Path): The path to save the results CSV file.
+            experiments (DataFrame): A DataFrame containing the results of the experiments.
+        """
         visualizer = CsvVisualizer(output_path, experiments)
         visualizer.export_csv()
 

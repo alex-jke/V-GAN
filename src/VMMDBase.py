@@ -23,10 +23,10 @@ from models.Mmd_loss_constrained import MMDLossConstrained
 
 class VMMDBase(IVMMDBase):
     '''
-    V-MMD, a Subspace-Generative Moment Matching Network.
+    Base class for V-MMD and its variants, providing common functionality for training and visualization.
+    This class is abstract and should not be instantiated directly. It is the base class for the non-kernel learning
+    V-MMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no kernel learning is performed.
 
-    Class for the method VMMD, the application of a GMMN to the problem of Subspace Generation. As a GMMN, no
-    kernel learning is performed. The default values for the kernel are
     '''
 
     def __init__(self, batch_size=500, epochs=500, lr=10e-5, momentum=0.99, seed=777, weight_decay=10e-5, path_to_directory=None,
